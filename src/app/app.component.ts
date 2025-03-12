@@ -1,15 +1,15 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { HeaderComponent } from "./customer/header/header.component";
-import { FooterComponent } from "./customer/footer/footer.component";
+import { HeaderCustomerComponent } from "./components/header-customer/header-customer.component";
+import { FooterCustomerComponent } from "./components/footer-customer/footer-customer.component";
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, HeaderComponent, FooterComponent],
+  imports: [HeaderCustomerComponent, RouterOutlet, FooterCustomerComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
 export class AppComponent {
-  title = 'frontend';
+  title = 'QL_KhachSan';
 }
