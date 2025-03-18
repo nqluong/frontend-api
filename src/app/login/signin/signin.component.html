@@ -1,61 +1,28 @@
-<!-- start: main grid layout -->
-<main class="container-fluid px-0">
-
-    <!-- start: project logo -->
-    <div class="px-md-5 px-4 auth-header" data-bs-theme="none">
-        <a href="index.html" class="brand-icon text-decoration-none d-flex align-items-center" title="HotelAir Admin Template">
-            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                <path d="M3 3m0 2a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2z"></path>
-                <path d="M9 8l0 8"></path>
-                <path d="M9 12l6 0"></path>
-                <path d="M15 8l0 8"></path>
-            </svg>
-            <span class="fw-bold ps-2 fs-5 text-gradient">HotelAir</span>
-        </a>
-    </div>
-
-    <!-- start: page body area -->
-    <div class="px-md-5 px-4 auth-body">
-        <form>
-            <ul class="row g-3 list-unstyled li_animate">
-                
-                <li class="col-12">
-                    <label class="form-label">Email</label>
-                    <input type="email" class="form-control form-control-lg" placeholder="" value="admin@hotelair.com">
-                </li>
-                <li class="col-12">
-                    <div class="form-label">
-                        <span class="d-flex justify-content-between align-items-center">
-                            Password
-                            <a class="text-primary" href="password-reset.html">Forgot Password?</a>
-                        </span>
+<div class="main-wrapper login-body">
+    <div class="login-wrapper">
+        <div class="container">
+            <div class="loginbox">
+                <div class="login-left"> <img class="img-fluid" src="assets/admin/img/logo.png" alt="Logo"> </div>
+                <div class="login-right">
+                    <div class="login-right-wrap">
+                        <h1>Login</h1>
+                        <p class="account-subtitle">Access to our dashboard</p>
+                        <form action="index.html">
+                            <div class="form-group">
+                                <input class="form-control" type="text" placeholder="Email"> </div>
+                            <div class="form-group">
+                                <input class="form-control" type="text" placeholder="Password"> </div>
+                            <div class="form-group">
+                                <button class="btn btn-primary btn-block" type="submit">Login</button>
+                            </div>
+                        </form>
+                        <div class="text-center forgotpass"><a href="forgot-password.html">Forgot Password?</a> </div>
+                        <div class="login-or"> <span class="or-line"></span> <span class="span-or">or</span> </div>
+                        <div class="social-login"> <span>Login with</span> <a href="#" class="facebook"><i class="fab fa-facebook-f"></i></a><a href="#" class="google"><i class="fab fa-google"></i></a> </div>
+                        <div class="text-center dont-have">Don’t have an account? <a href="register.html">Register</a></div>
                     </div>
-                    <input type="password" class="form-control form-control-lg" placeholder="" value="admin.hotelair">
-                </li>
-                <li class="col-12">
-                    <div class="form-check fs-5">
-                        <input class="form-check-input" type="checkbox" value="" id="Rememberme">
-                        <label class="form-check-label fs-6" for="Rememberme">Remeber this Device</label>
-                    </div>
-                </li>
-                <li class="col-12 my-lg-4">
-                    <a class="btn btn-lg w-100 btn-primary text-uppercase mb-2" href="index.html" title="sign in">SIGN IN</a>
-                    <a class="btn btn-lg btn-secondary w-100" href="signin.html#">
-                        <i class="fa fa-google me-2"></i>
-                        <span>Sign in with Google</span>
-                    </a>
-                </li>
-                <li class="col-12 text-center">
-                    <span class="text-muted d-flex d-sm-inline-flex">New to HotelAir <a class="ms-2" href="signup.html" title="">Sign up here</a></span>
-                </li>
-            </ul><!--[ ul.row end ]-->
-        </form>
+                </div>
+            </div>
+        </div>
     </div>
-
-    <!-- start: page footer -->
-    <footer class="px-xl-5 px-4">
-        <p class="mb-0 text-muted">© 2024 <a href="signin.html#" target="_blank" title="hotelair">HotelAir </a>, All Rights Reserved.</p>
-    </footer>
-    
-</main>
+</div>

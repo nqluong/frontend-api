@@ -183,7 +183,7 @@ swiper-slide {
     margin-inline-start: var(--swiper-centered-offset-before)
 }
 
-.swiper-centered.swiper-horizontal>.swiper-wrapper: :before {
+.swiper-centered.swiper-horizontal>.swiper-wrapper::before {
     height: 100%;
     min-height: 1px;
     width: var(--swiper-centered-offset-after)
@@ -193,7 +193,7 @@ swiper-slide {
     margin-block-start: var(--swiper-centered-offset-before)
 }
 
-.swiper-centered.swiper-vertical>.swiper-wrapper: :before {
+.swiper-centered.swiper-vertical>.swiper-wrapper::before {
     width: 100%;
     min-width: 1px;
     height: var(--swiper-centered-offset-after)

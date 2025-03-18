@@ -11,7 +11,7 @@ import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 })
 export class AppComponent {
   title = 'QL_KhachSan';
-  private previousZone: 'login' | 'customer' | null = null; 
+  private previousZone: 'login' | '' | null = null; 
 
   constructor(
     private renderer: Renderer2,
@@ -23,10 +23,9 @@ export class AppComponent {
   ngOnInit() {
     this.router.events.subscribe(event => {
       if (event instanceof NavigationEnd && isPlatformBrowser(this.platformId)) {
-        this.updateBodyClass();
 
         // Xác định khu vực hiện tại
-        const currentZone = this.router.url.startsWith('/login') ? 'login' : 'customer';
+        const currentZone = this.router.url.startsWith('/login') ? 'login' : '';
 
         // Nếu chuyển giữa `login` ↔ `customer`, cần xóa hết CSS/JS trước khi load lại
         if (this.previousZone !== null && this.previousZone !== currentZone) {
@@ -35,7 +34,7 @@ export class AppComponent {
           setTimeout(() => {
             this.loadStyles();
             this.loadScripts();
-          }, 50); // Đợi một chút để tránh lỗi
+          }, 500); // Đợi một chút để tránh lỗi
         } else {
           this.loadStyles();
           this.loadScripts();
@@ -44,20 +43,6 @@ export class AppComponent {
         this.previousZone = currentZone;
       }
     });
-  }
-
-  /**
-   * Cập nhật class cho body
-   */
-  private updateBodyClass() {
-    const url = this.router.url;
-    this.document.body.removeAttribute('data-theme');
-    this.document.body.classList.remove('svgstroke-a', 'auth', 'bg-gradient');
-
-    if (url.startsWith('/login')) {
-      this.document.body.setAttribute('data-theme', 'theme-PurpleHeart');
-      this.document.body.classList.add('svgstroke-a', 'auth', 'bg-gradient');
-    }
   }
 
   /**
@@ -84,7 +69,13 @@ export class AppComponent {
     let styles: string[] = [];
 
     if (url.startsWith('/login')) {
-      styles = ['assets/admin/css/style.min.css'];
+      styles = ['assets/admin/css/bootstrap.min.css',
+        'assets/admin/plugins/fontawesome/css/fontawesome.min.css',
+        'assets/admin/plugins/fontawesome/css/all.min.css',
+        'assets/admin/css/feathericon.min.css',
+        'assets/admin/plugins/morris/morris.css',
+        'assets/admin/css/style.css'
+      ];
     } else {
       styles = [
         'assets/customer/css/bootstrap.min.css',
@@ -134,6 +125,13 @@ export class AppComponent {
         'assets/customer/js/script.js',
         'assets/customer/js/script-gsap.js'
       ];
+    } else {
+      scripts = ['assets/admin/js/jquery-3.5.1.min.js',
+        'assets/admin/js/bootstrap.min.js',
+        'assets/admin/js/popper.min.js',
+        'assets/admin/plugins/slimscroll/jquery.slimscroll.min.js',
+        'assets/admin/js/script.js'
+      ]
     }
 
     scripts.forEach(jsFile => {
