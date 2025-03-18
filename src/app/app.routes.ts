@@ -1,12 +1,34 @@
 import { Routes } from '@angular/router';
-import { HomeCustomerComponent } from './components/home-customer/home-customer.component';
-import { RoomsComponent } from './components/rooms/rooms.component';
-import { RoomsSuitsComponent } from './components/rooms-suits/rooms-suits.component';
-import { RoomDetailsComponent } from './components/room-details/room-details.component';
+import { HomeComponent } from './customer/home/home.component';
+import { RoomsComponent } from './customer/rooms/rooms.component';
+import { RoomDetailsComponent } from './customer/room-details/room-details.component';
+import { ContactComponent } from './customer/contact/contact.component';
+import { ServiceComponent } from './customer/service/service.component';
+import { SigninComponent } from './login/signin/signin.component';
+import { SignupComponent } from './login/signup/signup.component';
+import { PasswordResetComponent } from './login/password-reset/password-reset.component';
+import { MainCustomerComponent } from './customer/main-customer/main-customer.component';
+import { MainLoginComponent } from './login/main-login/main-login.component';
 
 export const routes: Routes = [
-    {path: '', component: HomeCustomerComponent},
-    {path: 'rooms', component: RoomsComponent},
-    {path: 'rooms-suits', component: RoomsSuitsComponent},
-    {path: 'room-details', component: RoomDetailsComponent}
+    {
+        path: '',
+        component: MainCustomerComponent,
+        children: [
+            {path:'', component: HomeComponent},
+            {path: 'rooms', component: RoomsComponent},
+            {path: 'room-details', component: RoomDetailsComponent},
+            {path: 'contact', component: ContactComponent},
+            {path: 'service', component: ServiceComponent}
+        ]
+    },
+    {
+        path: 'login',
+        component: MainLoginComponent,
+        children:[
+            {path: 'signin', component: SigninComponent},
+            {path: 'signup', component: SignupComponent}, 
+            {path: 'forgot-password', component: PasswordResetComponent}
+        ]
+    }
 ];
