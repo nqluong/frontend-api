@@ -21,28 +21,16 @@ export class AppComponent {
   ) { }
 
   ngOnInit() {
-    this.router.events.subscribe(event => {
-      if (event instanceof NavigationEnd && isPlatformBrowser(this.platformId)) {
-
-        // Xác định khu vực hiện tại
-        const currentZone = this.router.url.startsWith('/login') ? 'login' : '';
-
-        // Nếu chuyển giữa `login` ↔ `customer`, cần xóa hết CSS/JS trước khi load lại
-        if (this.previousZone !== null && this.previousZone !== currentZone) {
-          this.clearStyles();
-          this.clearScripts();
-          setTimeout(() => {
-            this.loadStyles();
-            this.loadScripts();
-          }, 500); // Đợi một chút để tránh lỗi
-        } else {
-          this.loadStyles();
-          this.loadScripts();
+    if (isPlatformBrowser(this.platformId)) {
+      this.router.events.subscribe((event) => {
+        if (event instanceof NavigationEnd) {
+          void this.loadStyles().then(() => {
+            // Khi CSS đã load xong, thêm class ready vào body
+            this.document.body.classList.add('ready');
+          });
         }
-
-        this.previousZone = currentZone;
-      }
-    });
+      });
+    }
   }
 
   /**
@@ -64,95 +52,64 @@ export class AppComponent {
   /**
    * Load CSS mới
    */
-  private loadStyles() {
+  private async loadStyles(): Promise<void> {
     const url = this.router.url;
-    let styles: string[] = [];
 
-    if (url.startsWith('/login')) {
-      styles = ['assets/admin/css/bootstrap.min.css',
+    // CSS chính cần load ngay
+    const criticalStyles = url.startsWith('/login') || url.startsWith('/admin')
+      ? ['assets/admin/css/bootstrap.min.css', 'assets/admin/css/style.css']
+      : ['assets/customer/css/bootstrap.min.css', 'assets/customer/css/style.css'];
+
+    // CSS phụ có thể load sau
+    const nonCriticalStyles = url.startsWith('/login') || url.startsWith('/admin')
+      ? [
         'assets/admin/plugins/fontawesome/css/fontawesome.min.css',
         'assets/admin/plugins/fontawesome/css/all.min.css',
         'assets/admin/css/feathericon.min.css',
-        'assets/admin/plugins/morris/morris.css',
-        'assets/admin/css/style.css'
-      ];
-    }
-    else if (url.startsWith('/admin')) {
-      styles = [
-        'assets/admin/css/bootstrap.min.css',
-        'assets/admin/plugins/fontawesome/css/fontawesome.min.css',
-        'assets/admin/plugins/fontawesome/css/all.min.css',
-        'assets/admin/css/feathericon.min.css',
-        'assets/admin/plugins/morris/morris.css',
-        'assets/admin/css/style.css'
-      ];
-    }
-    else {
-      styles = [
-        'assets/customer/css/bootstrap.min.css',
-        'assets/customer/css/style.css',
+        'assets/admin/plugins/morris/morris.css'
+      ]
+      : [
         'assets/customer/css/flatpickr.min.css',
         'assets/customer/css/slick-theme.css',
         'assets/customer/css/slick.css'
       ];
-    }
 
-    styles.forEach(cssFile => {
-      if (!this.document.querySelector(`link[href="${cssFile}"]`)) {
-        const link = this.renderer.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = cssFile;
-        link.type = 'text/css';
-        link.setAttribute('data-dynamic-style', 'true');
-        this.renderer.appendChild(this.document.head, link);
-      }
-    });
+    // Load CSS chính trước
+    await Promise.all(
+      criticalStyles.map((cssFile) => this.loadStylesheet(cssFile, true))
+    );
+
+    // Load CSS phụ sau
+    Promise.all(
+      nonCriticalStyles.map((cssFile) => this.loadStylesheet(cssFile, false))
+    );
   }
 
-  /**
-   * Load JavaScript mới
-   */
-  private loadScripts() {
-    const url = this.router.url;
-    let scripts: string[] = [];
-
-    if (!url.startsWith('/login')) {
-      scripts = [
-        'assets/customer/js/jquery.js',
-        'assets/customer/js/bootstrap.min.js',
-        'assets/customer/js/popper.min.js',
-        'assets/customer/js/slick.min.js',
-        'assets/customer/js/slick-animation.min.js',
-        'assets/customer/js/flatpickr.js',
-        'assets/customer/js/jquery.fancybox.js',
-        'assets/customer/js/wow.js',
-        'assets/customer/js/appear.js',
-        'assets/customer/js/gsap.min.js',
-        'assets/customer/js/mixitup.js',
-        'assets/customer/js/swiper.min.js',
-        'assets/customer/js/ScrollTrigger.min.js',
-        'assets/customer/js/SplitText.min.js',
-        'assets/customer/js/splitType.js',
-        'assets/customer/js/script.js',
-        'assets/customer/js/script-gsap.js'
-      ];
-    } else {
-      scripts = ['assets/admin/js/jquery-3.5.1.min.js',
-        'assets/admin/js/bootstrap.min.js',
-        'assets/admin/js/popper.min.js',
-        'assets/admin/plugins/slimscroll/jquery.slimscroll.min.js',
-        'assets/admin/js/script.js'
-      ]
-    }
-
-    scripts.forEach(jsFile => {
-      if (!this.document.querySelector(`script[src="${jsFile}"]`)) {
-        const script = this.renderer.createElement('script');
-        script.src = jsFile;
-        script.async = false;
-        script.setAttribute('data-dynamic-script', 'true');
-        this.renderer.appendChild(this.document.body, script);
+  private loadStylesheet(href: string, isCritical: boolean): Promise<void> {
+    return new Promise((resolve) => {
+      if (this.document.querySelector(`link[href="${href}"]`)) {
+        resolve();
+        return;
       }
+
+      const link = this.renderer.createElement('link');
+      if (isCritical) {
+        link.rel = 'preload';
+        link.as = 'style';
+      } else {
+        link.rel = 'stylesheet';
+      }
+
+      link.href = href;
+      link.onload = () => {
+        if (isCritical) {
+          link.rel = 'stylesheet';
+          link.removeAttribute('as');
+        }
+        resolve();
+      };
+
+      this.renderer.appendChild(this.document.head, link);
     });
   }
 }
