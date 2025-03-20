@@ -10,17 +10,19 @@ import { PasswordResetComponent } from './login/password-reset/password-reset.co
 import { MainCustomerComponent } from './customer/main-customer/main-customer.component';
 import { MainLoginComponent } from './login/main-login/main-login.component';
 import { HomeComponent as AdminHomeComponent } from './admin/home/home.component';
+import { TablesDatatablesComponent } from './admin/tables-datatables/tables-datatables.component';
+import { MainAdminComponent } from './admin/main-admin/main-admin.component';
+import { SettingsComponent } from './admin/settings/settings.component';
 
 export const routes: Routes = [
-    {
-        path: '',
-        redirectTo: 'admin/home',
-        pathMatch: 'full'
-    },
+    { path: '', redirectTo: '/admin', pathMatch: 'full' },
     {
         path: 'admin',
+        component: MainAdminComponent,
         children: [
-            { path: 'home', component: AdminHomeComponent }
+            { path: '', component: AdminHomeComponent },
+            { path: 'tables-datatables', component: TablesDatatablesComponent },
+            { path: 'settings', component: SettingsComponent }
         ]
     },
     {
