@@ -31,6 +31,14 @@
                         <li><a [routerLink]="['/admin/add-room']">Thêm phòng</a></li>
                     </ul>
                 </li>
+                <li class="submenu"> <a href="#"><i class="fas fa-user"></i> <span> Nhân viên </span> <span class="menu-arrow"></span></a>
+                    <ul class="submenu_class" style="display: none;">
+                        <li><a [routerLink]="['/admin/all-staff']">Tất cả nhân viên </a></li>
+                        <li><a [routerLink]="['/admin/edit-staff']"> Chỉnh sửa nhân viên </a></li>
+                        <li><a [routerLink]="['/admin/add-staff']"> Thêm nhân viên </a></li>
+                    </ul>
+                </li>
+                <li> <a [routerLink]="['/admin/pricing']"><i class="far fa-money-bill-alt"></i> <span>Giá cả</span></a> </li>
                 <li class="submenu"> 
                     <a href="#"><i class="far fa-money-bill-alt"></i> <span> Tài khoản </span> <span class="menu-arrow"></span></a>
                     <ul class="submenu_class" style="display: none;">
