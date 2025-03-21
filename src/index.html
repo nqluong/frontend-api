@@ -14,9 +14,23 @@
   <link rel="stylesheet" type="text/css" href="assets/customer/css/slick-theme.css">
   <link rel="stylesheet" type="text/css" href="assets/customer/css/slick.css"> -->
   <!-- <link href="assets/customer/css/style.css" rel="stylesheet"> -->
-
+  <style>
+    /* Critical CSS để tránh FOUC */
+    body {
+      visibility: hidden;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    body.ready {
+      visibility: visible;
+      opacity: 1;
+    }
+  </style>
   <link rel="shortcut icon" href="assets/customer/images/favicon.png" type="image/x-icon">
   <link rel="icon" href="assets/customer/images/favicon.png" type="image/x-icon">
+  <link rel="preconnect" href="/assets">
+  <link rel="dns-prefetch" href="/assets">
+  
   <!-- Responsive -->
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
