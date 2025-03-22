@@ -2,57 +2,74 @@
     <div class="sidebar-inner slimscroll">
         <div id="sidebar-menu" class="sidebar-menu">
             <ul>
-                <li class="active"> 
-                    <a [routerLink]="['/admin']" routerLinkActive="active">
+                <li routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}"> 
+                    <a [routerLink]="['/admin']">
                         <i class="fas fa-tachometer-alt"></i> <span>Bảng điều khiển</span>
                     </a> 
                 </li>
                 <li class="submenu"> 
                     <a href="#"><i class="fas fa-suitcase"></i> <span> Đặt phòng </span> <span class="menu-arrow"></span></a>
                     <ul class="submenu_class" style="display: none;">
-                        <li><a [routerLink]="['/admin/all-booking']">Tất cả đặt phòng</a></li>
-                        <li><a [routerLink]="['/admin/edit-booking']">Chỉnh sửa đặt phòng</a></li>
-                        <li><a [routerLink]="['/admin/add-booking']">Thêm đặt phòng</a></li>
+                        <li><a routerLinkActive="active" [routerLink]="['/admin/all-booking']">Tất cả đặt phòng</a></li>
+                        <li><a routerLinkActive="active" [routerLink]="['/admin/edit-booking']">Chỉnh sửa đặt phòng</a></li>
+                        <li><a routerLinkActive="active" [routerLink]="['/admin/add-booking']">Thêm đặt phòng</a></li>
                     </ul>
                 </li>
                 <li class="submenu"> 
                     <a href="#"><i class="fas fa-user"></i> <span> Khách hàng </span> <span class="menu-arrow"></span></a>
                     <ul class="submenu_class" style="display: none;">
-                        <li><a [routerLink]="['/admin/all-customer']">Tất cả khách hàng</a></li>
-                        <li><a [routerLink]="['/admin/edit-customer']">Chỉnh sửa khách hàng</a></li>
-                        <li><a [routerLink]="['/admin/add-customer']">Thêm khách hàng</a></li>
+                        <li><a routerLinkActive="active" [routerLink]="['/admin/all-customer']">Tất cả khách hàng</a></li>
+                        <li><a routerLinkActive="active" [routerLink]="['/admin/edit-customer']">Chỉnh sửa khách hàng</a></li>
+                        <li><a routerLinkActive="active" [routerLink]="['/admin/add-customer']">Thêm khách hàng</a></li>
                     </ul>
                 </li>
                 <li class="submenu"> 
                     <a href="#"><i class="fas fa-key"></i> <span> Phòng </span> <span class="menu-arrow"></span></a>
                     <ul class="submenu_class" style="display: none;">
-                        <li><a [routerLink]="['/admin/all-rooms']">Tất cả phòng</a></li>
-                        <li><a [routerLink]="['/admin/edit-room']">Chỉnh sửa phòng</a></li>
-                        <li><a [routerLink]="['/admin/add-room']">Thêm phòng</a></li>
+                        <li><a routerLinkActive="active" [routerLink]="['/admin/all-rooms']">Tất cả phòng</a></li>
+                        <li><a routerLinkActive="active" [routerLink]="['/admin/edit-room']">Chỉnh sửa phòng</a></li>
+                        <li><a routerLinkActive="active" [routerLink]="['/admin/add-room']">Thêm phòng</a></li>
                     </ul>
                 </li>
+                <li class="submenu"> <a href="#"><i class="fas fa-user"></i> <span> Nhân viên </span> <span class="menu-arrow"></span></a>
+                    <ul class="submenu_class" style="display: none;">
+                        <li><a routerLinkActive="active" [routerLink]="['/admin/all-staff']">Tất cả nhân viên </a></li>
+                        <li><a routerLinkActive="active" [routerLink]="['/admin/edit-staff']"> Chỉnh sửa nhân viên </a></li>
+                        <li><a routerLinkActive="active" [routerLink]="['/admin/add-staff']"> Thêm nhân viên </a></li>
+                    </ul>
+                </li>
+                <li routerLinkActive="active"><a [routerLink]="['/admin/pricing']"><i class="far fa-money-bill-alt"></i> <span>Giá cả</span></a> </li>
                 <li class="submenu"> 
                     <a href="#"><i class="far fa-money-bill-alt"></i> <span> Tài khoản </span> <span class="menu-arrow"></span></a>
                     <ul class="submenu_class" style="display: none;">
-                        <li><a [routerLink]="['/admin/invoices']">Hóa đơn</a></li>
-                        <li><a [routerLink]="['/admin/payments']">Thanh toán</a></li>
+                        <li><a routerLinkActive="active" [routerLink]="['/admin/invoices']">Hóa đơn</a></li>
+                        <li><a routerLinkActive="active" [routerLink]="['/admin/payments']">Thanh toán</a></li>
                     </ul>
                 </li>
-                <li><a [routerLink]="['/admin/calendar']"><i class="fas fa-calendar-alt"></i> <span>Lịch</span></a></li>
-                <li><a [routerLink]="['/admin/activities']"><i class="far fa-bell"></i> <span>Hoạt động</span></a></li>
+                <li routerLinkActive="active"><a [routerLink]="['/admin/calendar']"><i class="fas fa-calendar-alt"></i> <span>Lịch</span></a></li>
+                <li routerLinkActive="active"><a [routerLink]="['/admin/activities']"><i class="far fa-bell"></i> <span>Hoạt động</span></a></li>
                 <li class="submenu"> 
                     <a href="#"><i class="fe fe-table"></i> <span> Báo cáo </span> <span class="menu-arrow"></span></a>
                     <ul class="submenu_class" style="display: none;">
-                        <li><a [routerLink]="['/admin/invoice-reports']">Báo cáo hóa đơn</a></li>
+                        <li><a routerLinkActive="active" [routerLink]="['/admin/invoice-reports']">Báo cáo hóa đơn</a></li>
                     </ul>
                 </li>
-                <li><a [routerLink]="['/admin/settings']"><i class="fas fa-cog"></i> <span>Cài đặt</span></a></li>
+                <li class="submenu"> <a href="#"><i class="fas fa-cog"></i> <span> Cài đặt </span> <span class="menu-arrow"></span></a>
+                    <ul class="submenu_class" style="display: none;">
+                        <li><a routerLinkActive="active" [routerLink]="['/admin/settings']"><i class="fe fe-vector"></i>Cài đặt cơ bản</a>
+                        </li>
+                        <li><a routerLinkActive="active" [routerLink]="['/admin/roles-permissions']"><i class="fe fe-vector"></i>Vai trò và quyền</a>
+                        </li>
+                        <li><a routerLinkActive="active" [routerLink]="['/admin/invoice-settings']"><i class="fe fe-vector"></i>Cài đặt hóa đơn</a>
+                        </li>
+                    </ul>
+                </li>
                 <li class="list-divider"></li>
                 <li class="menu-title mt-3"><span>PHỤ</span></li>
                 <li class="submenu"> <a href="#"><i class="fas fa-share-alt"></i> <span> Đặt dịch vụ </span> <span class="menu-arrow"></span></a>
                     <ul class="submenu_class" style="display: none;">
-                        <li><a [routerLink]="['/admin/food']">Đồ ăn</a></li>
-                        <li><a [routerLink]="['/admin/utilities']">Tiện ích</a></li>
+                        <li><a routerLinkActive="active" [routerLink]="['/admin/food']">Đồ ăn</a></li>
+                        <li><a routerLinkActive="active" [routerLink]="['/admin/utilities']">Tiện ích</a></li>
                     </ul>
                 </li>
             </ul>
