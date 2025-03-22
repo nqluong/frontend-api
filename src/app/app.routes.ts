@@ -66,15 +66,9 @@ export const routes: Routes = [
             { path: 'invoices', component: InvoicesComponent },
             { path: 'payments', component: PaymentsComponent },
             { path: 'pricing', component: PricingComponent },
-        ]
-    },
-    {
-        path: 'settings',
-        component: SettingsComponent,
-        children: [
-            { path: '', component: SettingsComponent },
             { path: 'roles-permissions', component: RolesPermissionsComponent },
             { path: 'invoice-settings', component: InvoiceSettingsComponent },
+            { path: 'settings', component: SettingsComponent }
         ]
     },
     {

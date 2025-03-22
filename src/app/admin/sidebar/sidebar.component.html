@@ -54,7 +54,19 @@
                         <li><a [routerLink]="['/admin/invoice-reports']">Báo cáo hóa đơn</a></li>
                     </ul>
                 </li>
-                <li><a [routerLink]="['/settings']"><i class="fas fa-cog"></i> <span>Cài đặt</span></a></li>
+                <li class="submenu"> <a href="#"><i class="fas fa-cog"></i> <span> Cài đặt </span> <span class="menu-arrow"></span></a>
+                    <ul class="submenu_class" style="display: none;">
+                        <li class="active">
+                            <a [routerLink]="['/settings']"><i class="fe fe-vector"></i>Cài đặt cơ bản</a>
+                        </li>
+                        <li>
+                            <a [routerLink]="['/settings/roles-permissions']"><i class="fe fe-vector"></i>Vai trò và quyền</a>
+                        </li>
+                        <li>
+                            <a [routerLink]="['/settings/invoice-settings']"><i class="fe fe-vector"></i>Cài đặt hóa đơn</a>
+                        </li>
+                    </ul>
+                </li>
                 <li class="list-divider"></li>
                 <li class="menu-title mt-3"><span>PHỤ</span></li>
                 <li class="submenu"> <a href="#"><i class="fas fa-share-alt"></i> <span> Đặt dịch vụ </span> <span class="menu-arrow"></span></a>
