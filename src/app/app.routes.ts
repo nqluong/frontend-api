@@ -38,7 +38,7 @@ import { PricingComponent } from './admin/pricing/pricing.component';
 import { RolesPermissionsComponent } from './admin/roles-permissions/roles-permissions.component';
 
 export const routes: Routes = [
-    { path: '', redirectTo: '/admin', pathMatch: 'full' },
+    { path: '', redirectTo: '/customer', pathMatch: 'full' },
     {
         path: 'admin',
         component: MainAdminComponent,
@@ -66,15 +66,9 @@ export const routes: Routes = [
             { path: 'invoices', component: InvoicesComponent },
             { path: 'payments', component: PaymentsComponent },
             { path: 'pricing', component: PricingComponent },
-        ]
-    },
-    {
-        path: 'settings',
-        component: SettingsComponent,
-        children: [
-            { path: '', component: SettingsComponent },
+            { path: 'settings', component: SettingsComponent},
             { path: 'roles-permissions', component: RolesPermissionsComponent },
-            { path: 'invoice-settings', component: InvoiceSettingsComponent },
+            { path: 'invoice-settings', component: InvoiceSettingsComponent }
         ]
     },
     {
