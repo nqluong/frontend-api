@@ -5,26 +5,58 @@
                 <div class="login-left"> <img class="img-fluid" src="assets/admin/img/logo.png" alt="Logo"> </div>
                 <div class="login-right">
                     <div class="login-right-wrap">
-                        <h1>Login</h1>
-                        <p class="account-subtitle">Access to our dashboard</p>
-                        <form>
+                        <h1>Đăng nhập</h1>
+                        <p class="account-subtitle">Truy cập vào hệ thống</p>
+                        
+                        <div *ngIf="errorMessage" class="alert alert-danger">
+                            {{ errorMessage }}
+                        </div>
+
+                        <form (ngSubmit)="onSubmit()">
                             <div class="form-group">
-                                <input class="form-control" type="text" placeholder="Email">
+                                <input class="form-control" 
+                                       type="email" 
+                                       placeholder="Username"
+                                       [(ngModel)]="email"
+                                       name="email"
+                                       required>
                             </div>
                             <div class="form-group">
-                                <input class="form-control" type="password" placeholder="Password">
+                                <input class="form-control" 
+                                       type="password" 
+                                       placeholder="Mật khẩu"
+                                       [(ngModel)]="password"
+                                       name="password"
+                                       required>
                             </div>
                             <div class="form-group">
-                                <button class="btn btn-primary btn-block" [routerLink]="['/admin']" type="button">
-                                    Login
+                                <button class="btn btn-primary btn-block" 
+                                        type="submit"
+                                        [disabled]="isLoading">
+                                    {{ isLoading ? 'Đang đăng nhập...' : 'Đăng nhập' }}
                                 </button>
                             </div>
                         </form>
                         
-                        <div class="text-center forgotpass"><a href="forgot-password.html">Forgot Password?</a> </div>
-                        <div class="login-or"> <span class="or-line"></span> <span class="span-or">or</span> </div>
-                        <div class="social-login"> <span>Login with</span> <a href="#" class="facebook"><i class="fab fa-facebook-f"></i></a><a href="#" class="google"><i class="fab fa-google"></i></a> </div>
-                        <div class="text-center dont-have">Don’t have an account? <a href="register.html">Register</a></div>
+                        <div class="text-center forgotpass">
+                            <a routerLink="/login/forgot-password">Quên mật khẩu?</a>
+                        </div>
+                        <div class="login-or"> 
+                            <span class="or-line"></span> 
+                            <span class="span-or">hoặc</span> 
+                        </div>
+                        <div class="social-login">
+                            <span>Đăng nhập với</span>
+                            <a href="#" class="facebook">
+                                <i class="fab fa-facebook-f"></i>
+                            </a>
+                            <a href="#" class="google">
+                                <i class="fab fa-google"></i>
+                            </a>
+                        </div>
+                        <div class="text-center dont-have">
+                            Chưa có tài khoản? <a routerLink="/login/signup">Đăng ký</a>
+                        </div>
                     </div>
                 </div>
             </div>
