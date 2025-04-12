@@ -1,28 +1,3 @@
-<!-- Banner Section -->
-<!-- <section class="banner-section-seven">
-  <div class="banner-slider banner-slider-home1">
-
-    <div class="banner-slide">
-      <div class="outer-box">
-        <figure class="image-1 wow fadeInUp tm-gsap-img-parallax overflow-hidden"><img
-            src="assets/customer/images/banner/banner1-1.jpg" alt=""></figure>
-        <div class="content-box">
-          <div class="star-rating" data-animation-in="fadeInUp" data-wow-delay="300ms">
-            <i class="fa-sharp fa-solid fa-star-sharp"></i>
-            <i class="fa-sharp fa-solid fa-star-sharp"></i>
-            <i class="fa-sharp fa-solid fa-star-sharp"></i>
-            <i class="fa-sharp fa-solid fa-star-sharp"></i>
-            <i class="fa-sharp fa-solid fa-star-sharp"></i>
-          </div>
-          <h1 data-animation-in="fadeInUp" data-delay-in="0.3">Book Your Dream Hotel <br />With Hoteler</h1>
-        </div>
-      </div>
-    </div>
-
-  </div>
-</section> -->
-<!-- End Banner Section -->
-<!-- Start main-content -->
 <section class="page-title" style="background-image: url(assets/customer/images/banner/banner1-1.jpg);">
     <div class="auto-container">
       <div class="title-outer text-center">
@@ -40,36 +15,39 @@
   <!-- Form Section -->
   <div class="checkout-form-section-two">
     <div class="container">
-      <div class="checkout-form">
-        <div class="checkout-field">
-          <h4>Check-In</h4>
-          <div class="chk-field">
-            <input class="date-pick" type="text" placeholder="31 Dec 2025" />
-            <i class="fas fa-angle-down"></i>
+      <form (ngSubmit)="searchRooms()" #searchForm="ngForm">
+        <div class="checkout-form">
+          <div class="checkout-field">
+            <h4>Ngày Vào</h4>
+            <div class="chk-field">
+              <input class="date-pick" type="date" [(ngModel)]="searchParams.checkIn" name="checkIn" required/>
+              <i class="fas fa-calendar"></i>
+            </div>
           </div>
-        </div>
-        <div class="checkout-field">
-          <h4>Check-Out</h4>
-          <div class="chk-field">
-            <input class="date-pick" type="text" placeholder="31 Dec 2025" />
-            <i class="fas fa-angle-down"></i>
+          <div class="checkout-field">
+            <h4>Ngày Ra</h4>
+            <div class="chk-field">
+              <input class="date-pick" type="date" [(ngModel)]="searchParams.checkOut" name="checkOut" required/>
+              <i class="fas fa-calendar"></i>
+            </div>
           </div>
-        </div>
-        <div class="checkout-field select-field br-0">
-          <h4>Quests</h4>
-          <div class="chk-field">
-            <i class="fas fa-angle-down"></i>
-            <select>
-              <option>2 </option>
-              <option>1 </option>
-              <option>2 </option>
-              <option>3 </option>
-            </select>
+          <div class="checkout-field select-field br-0">
+            <h4>Loại Phòng</h4>
+            <div class="chk-field">
+              <select [(ngModel)]="searchParams.roomType" name="roomType">
+                <option value="">Tất cả</option>
+                <option value="Phòng Đơn">Phòng Đơn</option>
+                <option value="Phòng Đôi">Phòng Đôi</option>
+                <option value="Phòng VIP">Phòng VIP</option>
+              </select>
+              <i class="fas fa-angle-down"></i>
+            </div>
           </div>
+          <button type="submit" class="theme-btn btn-style-one">
+            <span class="btn-title">TÌM KIẾM</span>
+          </button>
         </div>
-        <a href="page-contact.html" class="theme-btn btn-style-one"><span class="btn-title">CHECK
-            <br />AVAILABILITY</span></a>
-      </div>
+      </form>
     </div>
   </div>
   <!-- End Form Section -->
@@ -184,8 +162,7 @@
         <div class="room-service-block-one col-lg-4 col-sm-6 wow fadeInUp">
           <div class="inner-box">
             <div class="image-box">
-              <figure class="image mb-0"><a href="room-details.html"><img src="assets/customer/images/resource/room-service1-1.jpg"
-                    alt=""></a></figure>
+              <figure class="image mb-0"><a href="room-details.html"><img src="assets/customer/images/resource/room-service1-1.jpg" alt=""></a></figure>
             </div>
             <div class="content-box">
               <div class="inner-box">
@@ -209,8 +186,7 @@
         <div class="room-service-block-one col-lg-4 col-sm-6 wow fadeInUp" data-wow-delay="300ms">
           <div class="inner-box">
             <div class="image-box">
-              <figure class="image mb-0"><a href="room-details.html"><img src="assets/customer/images/resource/room-service1-2.jpg"
-                    alt=""></a></figure>
+              <figure class="image mb-0"><a href="room-details.html"><img src="assets/customer/images/resource/room-service1-2.jpg" alt=""></a></figure>
             </div>
             <div class="content-box">
               <div class="inner-box">
@@ -234,8 +210,7 @@
         <div class="room-service-block-one col-lg-4 col-sm-6 wow fadeInUp" data-wow-delay="600ms">
           <div class="inner-box">
             <div class="image-box">
-              <figure class="image mb-0"><a href="room-details.html"><img src="assets/customer/images/resource/room-service1-3.jpg"
-                    alt=""></a></figure>
+              <figure class="image mb-0"><a href="room-details.html"><img src="assets/customer/images/resource/room-service1-3.jpg" alt=""></a></figure>
             </div>
             <div class="content-box">
               <div class="inner-box">
