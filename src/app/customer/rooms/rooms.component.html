@@ -4,7 +4,7 @@
         <div class="title-outer text-center">
             <h1 class="title">Kết Quả Tìm Kiếm</h1>
             <ul class="page-breadcrumb">
-                <li><a href="/">Trang Chủ</a></li>
+                <li><a routerLink="/customer">Trang Chủ</a></li>
                 <li>Danh Sách Phòng</li>
             </ul>
         </div>
@@ -25,11 +25,11 @@
                         </figure>
                     </div>
                     <div class="content-box">
-                        <h6 class="title"><a [routerLink]="['/room-details', room.id]">{{room.tenPhong}}</a></h6>
+                        <h6 class="title">{{room.tenPhong}}</h6>
                         <span class="price">{{room.gia | currency:'VND':'symbol':'1.0-0'}} / ĐÊM</span>
                     </div>
                     <div class="box-caption">
-                        <a [routerLink]="['/room-details', room.id]" class="book-btn">ĐẶT NGAY</a>
+                        <a href="javascript:void(0)" class="book-btn" (click)="bookRoom(room.id)">ĐẶT NGAY</a>
                         <ul class="bx-links">
                             <li *ngFor="let tienNghi of room.tienNghi">
                                 <a href="javascript:void(0)">
@@ -45,10 +45,18 @@
                 </div>
             </div>
 
+            <!-- Hiển thị thông báo đang tạo đặt phòng -->
+            <div class="col-12 text-center" *ngIf="isCreatingBooking">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Đang xử lý...</span>
+                </div>
+                <p class="mt-2">Đang xử lý đặt phòng...</p>
+            </div>
+
             <!-- Hiển thị thông báo khi không có kết quả -->
-            <div class="col-12 text-center" *ngIf="searchResults.length === 0">
+            <div class="col-12 text-center" *ngIf="searchResults.length === 0 && !isCreatingBooking">
                 <h3>Không tìm thấy phòng phù hợp với tiêu chí tìm kiếm</h3>
-                <a routerLink="/" class="theme-btn btn-style-one mt-4">
+                <a routerLink="/customer" class="theme-btn btn-style-one mt-4">
                     <span class="btn-title">Quay lại trang chủ</span>
                 </a>
             </div>

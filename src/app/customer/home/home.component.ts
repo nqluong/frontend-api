@@ -90,7 +90,13 @@ export class HomeComponent {
     try {
       // Chuyển đổi chuỗi ngày thành đối tượng Date
       const [year, month, day] = dateStr.split('-').map(num => parseInt(num, 10));
-      const date = new Date(year, month - 1, day, 7, 0, 0); // Set giờ là 7:00:00
+      
+      // Xác minh năm hợp lệ (tránh vấn đề về năm lạ như 1915, 1917)
+      const currentYear = new Date().getFullYear();
+      const validYear = (year >= currentYear && year <= currentYear + 10) ? year : currentYear;
+      
+      // Tạo đối tượng Date với năm đã xác minh
+      const date = new Date(validYear, month - 1, day, 7, 0, 0); // Set giờ là 7:00:00
 
       // Kiểm tra tính hợp lệ của ngày
       if (isNaN(date.getTime())) {
@@ -152,9 +158,13 @@ export class HomeComponent {
             const transformedResults = results.map(room => this.transformRoomData(room));
             console.log('Transformed Results:', transformedResults);
             
-            // Lưu kết quả vào state và điều hướng
+            // Lưu kết quả vào state và điều hướng, thêm thông tin check-in và check-out
             this.router.navigate(['/customer/rooms'], {
-              state: { searchResults: transformedResults }
+              state: { 
+                searchResults: transformedResults,
+                checkIn: checkIn, // Truyền ngày check-in
+                checkOut: checkOut // Truyền ngày check-out
+              }
             }).then(() => {
               console.log('Navigation completed');
             }).catch(error => {

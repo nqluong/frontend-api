@@ -12,10 +12,38 @@
 </section>
 <!-- end main-content -->
 
-<!-- Service Section -->
-<section class="service-section pt-120 pb-60">
+<!-- Booking Info Section -->
+<section class="booking-info pt-60 pb-0" *ngIf="bookingId">
     <div class="auto-container">
         <div class="sec-title text-center">
+            <span class="sub-title">THÔNG TIN ĐẶT PHÒNG</span>
+            <h2>Chọn Dịch Vụ Kèm Theo</h2>
+        </div>
+        <div class="booking-info-box text-center mb-30">
+            <div class="info-item">
+                <h4>Mã đặt phòng</h4>
+                <p>#{{bookingId}}</p>
+            </div>
+            <div class="info-item">
+                <h4>Tên phòng</h4>
+                <p>{{roomName || 'Chưa có thông tin'}}</p>
+            </div>
+            <div class="info-item">
+                <h4>Ngày nhận phòng</h4>
+                <p>{{checkIn ? (checkIn | date:'dd/MM/yyyy') : 'Chưa có thông tin'}}</p>
+            </div>
+            <div class="info-item">
+                <h4>Ngày trả phòng</h4>
+                <p>{{checkOut ? (checkOut | date:'dd/MM/yyyy') : 'Chưa có thông tin'}}</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Service Section -->
+<section class="service-section pt-60 pb-60">
+    <div class="auto-container">
+        <div class="sec-title text-center" *ngIf="!bookingId">
             <span class="sub-title">DỊCH VỤ CỦA CHÚNG TÔI</span>
             <h2>Trải Nghiệm Dịch Vụ Cao Cấp</h2>
             <div class="text">Chúng tôi cung cấp các dịch vụ hàng đầu để đảm bảo kỳ nghỉ của bạn thật thoải mái và đáng nhớ</div>
@@ -29,6 +57,14 @@
             <p class="mt-2">Đang tải dịch vụ...</p>
         </div>
 
+        <!-- Hiển thị thông báo đang xử lý -->
+        <div class="text-center py-5" *ngIf="isAddingServices">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Đang xử lý...</span>
+            </div>
+            <p class="mt-2">Đang xử lý đặt dịch vụ...</p>
+        </div>
+
         <!-- Hiển thị lỗi khi không kết nối được API -->
         <div class="text-center py-5" *ngIf="error">
             <div class="alert alert-danger">
@@ -39,13 +75,12 @@
         </div>
 
         <!-- Hiển thị danh sách dịch vụ -->
-        <div class="row" *ngIf="!isLoading && hasServices()">
+        <div class="row" *ngIf="!isLoading && !isAddingServices && hasServices()">
             <div class="service-block col-lg-4 col-md-6 col-sm-12" *ngFor="let service of services">
                 <div class="inner-box">
                     <div class="image-box">
                         <figure class="image overlay-anim">
-                            <!-- Sử dụng ảnh dựa trên loại dịch vụ -->
-                            <img [src]="'assets/customer/images/resource/feature2-1.jpg'" alt="Service Image">
+                            <img src="assets/customer/images/resource/feature2-1.jpg" alt="Service Image">
                         </figure>
                         <div class="icon-box"><span class="icon flaticon-room-service"></span></div>
                     </div>
@@ -53,9 +88,55 @@
                         <h4 class="title">{{service.tenDV}}</h4>
                         <div class="text">{{service.moTa}}</div>
                         <div class="price mt-3">{{formatCurrency(service.gia)}}</div>
-                        <a href="javascript:void(0)" class="theme-btn btn-style-two mt-4"><span class="btn-title">Đặt Ngay</span></a>
+                        
+                        <!-- Nút chọn dịch vụ cho đặt phòng -->
+                        <div class="service-selection mt-3" *ngIf="bookingId">
+                            <div class="form-check form-switch d-flex justify-content-center align-items-center mb-3">
+                                <input class="form-check-input" type="checkbox" 
+                                    [id]="'service-toggle-'+service.maDV" 
+                                    (change)="toggleService(service.maDV, $event)">
+                                <label class="form-check-label ms-2" [for]="'service-toggle-'+service.maDV">
+                                    Chọn dịch vụ này
+                                </label>
+                            </div>
+                            
+                            <!-- Hiển thị số lượng khi đã chọn dịch vụ -->
+                            <div class="quantity-selector" *ngIf="selectedServices[service.maDV]">
+                                <label>Số lượng:</label>
+                                <div class="d-flex justify-content-center align-items-center mt-2">
+                                    <button class="btn btn-sm btn-outline-secondary" 
+                                        (click)="updateQuantity(service.maDV, (selectedServices[service.maDV] || 0) - 1)">
+                                        -
+                                    </button>
+                                    <input type="number" class="form-control mx-2" style="width: 60px; text-align: center;"
+                                        [(ngModel)]="selectedServices[service.maDV]" 
+                                        (change)="updateQuantity(service.maDV, selectedServices[service.maDV] || 0)">
+                                    <button class="btn btn-sm btn-outline-secondary" 
+                                        (click)="updateQuantity(service.maDV, (selectedServices[service.maDV] || 0) + 1)">
+                                        +
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Nút đặt ngay cho khách chưa đặt phòng -->
+                        <a href="javascript:void(0)" class="theme-btn btn-style-two mt-4" *ngIf="!bookingId">
+                            <span class="btn-title">Đặt Ngay</span>
+                        </a>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- Buttons Section -->
+        <div class="row mt-4" *ngIf="bookingId && !isLoading && !isAddingServices && hasServices()">
+            <div class="col-12 text-center">
+                <button class="theme-btn btn-style-one mx-2" (click)="addServicesToBooking()">
+                    <span class="btn-title">Tiếp tục với dịch vụ đã chọn</span>
+                </button>
+                <button class="theme-btn btn-style-two mx-2" (click)="skipServices()">
+                    <span class="btn-title">Bỏ qua dịch vụ</span>
+                </button>
             </div>
         </div>
 
@@ -89,8 +170,8 @@
 </section>
 <!-- End Service Section -->
 
-<!-- Intro section -->
-<section class="contact-form-section">
+<!-- Intro section - chỉ hiển thị khi không có booking -->
+<section class="contact-form-section" *ngIf="!bookingId">
     <div class="auto-container">
         <div class="row">
             <div class="form-column col-lg-12">

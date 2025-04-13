@@ -1,0 +1,283 @@
+/* Booking Info Section */
+.booking-info-box {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    background-color: #f8f9fa;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+    margin-bottom: 30px;
+}
+
+.info-item {
+    flex: 1;
+    min-width: 200px;
+    padding: 15px;
+    text-align: center;
+    border-right: 1px dashed #ddd;
+}
+
+.info-item:last-child {
+    border-right: none;
+}
+
+.info-item h4 {
+    font-size: 16px;
+    color: #777;
+    margin-bottom: 10px;
+}
+
+.info-item p {
+    font-size: 18px;
+    font-weight: 600;
+    color: #222;
+    margin: 0;
+}
+
+/* Customer Form Box */
+.customer-form-box {
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.08);
+}
+
+.form-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.form-header h3 {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+.form-header p {
+    color: #777;
+}
+
+.form-group label {
+    font-weight: 500;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.form-control {
+    height: 50px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    padding: 10px 15px;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: var(--thm-primary);
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.1);
+}
+
+.form-check {
+    padding-left: 30px;
+}
+
+.form-check-input {
+    margin-left: -30px;
+    width: 20px;
+    height: 20px;
+}
+
+.form-check-label {
+    margin-left: 5px;
+}
+
+.invalid-feedback {
+    color: #dc3545;
+    font-size: 14px;
+    margin-top: 5px;
+}
+
+/* Payment Details Box */
+.payment-details-box {
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.08);
+}
+
+.details-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.details-header h3 {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+.details-header p {
+    color: #777;
+}
+
+.room-details, .services-details {
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.room-details h4, .services-details h4 {
+    font-size: 18px;
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+    border-bottom: 1px dashed #eee;
+}
+
+.item-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+}
+
+.item-label {
+    font-weight: 500;
+    color: #555;
+}
+
+.item-value {
+    font-weight: 600;
+}
+
+.total-row {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed #eee;
+    font-weight: 600;
+}
+
+/* Services Table */
+.services-table {
+    margin-top: 15px;
+    border: 1px solid #eee;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.table-header, .table-row {
+    display: flex;
+    align-items: center;
+}
+
+.table-header {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    padding: 12px 15px;
+}
+
+.table-row {
+    padding: 12px 15px;
+    border-top: 1px solid #eee;
+}
+
+.col-name {
+    flex: 3;
+}
+
+.col-price, .col-qty, .col-total {
+    flex: 1;
+    text-align: right;
+}
+
+.table-footer {
+    display: flex;
+    justify-content: space-between;
+    background-color: #f8f9fa;
+    padding: 12px 15px;
+    font-weight: 600;
+}
+
+/* Total Amount */
+.total-amount {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 5px;
+    margin-top: 20px;
+}
+
+.total-amount .total-row {
+    border-top: none;
+    font-size: 20px;
+    color: var(--thm-primary);
+}
+
+.total-label {
+    font-weight: 600;
+}
+
+.total-value {
+    font-weight: 700;
+    font-size: 22px;
+}
+
+/* Error Box */
+.error-box {
+    background-color: #fff;
+    padding: 50px 30px;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.08);
+}
+
+.error-icon {
+    font-size: 60px;
+    color: #dc3545;
+    margin-bottom: 20px;
+}
+
+.error-box h3 {
+    font-size: 24px;
+    margin-bottom: 15px;
+}
+
+.error-box p {
+    color: #777;
+    margin-bottom: 25px;
+}
+
+/* Responsive Styles */
+@media (max-width: 767px) {
+    .booking-info-box {
+        flex-direction: column;
+    }
+    
+    .info-item {
+        border-right: none;
+        border-bottom: 1px dashed #ddd;
+        margin-bottom: 15px;
+    }
+    
+    .info-item:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+    }
+    
+    .table-header, .table-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .col-name, .col-price, .col-qty, .col-total {
+        flex: 1;
+        width: 100%;
+        text-align: left;
+        margin-bottom: 5px;
+    }
+    
+    .col-price:before, .col-qty:before, .col-total:before {
+        content: attr(class);
+        display: inline-block;
+        width: 80px;
+        font-weight: 500;
+    }
+    
+    .table-header {
+        display: none;
+    }
+}

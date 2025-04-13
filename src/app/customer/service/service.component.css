@@ -204,3 +204,124 @@
     margin-top: 10px;
     text-decoration: none;
 }
+
+/* Booking Info Styling */
+.booking-info {
+    background-color: #f8f9fa;
+}
+
+.booking-info-box {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    padding: 30px;
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+}
+
+.booking-info-box .info-item {
+    flex: 1;
+    min-width: 200px;
+    padding: 15px;
+    text-align: center;
+}
+
+.booking-info-box .info-item h4 {
+    font-size: 16px;
+    color: #777;
+    margin-bottom: 8px;
+}
+
+.booking-info-box .info-item p {
+    font-size: 18px;
+    color: #2c3e50;
+    font-weight: 600;
+    margin: 0;
+}
+
+/* Service Selection Styling */
+.service-selection {
+    border-top: 1px dashed #e0e0e0;
+    padding-top: 15px;
+}
+
+.form-check-input {
+    cursor: pointer;
+    width: 24px;
+    height: 24px;
+}
+
+.form-check-label {
+    cursor: pointer;
+    font-size: 16px;
+    color: #333;
+}
+
+.quantity-selector {
+    margin-top: 15px;
+}
+
+.quantity-selector label {
+    display: block;
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 5px;
+}
+
+.btn-outline-secondary {
+    border-color: #ccc;
+    color: #333;
+}
+
+.btn-outline-secondary:hover {
+    background-color: #e6b31e;
+    border-color: #e6b31e;
+    color: white;
+}
+
+/* Button styling */
+.theme-btn {
+    display: inline-block;
+    padding: 12px 30px;
+    font-size: 16px;
+    font-weight: 500;
+    text-align: center;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+}
+
+.btn-style-one {
+    background: #2c3e50;
+    color: white;
+}
+
+.btn-style-one:hover {
+    background: #1a252f;
+}
+
+.btn-style-two {
+    background: #e6b31e;
+    color: white;
+}
+
+.btn-style-two:hover {
+    background: #d4a518;
+}
+
+@media (max-width: 767px) {
+    .booking-info-box {
+        flex-direction: column;
+    }
+    
+    .booking-info-box .info-item {
+        width: 100%;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .booking-info-box .info-item:last-child {
+        border-bottom: none;
+    }
+}

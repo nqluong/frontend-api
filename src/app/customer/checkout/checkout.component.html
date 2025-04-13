@@ -1,209 +1,265 @@
-
-<section class="page-title" style="background-image: url(images/background/page-title-bg.png);">
+<!-- Start main-content -->
+<section class="page-title" style="background-image: url(assets/customer/images/background/page-title-bg.png);">
     <div class="auto-container">
         <div class="title-outer text-center">
-            <h1 class="title">Checkout</h1>
+            <h1 class="title">Đặt Phòng & Thanh Toán</h1>
             <ul class="page-breadcrumb">
-                <li><a href="index.html">Home</a></li>
-                <li>Shop</li>
+                <li><a routerLink="/customer">Trang Chủ</a></li>
+                <li>Thanh Toán</li>
             </ul>
         </div>
     </div>
 </section>
 <!-- end main-content -->
 
-<!--checkout Start-->
-<section>
-  <div class="container pt-70 pb-120">
-      <div class="section-content">
-      <form id="checkout-form" action="#">
-          <div class="row mt-30">
-          <div class="col-md-6">
-              <div class="billing-details">
-              <h3 class="mb-30">Billing Details</h3>
-              <div class="row">
-                  <div class="mb-3 col-md-6">
-                  <label for="checkuot-form-fname">First Name</label>
-                  <input id="checkuot-form-fname" type="email" class="form-control" placeholder="First Name">
-                  </div>
-                  <div class="mb-3 col-md-6">
-                  <label for="checkuot-form-lname">Last Name</label>
-                  <input id="checkuot-form-lname" type="email" class="form-control" placeholder="Last Name">
-                  </div>
-                  <div class="col-md-12">
-                  <div class="mb-3">
-                      <label for="checkuot-form-cname">Company Name</label>
-                      <input id="checkuot-form-cname" type="email" class="form-control" placeholder="Company Name">
-                  </div>
-                  <div class="mb-3">
-                      <label for="checkuot-form-email">Email Address</label>
-                      <input id="checkuot-form-email" type="email" class="form-control" placeholder="Email Address">
-                  </div>
-                  <div class="mb-3">
-                      <label for="checkuot-form-address">Address</label>
-                      <input id="checkuot-form-address" type="email" class="form-control" placeholder="Street address">
-                  </div>
-                  <div class="mb-3">
-                      <input type="email" class="form-control" placeholder="Apartment, suite, unit etc. (optional)">
-                  </div>
-                  </div>
-                  <div class="mb-3 col-md-6">
-                  <label for="checkuot-form-city">City</label>
-                  <input id="checkuot-form-city" type="email" class="form-control" placeholder="City">
-                  </div>
-                  <div class="mb-3 col-md-6">
-                  <label>State/Province</label>
-                  <select class="form-control">
-                      <option>Select Country</option>
-                      <option>Australia</option>
-                      <option>UK</option>
-                      <option>USA</option>
-                  </select>
-                  </div>
-                  <div class="mb-3 col-md-6">
-                  <label for="checkuot-form-zip">Zip/Postal Code</label>
-                  <input id="checkuot-form-zip" type="email" class="form-control" placeholder="Zip/Postal Code">
-                  </div>
-                  <div class="mb-3 col-md-6">
-                  <label>Country</label>
-                  <select class="form-control">
-                      <option>Select Country</option>
-                      <option>Australia</option>
-                      <option>UK</option>
-                      <option>USA</option>
-                  </select>
-                  </div>
-              </div>
-              </div>
-          </div>
-          <div class="col-md-6">
-              <h3>Additional information</h3>
-              <label for="order_comments" class="">Order notes&nbsp;<span class="optional">(optional)</span></label>
-              <textarea id="order_comments" class="form-control" placeholder="Notes about your order, e.g. special notes for delivery." rows="3"></textarea>
-          </div>
-          <div class="col-md-12 mt-30">
-              <h3>Your order</h3>
-              <table class="table table-striped table-bordered tbl-shopping-cart">
-              <thead>
-                  <tr>
-                  <th>Photo</th>
-                  <th>Product Name</th>
-                  <th>Total</th>
-                  </tr>
-              </thead>
-              <tbody>
-                  <tr>
-                  <td class="product-thumbnail"><a href="shop-product-details.html"><img alt="product" src="images/resource/products/1.jpg"></a></td>
-                  <td class="product-name"><a href="shop-product-details.html">Headphone</a> x 2</td>
-                  <td><span class="amount">$36.00</span></td>
-                  </tr>
-                  <tr>
-                  <td class="product-thumbnail"><a href="shop-product-details.html"><img alt="product" src="images/resource/products/2.jpg"></a></td>
-                  <td class="product-name"><a href="shop-product-details.html">Lagage</a> x 3</td>
-                  <td><span class="amount">$115.00</span></td>
-                  </tr>
-                  <tr>
-                  <td class="product-thumbnail"><a href="shop-product-details.html"><img alt="product" src="images/resource/products/3.jpg"></a></td>
-                  <td class="product-name"><a href="shop-product-details.html">Watch</a> x 1</td>
-                  <td><span class="amount">$68.00</span></td>
-                  </tr>
-                  <tr>
-                  <td>Cart Subtotal</td>
-                  <td>&nbsp;</td>
-                  <td>$180.00</td>
-                  </tr>
-                  <tr>
-                  <td>Shipping and Handling</td>
-                  <td>&nbsp;</td>
-                  <td>Free Shipping</td>
-                  </tr>
-                  <tr>
-                  <td>Order Total</td>
-                  <td>&nbsp;</td>
-                  <td>$250.00</td>
-                  </tr>
-              </tbody>
-              </table>
-          </div>
-          <div class="col-md-12 mt-60">
-              <div class="payment-method">
-                  <h3>Choose a Payment Method</h3>
-                  <ul class="accordion-box">
-                      <li class="accordion block active-block">
-                          <div class="acc-btn active">
-                              <div class="icon-outer"><i class="lnr-icon-chevron-down"></i></div>
-                              Credir Card / Debit Card
-                          </div>
-                          <div class="acc-content current">
-                              <div class="payment-info">
-                                  <div class="row clearfix">
-                                      <div class="col-lg-6 col-md-6 col-sm-12 column">
-                                          <div class="field-input mb-3">
-                                              <input type="text" class="form-control" name="name" placeholder="Name on the Card" required="">
-                                          </div>
-                                      </div>
-                                      <div class="col-lg-6 col-md-6 col-sm-12 column">
-                                          <div class="field-input mb-3">
-                                              <input type="text" class="form-control" name="number" placeholder="Card Number" required="">
-                                          </div>
-                                      </div>
-                                      <div class="col-lg-3 col-md-6 col-sm-12 column">
-                                          <div class="field-input mb-3">
-                                              <input type="text" class="form-control" name="date" placeholder="Expiry Date" required="">
-                                          </div>
-                                      </div>
-                                      <div class="col-lg-3 col-md-6 col-sm-12 column">
-                                          <div class="field-input mb-3">
-                                              <input type="text" class="form-control" name="code" placeholder="Security Code" required="">
-                                          </div>
-                                      </div>
-                                      <div class="col-lg-6 col-md-12 col-sm-12 column">
-                                          <div class="field-input message-btn">
-                                              <button type="submit" class="theme-btn btn-style-one" data-loading-text="Please wait..."><span class="btn-title">Make Payment</span></button>
-                                          </div>
-                                      </div>
-                                  </div>
-                              </div>
-                          </div>
-                      </li>
-                      <li class="accordion block">
-                          <div class="acc-btn">
-                              <div class="icon-outer"><i class="lnr-icon-chevron-down"></i></div>
-                              Direct Bank Transfer
-                          </div>
-                          <div class="acc-content">
-                              <div class="payment-info">
-                                  <p class="mb-0">Make your payment directly into our bank account. Please use your Order ID as the payment reference. Your order won’t be shipped until the funds have cleared in our account.</p>
-                              </div>
-                          </div>
-                      </li>
-                      <li class="accordion block">
-                           <div class="acc-btn">
-                              <div class="icon-outer"><i class="lnr-icon-chevron-down"></i></div>
-                              Cheque Payment
-                          </div>
-                          <div class="acc-content">
-                              <div class="payment-info">
-                                  <p class="mb-0">Make your payment directly into our bank account. Please use your Order ID as the payment reference. Your order won’t be shipped until the funds have cleared in our account.</p>
-                              </div>
-                          </div>
-                      </li>
-                      <li class="accordion block">
-                           <div class="acc-btn">
-                              <div class="icon-outer"><i class="lnr-icon-chevron-down"></i></div>
-                              Other Payment
-                          </div>
-                          <div class="acc-content">
-                              <div class="payment-info">
-                                  <p class="mb-0">Make your payment directly into our bank account. Please use your Order ID as the payment reference. Your order won’t be shipped until the funds have cleared in our account.</p>
-                              </div>
-                          </div>
-                      </li>
-                  </ul>
-              </div>
-          </div>
-          </div>
-      </form>
-      </div>
-  </div>
+<!-- Booking Info Section -->
+<section class="booking-info pt-60 pb-0" *ngIf="bookingId">
+    <div class="auto-container">
+        <div class="sec-title text-center" *ngIf="step === 'info'">
+            <span class="sub-title">THÔNG TIN ĐẶT PHÒNG</span>
+            <h2>Hoàn Thành Thông Tin Cá Nhân</h2>
+        </div>
+        <div class="sec-title text-center" *ngIf="step === 'payment'">
+            <span class="sub-title">THÔNG TIN ĐẶT PHÒNG</span>
+            <h2>Xác Nhận & Thanh Toán</h2>
+        </div>
+        <div class="booking-info-box text-center mb-30">
+            <div class="info-item">
+                <h4>Mã đặt phòng</h4>
+                <p>#{{bookingId}}</p>
+            </div>
+            <div class="info-item">
+                <h4>Tên phòng</h4>
+                <p>{{roomName || 'Chưa có thông tin'}}</p>
+            </div>
+            <div class="info-item">
+                <h4>Ngày nhận phòng</h4>
+                <p>{{checkIn ? (checkIn | date:'dd/MM/yyyy') : 'Chưa có thông tin'}}</p>
+            </div>
+            <div class="info-item">
+                <h4>Ngày trả phòng</h4>
+                <p>{{checkOut ? (checkOut | date:'dd/MM/yyyy') : 'Chưa có thông tin'}}</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Loading Indicators -->
+<div class="text-center py-5" *ngIf="isSubmittingInfo || isLoadingPaymentDetails">
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Đang xử lý...</span>
+    </div>
+    <p class="mt-2" *ngIf="isSubmittingInfo">Đang gửi thông tin cá nhân...</p>
+    <p class="mt-2" *ngIf="isLoadingPaymentDetails">Đang tải thông tin thanh toán...</p>
+</div>
+
+<!-- Customer Info Form -->
+<section class="customer-info-section pt-60 pb-90" *ngIf="step === 'info' && !isSubmittingInfo && !isLoadingPaymentDetails">
+    <div class="auto-container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="customer-form-box">
+                    <div class="form-header">
+                        <h3>Thông Tin Cá Nhân</h3>
+                        <p>Vui lòng điền đầy đủ thông tin để hoàn tất đặt phòng</p>
+                    </div>
+                    <form (ngSubmit)="submitCustomerInfo()">
+                        <div class="row">
+                            <div class="col-md-12 mb-4">
+                                <div class="form-group">
+                                    <label for="fullName">Họ và tên <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="fullName" [(ngModel)]="customerInfo.fullName" name="fullName" required>
+                                    <small class="form-text text-muted">Vui lòng nhập đầy đủ họ và tên. Hệ thống sẽ tự động tách thành họ và tên riêng.</small>
+                                    <div class="invalid-feedback" *ngIf="formSubmitted && !customerInfo.fullName">
+                                        Vui lòng nhập họ và tên
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-4">
+                                <div class="form-group">
+                                    <label for="dateOfBirth">Ngày sinh <span class="text-danger">*</span></label>
+                                    <input type="date" class="form-control" id="dateOfBirth" [(ngModel)]="customerInfo.dateOfBirth" name="dateOfBirth" required>
+                                    <div class="invalid-feedback" *ngIf="formSubmitted && !customerInfo.dateOfBirth">
+                                        Vui lòng chọn ngày sinh
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-4">
+                                <div class="form-group">
+                                    <label for="gender">Giới tính <span class="text-danger">*</span></label>
+                                    <select class="form-control" id="gender" [(ngModel)]="customerInfo.gender" name="gender" required>
+                                        <option value="Male">Nam</option>
+                                        <option value="Female">Nữ</option>
+                                        <option value="Other">Khác</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-4">
+                                <div class="form-group">
+                                    <label for="email">Email <span class="text-danger">*</span></label>
+                                    <input type="email" class="form-control" id="email" [(ngModel)]="customerInfo.email" name="email" required>
+                                    <div class="invalid-feedback" *ngIf="formSubmitted && !customerInfo.email">
+                                        Vui lòng nhập email
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-4">
+                                <div class="form-group">
+                                    <label for="phone">Số điện thoại <span class="text-danger">*</span></label>
+                                    <input type="tel" class="form-control" id="phone" [(ngModel)]="customerInfo.phone" name="phone" required>
+                                    <div class="invalid-feedback" *ngIf="formSubmitted && !customerInfo.phone">
+                                        Vui lòng nhập số điện thoại
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-12 mb-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="createAccount" [(ngModel)]="customerInfo.createAccount" name="createAccount">
+                                    <label class="form-check-label" for="createAccount">
+                                        Tạo tài khoản cho các lần đặt phòng sau
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-4" *ngIf="customerInfo.createAccount">
+                                <div class="form-group">
+                                    <label for="username">Tên đăng nhập <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="username" [(ngModel)]="customerInfo.username" name="username" required>
+                                    <div class="invalid-feedback" *ngIf="formSubmitted && customerInfo.createAccount && !customerInfo.username">
+                                        Vui lòng nhập tên đăng nhập
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-4" *ngIf="customerInfo.createAccount">
+                                <div class="form-group">
+                                    <label for="password">Mật khẩu <span class="text-danger">*</span></label>
+                                    <input type="password" class="form-control" id="password" [(ngModel)]="customerInfo.password" name="password" required>
+                                    <div class="invalid-feedback" *ngIf="formSubmitted && customerInfo.createAccount && (!customerInfo.password || customerInfo.password.length < 6)">
+                                        Mật khẩu phải có ít nhất 6 ký tự
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-12 text-center mt-3">
+                                <button type="submit" class="theme-btn btn-style-one" [disabled]="isSubmittingInfo">
+                                    <span class="btn-title">Tiếp tục đến thanh toán</span>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Payment Details Section -->
+<section class="payment-section pt-60 pb-90" *ngIf="step === 'payment' && paymentDetails && !isSubmittingInfo && !isLoadingPaymentDetails">
+    <div class="auto-container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="payment-details-box">
+                    <div class="details-header">
+                        <h3>Chi Tiết Thanh Toán</h3>
+                        <p>Vui lòng kiểm tra thông tin thanh toán trước khi hoàn tất</p>
+                    </div>
+                    
+                    <div class="details-content">
+                        <div class="room-details">
+                            <h4>Thông tin phòng</h4>
+                            <div class="item-row">
+                                <span class="item-label">Tên phòng:</span>
+                                <span class="item-value">{{paymentDetails.roomName}}</span>
+                            </div>
+                            <div class="item-row">
+                                <span class="item-label">Ngày nhận phòng:</span>
+                                <span class="item-value">{{paymentDetails.checkIn | date:'dd/MM/yyyy'}}</span>
+                            </div>
+                            <div class="item-row">
+                                <span class="item-label">Ngày trả phòng:</span>
+                                <span class="item-value">{{paymentDetails.checkOut | date:'dd/MM/yyyy'}}</span>
+                            </div>
+                            <div class="item-row">
+                                <span class="item-label">Số ngày:</span>
+                                <span class="item-value">{{paymentDetails.totalDays}}</span>
+                            </div>
+                            <div class="item-row">
+                                <span class="item-label">Giá phòng:</span>
+                                <span class="item-value">{{formatCurrency(paymentDetails.roomPrice)}} / đêm</span>
+                            </div>
+                            <div class="item-row total-row">
+                                <span class="item-label">Thành tiền phòng:</span>
+                                <span class="item-value">{{formatCurrency(paymentDetails.roomPrice * paymentDetails.totalDays)}}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="services-details" *ngIf="paymentDetails.services && paymentDetails.services.length > 0">
+                            <h4>Dịch vụ đã chọn</h4>
+                            <div class="services-table">
+                                <div class="table-header">
+                                    <div class="col-name">Tên dịch vụ</div>
+                                    <div class="col-price">Giá</div>
+                                    <div class="col-qty">SL</div>
+                                    <div class="col-total">Thành tiền</div>
+                                </div>
+                                <div class="table-row" *ngFor="let service of paymentDetails.services">
+                                    <div class="col-name">{{service.serviceName}}</div>
+                                    <div class="col-price">{{formatCurrency(service.price)}}</div>
+                                    <div class="col-qty">{{service.quantity}}</div>
+                                    <div class="col-total">{{formatCurrency(service.total)}}</div>
+                                </div>
+                                <div class="table-footer">
+                                    <span>Tổng tiền dịch vụ:</span>
+                                    <span>{{formatCurrency(paymentDetails.totalServiceAmount)}}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="total-amount">
+                            <div class="total-row">
+                                <span class="total-label">Tổng số tiền thanh toán:</span>
+                                <span class="total-value">{{formatCurrency(paymentDetails.totalAmount)}}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="payment-actions text-center mt-5">
+                            <button class="theme-btn btn-style-one me-3" (click)="createPayment()" [disabled]="isCreatingPayment">
+                                <span class="btn-title" *ngIf="!isCreatingPayment">Thanh toán ngay</span>
+                                <span class="btn-title" *ngIf="isCreatingPayment">Đang xử lý...</span>
+                            </button>
+                            <button class="theme-btn btn-style-two" (click)="cancelBooking()">
+                                <span class="btn-title">Hủy đặt phòng</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- No Booking Info Section -->
+<section class="no-booking-section pt-60 pb-90" *ngIf="!bookingId">
+    <div class="auto-container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 text-center">
+                <div class="error-box">
+                    <div class="error-icon">
+                        <i class="fa fa-exclamation-circle"></i>
+                    </div>
+                    <h3>Không tìm thấy thông tin đặt phòng</h3>
+                    <p>Có vẻ như bạn chưa có phòng nào được đặt. Vui lòng quay lại trang chủ để tìm kiếm và đặt phòng.</p>
+                    <a routerLink="/customer" class="theme-btn btn-style-one mt-4">
+                        <span class="btn-title">Quay lại trang chủ</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 </section>
