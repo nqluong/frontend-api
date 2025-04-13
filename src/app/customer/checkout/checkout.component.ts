@@ -106,16 +106,23 @@ export class CheckoutComponent implements OnInit {
     
     this.isSubmittingInfo = true;
     
+    // Lưu thông tin khách hàng vào localStorage
+    if (this.isBrowser) {
+      this.customerService.storeCustomerInfo(this.bookingId, this.customerInfo);
+    }
+    
+    // Gửi thông tin khách hàng lên server
     this.customerService.submitCustomerInfo(this.bookingId, this.customerInfo)
       .subscribe({
-        next: (response: any) => {
+        next: (response) => {
           console.log('Customer info submitted successfully:', response);
-          // Chuyển sang bước thanh toán
+          // Tiếp tục đến bước thanh toán
           this.loadPaymentDetails();
         },
         error: (error) => {
           console.error('Error submitting customer info:', error);
-          alert('Có lỗi xảy ra khi gửi thông tin khách hàng. Vui lòng thử lại sau.');
+          alert('Có lỗi xảy ra khi gửi thông tin cá nhân: ' + 
+            (error.message || 'Vui lòng thử lại sau.'));
           this.isSubmittingInfo = false;
         }
       });
@@ -135,7 +142,41 @@ export class CheckoutComponent implements OnInit {
         next: (response) => {
           console.log('Payment details loaded:', response);
           
-          if (response && (response.status === 200 || response.status === 201) && response.result) {
+          // API đang trả về dữ liệu trực tiếp, không có status và result
+          if (response && (response.maDatPhong || response.bookingId)) {
+            this.paymentDetails = response;
+            
+            // Kiểm tra và sửa lỗi số ngày thuê nếu cần
+            if (this.paymentDetails && this.paymentDetails.soNgayThue && this.paymentDetails.soNgayThue > 100) {
+              console.warn('Số ngày thuê bất thường:', this.paymentDetails.soNgayThue);
+              
+              // Tính lại số ngày từ checkIn và checkOut đã lưu
+              if (this.checkIn && this.checkOut) {
+                try {
+                  const checkInDate = new Date(this.checkIn);
+                  const checkOutDate = new Date(this.checkOut);
+                  // Tính số ngày giữa hai ngày
+                  const diffTime = Math.abs(checkOutDate.getTime() - checkInDate.getTime());
+                  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                  
+                  if (diffDays > 0 && diffDays < 100 && this.paymentDetails) {
+                    this.paymentDetails.soNgayThue = diffDays;
+                    if (this.paymentDetails.giaPhong) {
+                      this.paymentDetails.tongTienPhong = this.paymentDetails.giaPhong * diffDays;
+                      this.paymentDetails.tongTienThanhToan = (this.paymentDetails.tongTienPhong || 0) + 
+                        (this.paymentDetails.tongTienDichVu || 0);
+                    }
+                    console.log('Đã sửa số ngày thuê thành:', diffDays);
+                  }
+                } catch (error) {
+                  console.error('Lỗi khi tính toán số ngày thuê:', error);
+                }
+              }
+            }
+            
+            this.step = 'payment';
+          } else if (response && response.status === 200 && response.result) {
+            // Trường hợp API trả về trong cấu trúc result
             this.paymentDetails = response.result;
             this.step = 'payment';
           } else {
@@ -147,7 +188,8 @@ export class CheckoutComponent implements OnInit {
         },
         error: (error) => {
           console.error('Error loading payment details:', error);
-          alert('Có lỗi xảy ra khi tải thông tin thanh toán. Vui lòng thử lại sau.');
+          alert('Có lỗi xảy ra khi tải thông tin thanh toán: ' + 
+            (error.message || 'Vui lòng thử lại sau.'));
           this.isLoadingPaymentDetails = false;
           this.isSubmittingInfo = false;
         }
@@ -168,9 +210,24 @@ export class CheckoutComponent implements OnInit {
         next: (response) => {
           console.log('Payment created:', response);
           
-          if (response && (response.status === 200 || response.status === 201) && response.result && response.result.paymentUrl) {
-            // Chuyển hướng đến URL thanh toán
+          // Kiểm tra response từ API
+          if (response && response.paymentUrl) {
+            // Trường hợp API trả về trực tiếp paymentUrl
             if (this.isBrowser) {
+              // Lưu bookingId vào localStorage để sử dụng sau khi thanh toán
+              const bookingIdValue = this.bookingId as number; // Type assertion để tránh lỗi null
+              this.bookingService.saveBookingId(bookingIdValue);
+              // Chuyển hướng đến URL thanh toán
+              window.location.href = response.paymentUrl;
+            }
+          } else if (response && response.result && response.result.paymentUrl) {
+            // Trường hợp API trả về trong cấu trúc result
+            // Lưu paymentId vào localStorage nếu có
+            if (this.isBrowser) {
+              if (response.result.paymentId) {
+                localStorage.setItem('currentPaymentId', response.result.paymentId);
+              }
+              // Chuyển hướng đến URL thanh toán
               window.location.href = response.result.paymentUrl;
             }
           } else {
@@ -180,7 +237,8 @@ export class CheckoutComponent implements OnInit {
         },
         error: (error) => {
           console.error('Error creating payment:', error);
-          alert('Có lỗi xảy ra khi tạo thanh toán. Vui lòng thử lại sau.');
+          alert('Có lỗi xảy ra khi tạo thanh toán: ' + 
+            (error.message || 'Vui lòng thử lại sau.'));
           this.isCreatingPayment = false;
         }
       });

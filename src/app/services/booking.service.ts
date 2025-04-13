@@ -37,4 +37,17 @@ export class BookingService {
   clearBookingId(): void {
     localStorage.removeItem('currentBookingId');
   }
+  
+  // Helper để lưu/lấy paymentId từ localStorage
+  savePaymentId(paymentId: string): void {
+    localStorage.setItem('currentPaymentId', paymentId);
+  }
+  
+  getPaymentId(): string | null {
+    return localStorage.getItem('currentPaymentId');
+  }
+  
+  clearPaymentId(): void {
+    localStorage.removeItem('currentPaymentId');
+  }
 } 

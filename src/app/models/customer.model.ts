@@ -11,8 +11,7 @@ export interface CustomerInfo {
 
 export interface CustomerData {
   khachHang: {
-    ho: string;
-    ten: string;
+    hoTen: string;
     ngaySinh: string;
     gioiTinh: string;
     email: string;
@@ -24,4 +23,10 @@ export interface CustomerData {
     password: string;
     email: string;
   };
+}
+
+// Interface để lưu thông tin khách hàng trong localStorage
+export interface StoredCustomerInfo {
+  bookingId: number;
+  customerInfo: CustomerInfo;
 } 

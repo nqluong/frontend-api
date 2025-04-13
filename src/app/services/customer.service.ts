@@ -1,38 +1,32 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { CustomerInfo, CustomerData } from '../models/customer.model';
+import { CustomerInfo, CustomerData, StoredCustomerInfo } from '../models/customer.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CustomerService {
   private apiUrl = 'http://localhost:8080/hotelbooking';
+  private customerStorageKey = 'currentCustomerInfo';
 
   constructor(private http: HttpClient) { }
 
+  // Phương thức này bây giờ chỉ gửi thông tin khách hàng đến backend
   submitCustomerInfo(bookingId: number, customerInfo: CustomerInfo): Observable<any> {
-    // Tách họ và tên từ fullName
-    let ho = '';
-    let ten = '';
+    // Chuẩn bị dữ liệu gửi đi
+    const customerData: CustomerData = this.prepareCustomerData(customerInfo);
     
-    if (customerInfo.fullName) {
-      const nameParts = customerInfo.fullName.trim().split(' ');
-      if (nameParts.length > 1) {
-        // Lấy phần tử cuối cùng làm tên, các phần tử còn lại làm họ
-        ten = nameParts.pop() || '';
-        ho = nameParts.join(' ');
-      } else {
-        // Nếu chỉ có một từ, lấy làm tên
-        ten = customerInfo.fullName.trim();
-      }
-    }
-    
+    // Gửi thông tin khách hàng lên server
+    return this.http.put(`${this.apiUrl}/bookings/${bookingId}/customer-info`, customerData);
+  }
+  
+  // Phương thức mới để chuẩn bị dữ liệu khách hàng
+  prepareCustomerData(customerInfo: CustomerInfo): CustomerData {
     // Chuẩn bị dữ liệu gửi đi
     const customerData: CustomerData = {
       khachHang: {
-        ho: ho,
-        ten: ten,
+        hoTen: customerInfo.fullName,
         ngaySinh: customerInfo.dateOfBirth,
         gioiTinh: customerInfo.gender,
         email: customerInfo.email,
@@ -50,7 +44,30 @@ export class CustomerService {
       };
     }
     
-    return this.http.put(`${this.apiUrl}/bookings/${bookingId}/customer-info`, customerData);
+    return customerData;
+  }
+
+  // Lưu thông tin khách hàng vào localStorage
+  storeCustomerInfo(bookingId: number, customerInfo: CustomerInfo): void {
+    const storedInfo: StoredCustomerInfo = {
+      bookingId: bookingId,
+      customerInfo: customerInfo
+    };
+    localStorage.setItem(this.customerStorageKey, JSON.stringify(storedInfo));
+  }
+
+  // Lấy thông tin khách hàng từ localStorage
+  getStoredCustomerInfo(): StoredCustomerInfo | null {
+    const storedInfo = localStorage.getItem(this.customerStorageKey);
+    if (storedInfo) {
+      return JSON.parse(storedInfo);
+    }
+    return null;
+  }
+
+  // Xóa thông tin khách hàng từ localStorage
+  clearStoredCustomerInfo(): void {
+    localStorage.removeItem(this.customerStorageKey);
   }
 
   validateCustomerInfo(info: CustomerInfo): boolean {

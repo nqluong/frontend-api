@@ -175,31 +175,31 @@
                             <h4>Thông tin phòng</h4>
                             <div class="item-row">
                                 <span class="item-label">Tên phòng:</span>
-                                <span class="item-value">{{paymentDetails.roomName}}</span>
+                                <span class="item-value">{{paymentDetails.phongInfo || paymentDetails.roomName}}</span>
                             </div>
                             <div class="item-row">
                                 <span class="item-label">Ngày nhận phòng:</span>
-                                <span class="item-value">{{paymentDetails.checkIn | date:'dd/MM/yyyy'}}</span>
+                                <span class="item-value">{{checkIn | date:'dd/MM/yyyy'}}</span>
                             </div>
                             <div class="item-row">
                                 <span class="item-label">Ngày trả phòng:</span>
-                                <span class="item-value">{{paymentDetails.checkOut | date:'dd/MM/yyyy'}}</span>
+                                <span class="item-value">{{checkOut | date:'dd/MM/yyyy'}}</span>
                             </div>
                             <div class="item-row">
                                 <span class="item-label">Số ngày:</span>
-                                <span class="item-value">{{paymentDetails.totalDays}}</span>
+                                <span class="item-value">{{paymentDetails.soNgayThue || paymentDetails.totalDays}}</span>
                             </div>
                             <div class="item-row">
                                 <span class="item-label">Giá phòng:</span>
-                                <span class="item-value">{{formatCurrency(paymentDetails.roomPrice)}} / đêm</span>
+                                <span class="item-value">{{formatCurrency(paymentDetails.giaPhong ?? paymentDetails.roomPrice ?? 0)}} / đêm</span>
                             </div>
                             <div class="item-row total-row">
                                 <span class="item-label">Thành tiền phòng:</span>
-                                <span class="item-value">{{formatCurrency(paymentDetails.roomPrice * paymentDetails.totalDays)}}</span>
+                                <span class="item-value">{{formatCurrency(paymentDetails.tongTienPhong ?? (paymentDetails.roomPrice && paymentDetails.totalDays ? paymentDetails.roomPrice * paymentDetails.totalDays : 0))}}</span>
                             </div>
                         </div>
                         
-                        <div class="services-details" *ngIf="paymentDetails.services && paymentDetails.services.length > 0">
+                        <div class="services-details" *ngIf="(paymentDetails.dichVuList && paymentDetails.dichVuList.length > 0) || (paymentDetails.services && paymentDetails.services.length > 0)">
                             <h4>Dịch vụ đã chọn</h4>
                             <div class="services-table">
                                 <div class="table-header">
@@ -208,15 +208,26 @@
                                     <div class="col-qty">SL</div>
                                     <div class="col-total">Thành tiền</div>
                                 </div>
+                                
+                                <!-- Sử dụng dichVuList nếu có -->
+                                <div class="table-row" *ngFor="let service of paymentDetails.dichVuList">
+                                    <div class="col-name">{{service.tenDv}}</div>
+                                    <div class="col-price">{{formatCurrency(service.gia)}}</div>
+                                    <div class="col-qty">{{service.soLuong}}</div>
+                                    <div class="col-total">{{formatCurrency(service.thanhTien)}}</div>
+                                </div>
+                                
+                                <!-- Sử dụng services nếu có -->
                                 <div class="table-row" *ngFor="let service of paymentDetails.services">
                                     <div class="col-name">{{service.serviceName}}</div>
                                     <div class="col-price">{{formatCurrency(service.price)}}</div>
                                     <div class="col-qty">{{service.quantity}}</div>
                                     <div class="col-total">{{formatCurrency(service.total)}}</div>
                                 </div>
+                                
                                 <div class="table-footer">
                                     <span>Tổng tiền dịch vụ:</span>
-                                    <span>{{formatCurrency(paymentDetails.totalServiceAmount)}}</span>
+                                    <span>{{formatCurrency(paymentDetails.tongTienDichVu ?? paymentDetails.totalServiceAmount ?? 0)}}</span>
                                 </div>
                             </div>
                         </div>
@@ -224,7 +235,7 @@
                         <div class="total-amount">
                             <div class="total-row">
                                 <span class="total-label">Tổng số tiền thanh toán:</span>
-                                <span class="total-value">{{formatCurrency(paymentDetails.totalAmount)}}</span>
+                                <span class="total-value">{{formatCurrency(paymentDetails.tongTienThanhToan ?? paymentDetails.totalAmount ?? 0)}}</span>
                             </div>
                         </div>
                         
