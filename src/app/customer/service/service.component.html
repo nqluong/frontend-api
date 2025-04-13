@@ -2,88 +2,111 @@
 <section class="page-title" style="background-image: url(assets/customer/images/background/page-title-bg.png);">
     <div class="auto-container">
         <div class="title-outer text-center">
-            <h1 class="title">Rooms and Suits</h1>
+            <h1 class="title">Dịch Vụ Khách Sạn</h1>
             <ul class="page-breadcrumb">
-                <li><a href="index.html">Home</a></li>
-                <li>Rooms and Suits</li>
+                <li><a routerLink="/customer">Trang chủ</a></li>
+                <li>Dịch vụ</li>
             </ul>
         </div>
     </div>
 </section>
 <!-- end main-content -->
 
-<!-- Features Section Two -->
-<section class="feature-section-two pt-120 pb-120">
+<!-- Service Section -->
+<section class="service-section pt-120 pb-60">
     <div class="auto-container">
-        <div class="row feature-row g-0">
-            <div class="image-column col-lg-6">
-                <div class="inner-column">
-                    <div class="image-box">
-                        <figure class="image overlay-anim wow reveal-right"><img
-                                src="assets/customer/images/resource/feature2-1.jpg" alt=""></figure>
-                    </div>
-                </div>
+        <div class="sec-title text-center">
+            <span class="sub-title">DỊCH VỤ CỦA CHÚNG TÔI</span>
+            <h2>Trải Nghiệm Dịch Vụ Cao Cấp</h2>
+            <div class="text">Chúng tôi cung cấp các dịch vụ hàng đầu để đảm bảo kỳ nghỉ của bạn thật thoải mái và đáng nhớ</div>
+        </div>
+
+        <!-- Hiển thị thông báo đang tải -->
+        <div class="text-center py-5" *ngIf="isLoading">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Đang tải...</span>
             </div>
-            <div class="content-column col-lg-6">
-                <div class="inner-column">
-                    <div class="content-box">
-                        <div class="sec-title">
-                            <span class="sub-title">DISCOVER</span>
-                            <h2>The Restaurant</h2>
-                            <div class="text">With the largest fleet of luxury catamarans, sailing and motor yachts in
-                                Santorini we guarantee the ultimate sailing experience!</div>
-                        </div>
-                        <a href="room-details.html" class="theme-btn btn-style-two read-more">READ MORE</a>
+            <p class="mt-2">Đang tải dịch vụ...</p>
+        </div>
+
+        <!-- Hiển thị lỗi khi không kết nối được API -->
+        <div class="text-center py-5" *ngIf="error">
+            <div class="alert alert-danger">
+                <h4>Lỗi kết nối</h4>
+                <p>Không thể kết nối đến máy chủ. Vui lòng thử lại sau hoặc kiểm tra kết nối của bạn.</p>
+                <button class="btn btn-primary mt-3" (click)="loadServices()">Thử lại</button>
+            </div>
+        </div>
+
+        <!-- Hiển thị danh sách dịch vụ -->
+        <div class="row" *ngIf="!isLoading && hasServices()">
+            <div class="service-block col-lg-4 col-md-6 col-sm-12" *ngFor="let service of services">
+                <div class="inner-box">
+                    <div class="image-box">
+                        <figure class="image overlay-anim">
+                            <!-- Sử dụng ảnh dựa trên loại dịch vụ -->
+                            <img [src]="'assets/customer/images/resource/feature2-1.jpg'" alt="Service Image">
+                        </figure>
+                        <div class="icon-box"><span class="icon flaticon-room-service"></span></div>
+                    </div>
+                    <div class="lower-content">
+                        <h4 class="title">{{service.tenDV}}</h4>
+                        <div class="text">{{service.moTa}}</div>
+                        <div class="price mt-3">{{formatCurrency(service.gia)}}</div>
+                        <a href="javascript:void(0)" class="theme-btn btn-style-two mt-4"><span class="btn-title">Đặt Ngay</span></a>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="row feature-row g-0">
-            <div class="content-column col-lg-6">
-                <div class="inner-column">
-                    <div class="content-box">
-                        <div class="sec-title">
-                            <span class="sub-title">EXPERIENCE</span>
-                            <h2>Spa Center</h2>
-                            <div class="text">With the largest fleet of luxury catamarans, sailing and motor yachts in
-                                Santorini we guarantee the ultimate sailing experience!</div>
-                        </div>
-                        <a href="room-details.html" class="theme-btn btn-style-two read-more">READ MORE</a>
-                    </div>
-                </div>
-            </div>
-            <div class="image-column col-lg-6">
-                <div class="inner-column">
-                    <div class="image-box">
-                        <figure class="image overlay-anim wow reveal-left"><img
-                                src="assets/customer/images/resource/feature2-2.jpg" alt=""></figure>
-                    </div>
-                </div>
+
+        <!-- Phân trang -->
+        <div class="pagination-box text-center my-5" *ngIf="!isLoading && hasServices() && totalPages > 1">
+            <ul class="pagination">
+                <li class="page-item" [class.disabled]="currentPage === 0">
+                    <a class="page-link" href="javascript:void(0)" (click)="goToPage(currentPage - 1)">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                </li>
+                <li class="page-item" *ngFor="let page of getPagesArray()" [class.active]="page === currentPage">
+                    <a class="page-link" href="javascript:void(0)" (click)="goToPage(page)">{{page + 1}}</a>
+                </li>
+                <li class="page-item" [class.disabled]="currentPage === totalPages - 1">
+                    <a class="page-link" href="javascript:void(0)" (click)="goToPage(currentPage + 1)">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Hiển thị khi không có dịch vụ -->
+        <div class="text-center py-5" *ngIf="!isLoading && !error && !hasServices()">
+            <div class="alert alert-info">
+                <h4>Không có dịch vụ nào</h4>
+                <p>Hiện tại không có dịch vụ nào được tìm thấy. Vui lòng thử lại sau.</p>
             </div>
         </div>
-        <div class="row feature-row g-0">
-            <div class="image-column col-lg-6">
+    </div>
+</section>
+<!-- End Service Section -->
+
+<!-- Intro section -->
+<section class="contact-form-section">
+    <div class="auto-container">
+        <div class="row">
+            <div class="form-column col-lg-12">
                 <div class="inner-column">
-                    <div class="image-box">
-                        <figure class="image overlay-anim wow reveal-right"><img
-                                src="assets/customer/images/resource/feature2-3.jpg" alt=""></figure>
+                    <div class="sec-title">
+                        <span class="sub-title">TẠI SAO CHỌN CHÚNG TÔI</span>
+                        <h2>Dịch Vụ Tận Tâm <br>Cho Kỳ Nghỉ Hoàn Hảo</h2>
+                        <div class="text">Chúng tôi cam kết mang đến trải nghiệm dịch vụ tốt nhất cho khách hàng, với đội ngũ nhân viên chuyên nghiệp và tận tâm. Mọi chi tiết đều được chăm chút để đảm bảo sự hài lòng của quý khách.</div>
                     </div>
-                </div>
-            </div>
-            <div class="content-column col-lg-6">
-                <div class="inner-column">
-                    <div class="content-box">
-                        <div class="sec-title">
-                            <span class="sub-title">MODERN</span>
-                            <h2>Fitness Center</h2>
-                            <div class="text">With the largest fleet of luxury catamarans, sailing and motor yachts in
-                                Santorini we guarantee the ultimate sailing experience!</div>
-                        </div>
-                        <a href="room-details.html" class="theme-btn btn-style-two read-more">READ MORE</a>
+                    <div class="info-box">
+                        <div class="text">Liên hệ với chúng tôi ngay hôm nay để được tư vấn và đặt dịch vụ:</div>
+                        <a href="tel:+0123456789" class="phone">+84 123 456 789</a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </section>
-<!-- End Features Section -->
+<!-- End Intro Section -->
