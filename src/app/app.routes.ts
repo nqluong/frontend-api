@@ -36,7 +36,7 @@ import { InvoicesComponent } from './admin/invoices/invoices.component';
 import { PaymentsComponent } from './admin/payments/payments.component';
 import { PricingComponent } from './admin/pricing/pricing.component';
 import { RolesPermissionsComponent } from './admin/roles-permissions/roles-permissions.component';
-
+import { CheckoutComponent } from './customer/checkout/checkout.component';
 export const routes: Routes = [
     { path: '', redirectTo: '/customer', pathMatch: 'full' },
     {
@@ -79,7 +79,8 @@ export const routes: Routes = [
             { path: 'rooms', component: RoomsComponent },
             { path: 'room-details', component: RoomDetailsComponent },
             { path: 'contact', component: ContactComponent },
-            { path: 'service', component: ServiceComponent }
+            { path: 'service', component: ServiceComponent },
+            { path: 'checkout', component: CheckoutComponent }
         ]
     },
     {
