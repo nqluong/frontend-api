@@ -1,35 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
 import { isPlatformBrowser } from '@angular/common';
 import { PLATFORM_ID, Inject } from '@angular/core';
 
-interface RoomDisplay {
-  id: number;
-  tenPhong: string;
-  gia: number;
-  loaiPhong: string;
-  soNguoi: string;
-  tienNghi: string[];
-}
+// Import models
+import { RoomDisplay } from '../../models/booking.model';
 
-interface BookingResponse {
-  status: number;
-  time: string;
-  message: string;
-  result: {
-    maDP: number;
-    maKH: number;
-    tenKH: string;
-    maPhong: number;
-    tenPhong: string;
-    ngayDat: string;
-    ngayDen: string;
-    ngayDi: string;
-    trangThai: string;
-  }
-}
+// Import services
+import { BookingService } from '../../services/booking.service';
 
 @Component({
   selector: 'app-rooms',
@@ -48,7 +27,7 @@ export class RoomsComponent implements OnInit {
   constructor(
     private route: ActivatedRoute, 
     private router: Router,
-    private http: HttpClient,
+    private bookingService: BookingService,
     @Inject(PLATFORM_ID) platformId: Object
   ) {
     this.isBrowser = isPlatformBrowser(platformId);
@@ -123,24 +102,25 @@ export class RoomsComponent implements OnInit {
 
     this.isCreatingBooking = true;
 
-    // Tạo đối tượng params chứa thông tin đặt phòng và sửa lại định dạng ngày nếu cần
-    const params = {
+    // Sửa lại định dạng ngày nếu cần
+    const checkInFixed = this.fixDateFormat(this.checkInDate);
+    const checkOutFixed = this.fixDateFormat(this.checkOutDate);
+
+    console.log('Creating temporary booking with params:', {
       roomId: roomId,
-      checkIn: this.fixDateFormat(this.checkInDate),
-      checkOut: this.fixDateFormat(this.checkOutDate)
-    };
+      checkIn: checkInFixed,
+      checkOut: checkOutFixed
+    });
 
-    console.log('Creating temporary booking with params:', params);
-
-    // Gọi API tạo đặt phòng tạm thời
-    this.http.post<BookingResponse>('http://localhost:8080/hotelbooking/bookings/temporary', null, { params })
+    // Sử dụng service để tạo đặt phòng tạm thời
+    this.bookingService.createTemporaryBooking(roomId, checkInFixed, checkOutFixed)
       .subscribe({
         next: (response) => {
           console.log('Temporary booking created:', response);
           if (response && (response.status === 200 || response.status === 201) && response.result) {
             // Lưu mã đặt phòng vào localStorage để sử dụng cho các bước tiếp theo
             if (this.isBrowser) {
-              localStorage.setItem('currentBookingId', response.result.maDP.toString());
+              this.bookingService.saveBookingId(response.result.maDP);
             }
             
             // Chuyển hướng đến trang dịch vụ

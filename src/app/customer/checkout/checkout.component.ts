@@ -1,49 +1,18 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { isPlatformBrowser } from '@angular/common';
 import { PLATFORM_ID, Inject } from '@angular/core';
 
-interface CustomerInfo {
-  fullName: string;
-  dateOfBirth: string;
-  gender: string;
-  email: string;
-  phone: string;
-  createAccount: boolean;
-  username: string;
-  password: string;
-}
+// Import models
+import { CustomerInfo } from '../../models/customer.model';
+import { PaymentDetail } from '../../models/payment.model';
 
-interface PaymentDetail {
-  bookingId: number;
-  roomName: string;
-  checkIn: string;
-  checkOut: string;
-  roomPrice: number;
-  totalDays: number;
-  services: {
-    serviceId: number;
-    serviceName: string;
-    price: number;
-    quantity: number;
-    total: number;
-  }[];
-  totalServiceAmount: number;
-  totalAmount: number;
-}
-
-interface PaymentResponse {
-  status: number;
-  time: string;
-  message: string;
-  result: {
-    paymentId: string;
-    paymentUrl: string;
-  }
-}
+// Import services
+import { CustomerService } from '../../services/customer.service';
+import { BookingService } from '../../services/booking.service';
+import { PaymentService } from '../../services/payment.service';
 
 @Component({
   selector: 'app-checkout',
@@ -79,7 +48,9 @@ export class CheckoutComponent implements OnInit {
   step: 'info' | 'payment' = 'info';
   
   constructor(
-    private http: HttpClient,
+    private customerService: CustomerService,
+    private bookingService: BookingService,
+    private paymentService: PaymentService,
     private router: Router,
     @Inject(PLATFORM_ID) platformId: Object
   ) {
@@ -104,11 +75,8 @@ export class CheckoutComponent implements OnInit {
   ngOnInit(): void {
     // Nếu không có thông tin booking từ navigation state, thử lấy từ localStorage
     if (!this.bookingId && this.isBrowser) {
-      const storedBookingId = localStorage.getItem('currentBookingId');
-      if (storedBookingId) {
-        this.bookingId = parseInt(storedBookingId, 10);
-        console.log('Retrieved bookingId from localStorage:', this.bookingId);
-      } else {
+      this.bookingId = this.bookingService.getBookingId();
+      if (!this.bookingId) {
         // Không tìm thấy booking, chuyển về trang chủ
         alert('Không tìm thấy thông tin đặt phòng. Vui lòng thử lại.');
         this.router.navigate(['/customer']);
@@ -119,33 +87,7 @@ export class CheckoutComponent implements OnInit {
   
   // Kiểm tra form thông tin khách hàng hợp lệ
   isCustomerInfoValid(): boolean {
-    if (!this.customerInfo.fullName || 
-        !this.customerInfo.dateOfBirth || 
-        !this.customerInfo.email || 
-        !this.customerInfo.phone) {
-      return false;
-    }
-    
-    // Kiểm tra email hợp lệ
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(this.customerInfo.email)) {
-      return false;
-    }
-    
-    // Kiểm tra số điện thoại hợp lệ
-    const phoneRegex = /^[0-9]{10,11}$/;
-    if (!phoneRegex.test(this.customerInfo.phone)) {
-      return false;
-    }
-    
-    // Kiểm tra nếu tạo tài khoản thì username và password phải có
-    if (this.customerInfo.createAccount) {
-      if (!this.customerInfo.username || !this.customerInfo.password || this.customerInfo.password.length < 6) {
-        return false;
-      }
-    }
-    
-    return true;
+    return this.customerService.validateCustomerInfo(this.customerInfo);
   }
   
   // Gửi thông tin khách hàng
@@ -164,65 +106,7 @@ export class CheckoutComponent implements OnInit {
     
     this.isSubmittingInfo = true;
     
-    // Tách họ và tên từ fullName
-    let ho = '';
-    let ten = '';
-    
-    if (this.customerInfo.fullName) {
-      const nameParts = this.customerInfo.fullName.trim().split(' ');
-      if (nameParts.length > 1) {
-        // Lấy phần tử cuối cùng làm tên, các phần tử còn lại làm họ
-        ten = nameParts.pop() || '';
-        ho = nameParts.join(' ');
-      } else {
-        // Nếu chỉ có một từ, lấy làm tên
-        ten = this.customerInfo.fullName.trim();
-      }
-    }
-    
-    // Chuẩn bị dữ liệu theo định dạng mới
-    interface CustomerData {
-      khachHang: {
-        ho: string;
-        ten: string;
-        ngaySinh: string;
-        gioiTinh: string;
-        email: string;
-        sdt: string;
-      };
-      taoTaiKhoan: boolean;
-      taiKhoan?: {
-        username: string;
-        password: string;
-        email: string;
-      };
-    }
-    
-    const customerData: CustomerData = {
-      khachHang: {
-        ho: ho,
-        ten: ten,
-        ngaySinh: this.customerInfo.dateOfBirth,
-        gioiTinh: this.customerInfo.gender,
-        email: this.customerInfo.email,
-        sdt: this.customerInfo.phone
-      },
-      taoTaiKhoan: this.customerInfo.createAccount
-    };
-
-    // Nếu tạo tài khoản, thêm thông tin tài khoản
-    if (this.customerInfo.createAccount) {
-      customerData.taiKhoan = {
-        username: this.customerInfo.username,
-        password: this.customerInfo.password,
-        email: this.customerInfo.email
-      };
-    }
-    
-    console.log('Submitting customer info:', customerData);
-    
-    // Gửi thông tin khách hàng lên server
-    this.http.put(`http://localhost:8080/hotelbooking/bookings/${this.bookingId}/customer-info`, customerData)
+    this.customerService.submitCustomerInfo(this.bookingId, this.customerInfo)
       .subscribe({
         next: (response: any) => {
           console.log('Customer info submitted successfully:', response);
@@ -246,7 +130,7 @@ export class CheckoutComponent implements OnInit {
     
     this.isLoadingPaymentDetails = true;
     
-    this.http.get<any>(`http://localhost:8080/hotelbooking/payment/payment-details/${this.bookingId}`)
+    this.paymentService.getPaymentDetails(this.bookingId)
       .subscribe({
         next: (response) => {
           console.log('Payment details loaded:', response);
@@ -279,7 +163,7 @@ export class CheckoutComponent implements OnInit {
     
     this.isCreatingPayment = true;
     
-    this.http.post<PaymentResponse>(`http://localhost:8080/hotelbooking/payment/create-payment`, { bookingId: this.bookingId })
+    this.paymentService.createPayment(this.bookingId)
       .subscribe({
         next: (response) => {
           console.log('Payment created:', response);
@@ -310,14 +194,14 @@ export class CheckoutComponent implements OnInit {
     }
     
     if (confirm('Bạn có chắc chắn muốn hủy đặt phòng này không?')) {
-      this.http.delete(`http://localhost:8080/hotelbooking/bookings/${this.bookingId}`)
+      this.bookingService.cancelBooking(this.bookingId)
         .subscribe({
           next: (response: any) => {
             console.log('Booking cancelled successfully:', response);
             alert('Đã hủy đặt phòng thành công.');
             // Xóa dữ liệu booking khỏi localStorage
             if (this.isBrowser) {
-              localStorage.removeItem('currentBookingId');
+              this.bookingService.clearBookingId();
             }
             // Chuyển về trang chủ
             this.router.navigate(['/customer']);
@@ -332,9 +216,6 @@ export class CheckoutComponent implements OnInit {
   
   // Format tiền tệ
   formatCurrency(value: number): string {
-    return new Intl.NumberFormat('vi-VN', { 
-      style: 'currency', 
-      currency: 'VND' 
-    }).format(value);
+    return this.paymentService.formatCurrency(value);
   }
 }

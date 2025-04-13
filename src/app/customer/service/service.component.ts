@@ -1,43 +1,16 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { isPlatformBrowser } from '@angular/common';
+import { PLATFORM_ID, Inject } from '@angular/core';
 
-interface Service {
-  maDV: number;
-  tenDV: string;
-  gia: number;
-  moTa: string;
-}
+// Import models
+import { Service } from '../../models/service.model';
 
-interface ServiceResponse {
-  status: number;
-  time: string;
-  result: {
-    content: Service[];
-    currentPage: number;
-    totalPages: number;
-    totalElements: number;
-    pageSize: number;
-  }
-}
-
-interface BookingServiceResponse {
-  status: number;
-  time: string;
-  message: string;
-  result: Array<{
-    maDDV: number;
-    maBooking: number;
-    maDv: number;
-    tenDv: string;
-    gia: number;
-    thanhTien: number;
-    soLuong: number;
-    thoiGianDat: string;
-  }>
-}
+// Import services
+import { ServiceService } from '../../services/service.service';
+import { BookingService } from '../../services/booking.service';
 
 @Component({
   selector: 'app-service',
@@ -58,15 +31,20 @@ export class ServiceComponent implements OnInit {
   roomName: string = '';
   checkIn: string = '';
   checkOut: string = '';
+  isBrowser: boolean;
   
   // Dịch vụ đã chọn
   selectedServices: { [key: number]: number } = {}; // maDV: số lượng
   isAddingServices = false;
 
   constructor(
-    private http: HttpClient,
-    private router: Router
+    private serviceService: ServiceService,
+    private bookingService: BookingService,
+    private router: Router,
+    @Inject(PLATFORM_ID) platformId: Object
   ) {
+    this.isBrowser = isPlatformBrowser(platformId);
+    
     // Lấy thông tin booking từ navigation state
     const navigation = this.router.getCurrentNavigation();
     if (navigation?.extras?.state) {
@@ -85,12 +63,9 @@ export class ServiceComponent implements OnInit {
 
   ngOnInit(): void {
     // Nếu không có thông tin booking từ navigation state, thử lấy từ localStorage
-    if (!this.bookingId) {
-      const storedBookingId = localStorage.getItem('currentBookingId');
-      if (storedBookingId) {
-        this.bookingId = parseInt(storedBookingId, 10);
-        console.log('Retrieved bookingId from localStorage:', this.bookingId);
-      }
+    if (!this.bookingId && this.isBrowser) {
+      this.bookingId = this.bookingService.getBookingId();
+      console.log('Retrieved bookingId from localStorage:', this.bookingId);
     }
     
     this.loadServices();
@@ -100,7 +75,7 @@ export class ServiceComponent implements OnInit {
     this.isLoading = true;
     this.error = false;
     
-    this.http.get<ServiceResponse>(`http://localhost:8080/hotelbooking/services?page=${page}&size=9`)
+    this.serviceService.getServices(page)
       .subscribe({
         next: (response) => {
           if (response && response.status === 200 && response.result) {
@@ -124,10 +99,7 @@ export class ServiceComponent implements OnInit {
   }
 
   formatCurrency(value: number): string {
-    return new Intl.NumberFormat('vi-VN', { 
-      style: 'currency', 
-      currency: 'VND' 
-    }).format(value);
+    return this.serviceService.formatCurrency(value);
   }
 
   goToPage(page: number): void {
@@ -188,36 +160,34 @@ export class ServiceComponent implements OnInit {
     
     console.log(`Adding services to booking ${this.bookingId}:`, this.selectedServices);
     
-    // Gọi API để thêm dịch vụ vào booking
-    this.http.post<BookingServiceResponse>(
-      `http://localhost:8080/hotelbooking/bookings/${this.bookingId}/services/batch`,
-      this.selectedServices
-    ).subscribe({
-      next: (response) => {
-        console.log('Services added to booking:', response);
-        
-        if (response && (response.status === 200 || response.status === 201)) {
-          // Chuyển hướng đến trang thanh toán
-          this.router.navigate(['/customer/checkout'], {
-            state: { 
-              bookingId: this.bookingId,
-              roomName: this.roomName,
-              checkIn: this.checkIn,
-              checkOut: this.checkOut
-            }
-          });
-        } else {
-          alert('Có lỗi xảy ra khi thêm dịch vụ. Vui lòng thử lại.');
+    // Gọi service để thêm dịch vụ vào booking
+    this.serviceService.addServicesToBooking(this.bookingId, this.selectedServices)
+      .subscribe({
+        next: (response) => {
+          console.log('Services added to booking:', response);
+          
+          if (response && (response.status === 200 || response.status === 201)) {
+            // Chuyển hướng đến trang thanh toán
+            this.router.navigate(['/customer/checkout'], {
+              state: { 
+                bookingId: this.bookingId,
+                roomName: this.roomName,
+                checkIn: this.checkIn,
+                checkOut: this.checkOut
+              }
+            });
+          } else {
+            alert('Có lỗi xảy ra khi thêm dịch vụ. Vui lòng thử lại.');
+          }
+          
+          this.isAddingServices = false;
+        },
+        error: (error) => {
+          console.error('Error adding services to booking:', error);
+          alert('Có lỗi xảy ra khi thêm dịch vụ. Vui lòng thử lại sau.');
+          this.isAddingServices = false;
         }
-        
-        this.isAddingServices = false;
-      },
-      error: (error) => {
-        console.error('Error adding services to booking:', error);
-        alert('Có lỗi xảy ra khi thêm dịch vụ. Vui lòng thử lại sau.');
-        this.isAddingServices = false;
-      }
-    });
+      });
   }
   
   // Bỏ qua bước đặt dịch vụ
