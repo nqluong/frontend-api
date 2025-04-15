@@ -1,35 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
 import { isPlatformBrowser } from '@angular/common';
 import { PLATFORM_ID, Inject } from '@angular/core';
 
-interface RoomDisplay {
-  id: number;
-  tenPhong: string;
-  gia: number;
-  loaiPhong: string;
-  soNguoi: string;
-  tienNghi: string[];
-}
+// Import models
+import { RoomDisplay } from '../../models/booking.model';
 
-interface BookingResponse {
-  status: number;
-  time: string;
-  message: string;
-  result: {
-    maDP: number;
-    maKH: number;
-    tenKH: string;
-    maPhong: number;
-    tenPhong: string;
-    ngayDat: string;
-    ngayDen: string;
-    ngayDi: string;
-    trangThai: string;
-  }
-}
+// Import services
+import { BookingService } from '../../services/booking.service';
 
 @Component({
   selector: 'app-rooms',
@@ -48,7 +27,7 @@ export class RoomsComponent implements OnInit {
   constructor(
     private route: ActivatedRoute, 
     private router: Router,
-    private http: HttpClient,
+    private bookingService: BookingService,
     @Inject(PLATFORM_ID) platformId: Object
   ) {
     this.isBrowser = isPlatformBrowser(platformId);
@@ -79,32 +58,51 @@ export class RoomsComponent implements OnInit {
   fixDateFormat(dateString: string): string {
     if (!dateString) return '';
     
-    // Kiểm tra xem ngày có phải là năm cũ kỳ lạ không (ví dụ: 1915, 1917)
+    console.log('Fixing date format for:', dateString);
+    
     try {
+      // Chuyển string thành đối tượng Date
       const date = new Date(dateString);
-      const year = date.getFullYear();
       
-      // Nếu năm < 2000, đây có thể là lỗi định dạng
-      if (year < 2000) {
+      // Kiểm tra xem date có hợp lệ không
+      if (isNaN(date.getTime())) {
+        console.error('Invalid date:', dateString);
+        return dateString;
+      }
+      
+      // Lấy các thành phần ngày tháng
+      const year = date.getFullYear();
+      const month = date.getMonth() + 1; // getMonth() trả về 0-11
+      const day = date.getDate();
+      
+      // Nếu năm < 2000 hoặc > 2100, có thể là lỗi
+      if (year < 2000 || year > 2100) {
+        console.warn('Năm bất thường:', year);
+        
         // Lấy ngày hiện tại
         const today = new Date();
         
-        // Tìm thông tin ngày, tháng từ chuỗi gốc
-        const parts = dateString.split('T')[0].split('-');
-        if (parts.length === 3) {
-          const day = parseInt(parts[2]);
-          const month = parseInt(parts[1]);
+        // Nếu có thể tách thành ngày, tháng, năm từ chuỗi gốc
+        const parts = dateString.split(/[-T]/); // Tách theo - hoặc T
+        if (parts.length >= 3) {
+          let day = parseInt(parts[2]);
+          let month = parseInt(parts[1]);
+          
+          // Kiểm tra tính hợp lệ của ngày và tháng
+          if (isNaN(day) || day < 1 || day > 31) day = today.getDate();
+          if (isNaN(month) || month < 1 || month > 12) month = today.getMonth() + 1;
           
           // Tạo ngày mới với năm hiện tại
-          const fixedDate = new Date(today.getFullYear(), month - 1, day);
+          const currentYear = today.getFullYear();
+          const fixedDate = new Date(currentYear, month - 1, day);
           
-          // Format lại theo ISO 8601 với timezone +07:00
-          return fixedDate.toISOString().replace('Z', '+07:00');
+          // Format ISO với timezone
+          return fixedDate.toISOString().split('T')[0] + 'T00:00:00+07:00';
         }
       }
       
-      // Nếu không có vấn đề, giữ nguyên chuỗi
-      return dateString;
+      // Nếu không có vấn đề, format lại theo ISO 8601 với +07:00
+      return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T00:00:00+07:00`;
     } catch (error) {
       console.error('Error parsing date:', error);
       return dateString;
@@ -123,24 +121,25 @@ export class RoomsComponent implements OnInit {
 
     this.isCreatingBooking = true;
 
-    // Tạo đối tượng params chứa thông tin đặt phòng và sửa lại định dạng ngày nếu cần
-    const params = {
+    // Sửa lại định dạng ngày nếu cần
+    const checkInFixed = this.fixDateFormat(this.checkInDate);
+    const checkOutFixed = this.fixDateFormat(this.checkOutDate);
+
+    console.log('Creating temporary booking with params:', {
       roomId: roomId,
-      checkIn: this.fixDateFormat(this.checkInDate),
-      checkOut: this.fixDateFormat(this.checkOutDate)
-    };
+      checkIn: checkInFixed,
+      checkOut: checkOutFixed
+    });
 
-    console.log('Creating temporary booking with params:', params);
-
-    // Gọi API tạo đặt phòng tạm thời
-    this.http.post<BookingResponse>('http://localhost:8080/hotelbooking/bookings/temporary', null, { params })
+    // Sử dụng service để tạo đặt phòng tạm thời
+    this.bookingService.createTemporaryBooking(roomId, checkInFixed, checkOutFixed)
       .subscribe({
         next: (response) => {
           console.log('Temporary booking created:', response);
           if (response && (response.status === 200 || response.status === 201) && response.result) {
             // Lưu mã đặt phòng vào localStorage để sử dụng cho các bước tiếp theo
             if (this.isBrowser) {
-              localStorage.setItem('currentBookingId', response.result.maDP.toString());
+              this.bookingService.saveBookingId(response.result.maDP);
             }
             
             // Chuyển hướng đến trang dịch vụ
