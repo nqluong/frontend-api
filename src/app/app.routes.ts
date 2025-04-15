@@ -59,7 +59,7 @@ export const routes: Routes = [
             { path: 'edit-booking', component: EditBookingComponent },
             { path: 'edit-customer', component: EditCustomerComponent },
             { path: 'edit-pricing', component: EditPricingComponent },
-            { path: 'edit-room', component: EditRoomComponent },
+            { path: 'edit-room/:id', component: EditRoomComponent },
             { path: 'edit-staff', component: EditStaffComponent },
             { path: 'invoice-reports', component: InvoiceReportsComponent },
             { path: 'invoice-view', component: InvoiceViewComponent },
