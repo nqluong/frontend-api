@@ -5,6 +5,7 @@ import { RoomDetailsComponent } from './customer/room-details/room-details.compo
 import { ContactComponent } from './customer/contact/contact.component';
 import { ServiceComponent } from './customer/service/service.component';
 import { SigninComponent } from './login/signin/signin.component';
+import { OAuthCallbackComponent } from './login/signin/oauth-callback.component';
 import { SignupComponent } from './login/signup/signup.component';
 import { PasswordResetComponent } from './login/password-reset/password-reset.component';
 import { MainCustomerComponent } from './customer/main-customer/main-customer.component';
@@ -37,8 +38,13 @@ import { PaymentsComponent } from './admin/payments/payments.component';
 import { PricingComponent } from './admin/pricing/pricing.component';
 import { RolesPermissionsComponent } from './admin/roles-permissions/roles-permissions.component';
 import { CheckoutComponent } from './customer/checkout/checkout.component';
+
 export const routes: Routes = [
     { path: '', redirectTo: '/customer', pathMatch: 'full' },
+    {
+        path: 'login/oauth2/code/facebook',
+        component: OAuthCallbackComponent // Cấu hình route cho callback
+      },
     {
         path: 'admin',
         component: MainAdminComponent,
@@ -92,4 +98,5 @@ export const routes: Routes = [
             { path: 'forgot-password', component: PasswordResetComponent }
         ]
     }
+    
 ];
