@@ -1,8 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { RoomService } from '../../services/room.service';
+import { HotelsService } from '../../services/hotels.service';
+import { Hotel } from '../../models/hotels.model';
 
 // Interface cho dữ liệu từ API
 interface RoomResponse {
@@ -39,7 +42,7 @@ interface RoomDisplay {
   templateUrl: './home.component.html',
   styleUrl: './home.component.css'
 })
-export class HomeComponent {
+export class HomeComponent implements OnInit{
   searchParams = {
     checkIn: '',
     checkOut: '',
@@ -47,10 +50,14 @@ export class HomeComponent {
   };
 
   searchResults: RoomDisplay[] = [];
+  roomTypes: any[] = [];
+  hotel: Hotel | null = null;
 
   constructor(
     private http: HttpClient,
-    private router: Router
+    private router: Router,
+    private roomService: RoomService,
+    private hotelsService: HotelsService
   ) {}
 
   // Hàm chuyển đổi loại phòng sang số người
@@ -109,6 +116,37 @@ export class HomeComponent {
       console.error('Error formatting date:', error);
       return '';
     }
+  }
+
+  ngOnInit(): void {
+    this.loadRooms();
+    this.loadHotel();
+  }
+
+  // Hàm lấy danh sách phòng từ backend
+  loadRooms(): void {
+    this.roomService.getRoomTypes().subscribe({
+      next: (data) => {
+        this.roomTypes = data;
+      },
+      error: (error) => {
+        console.error('Error fetching room data:', error);
+        alert('Không thể tải danh sách phòng. Vui lòng thử lại sau.');
+      }
+    });
+  }
+
+  loadHotel(): void {
+    this.hotelsService.getHotels().subscribe({
+      next: (data) => {
+        if (data && data.result && data.result.length > 0) {
+          this.hotel = data.result[0]; // Lấy khách sạn đầu tiên từ API
+        }
+      },
+      error: (error) => {
+        console.error('Error fetching hotel data:', error);
+      }
+    });
   }
 
   searchRooms(): void {

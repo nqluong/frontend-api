@@ -6,7 +6,7 @@
         <i class="fa-sharp fa-solid fa-star-sharp"></i>
         <i class="fa-sharp fa-solid fa-star-sharp"></i>
         <i class="fa-sharp fa-solid fa-star-sharp"></i>
-        <h1 class="title">Book Your Dream Hotel </h1>
+        <h1 class="title">Đặt phòng khách sạn mơ ước của bạn</h1>
       </div>
     </div>
   </section>
@@ -95,7 +95,7 @@
   <!-- End Service section -->
   
   <!-- About Section -->
-  <section class="about-section-two pt-0">
+  <section class="about-section-two pt-0" *ngIf="hotel">
     <div class="anim-icons">
       <img class="image-1" src="assets/customer/images/icons/icon-home1.png" alt="">
     </div>
@@ -105,33 +105,29 @@
         <div class="content-column col-lg-7 wow fadeInRight" data-wow-delay="600ms">
           <div class="inner-column">
             <div class="sec-title">
-              <span class="sub-title style-three">LUXURY HOTELer</span>
-              <h2>We Provide Outdoor <br />Activities To All Visitors</h2>
-              <div class="text">San Francisco has hills with views, the coast, excellent food & has been voted the
-                happiest, healthiest and fittest city in the States many times.</div>
+              <span class="sub-title style-three">{{hotel.name }}</span>
+              <h2>Chúng tôi cung cấp <br />các hoạt động ngoài trời cho tất cả du khách</h2>
+              <div class="text">Trải nghiệm Hà Nội – thủ đô nghìn năm văn hiến với những con phố cổ kính, hồ Hoàn Kiếm thơ mộng và nét ẩm thực độc đáo. Thưởng thức phở bò, bún chả trong tiết trời se lạnh và tìm cho mình một khách sạn hay homestay ấm cúng tại trung tâm Hà Nội với view phố phường sôi động và nhịp sống thủ đô.</div>
             </div>
             <div class="outer-box">
               <div class="info-block">
                 <div class="inner">
                   <div class="icon-box"><i class="flaticon-light"></i></div>
-                  <h4 class="title">The Best <br />Lighting</h4>
+                  <h4 class="title">Ánh sáng <br />tốt nhất</h4>
                 </div>
               </div>
               <div class="info-block">
                 <div class="inner">
                   <div class="icon-box"><i class="flaticon-pool"></i></div>
-                  <h4 class="title">The Best <br />Swiming</h4>
+                  <h4 class="title">Bơi lội <br />tốt nhất</h4>
                 </div>
               </div>
             </div>
             <ul class="list-style-two">
-              <li><i class="icon fa fa-circle-check"></i>It is a long fact that a reader will be distracted by the
-                readable</li>
-              <li><i class="icon fa fa-circle-check"></i>Lorem Ipsum is simply dummy of the printing and industry</li>
-              <li><i class="icon fa fa-circle-check"></i>There are many variations of Lorem Ipsum majority</li>
-            </ul>
+              <li><i class="icon fa fa-circle-check"></i>{{ hotel.moTa}}</li>
+              </ul>
             <div class="btn-box">
-              <a href="page-about.html" class="theme-btn btn-style-one"><span class="btn-title">Discover More</span></a>
+              <a href="page-about.html" class="theme-btn btn-style-one"><span class="btn-title">Khám phá thêm</span></a>
             </div>
           </div>
         </div>
@@ -149,91 +145,57 @@
     </div>
   </section>
   <!--Emd About Section -->
-  
+
   <!-- Room-section two -->
-  <section class="room-service-section pt-120 pb-60">
-    <div class="auto-container">
-      <div class="sec-title text-center">
-        <span class="sub-title">CUSTOMER SERVICES</span>
-        <h2>Book your stay and <br />relax in luxury</h2>
+<section class="room-service-section pt-120 pb-60">
+  <div class="auto-container">
+    <div class="sec-title text-center">
+      <span class="sub-title">Loại phòng</span>
+      <h2>Đặt phòng và <br />thư giãn trong sự sang trọng</h2>
+    </div>
+    <div class="row">
+      <!-- Hiển thị danh sách phòng -->
+      <div
+        *ngFor="let room of roomTypes"
+        class="room-service-block-one col-lg-4 col-sm-6 wow fadeInUp"
+      >
+        <div class="inner-box">
+          <div class="image-box">
+            <figure class="image mb-0">
+              <a href="room-details.html">
+                <img [src]="'assets/customer/images/resource/room-service1-1.jpg'" alt="Room Image" />
+              </a>
+            </figure>
+          </div>
+          <div class="content-box">
+            <div class="inner-box">
+              <h4 class="title">
+                <a href="room-details.html">{{ room.loaiPhong }} {{ room.tenPhong }}</a>
+              </h4>
+              <div class="price">{{ room.gia | currency:'VND' }}/ Night</div>
+            </div>
+            <div class="facilities-box align-items-center d-flex justify-content-between">
+              <ul class="facilities-list">
+                <li><i class="fal fa-circle-user me-2"></i> {{ room.tinhTrang }}</li>
+                <li><i class="fal fa-bed me-2"></i> {{ room.loaiPhong }}</li>
+              </ul>
+              <ul class="facilities-list">
+                <li *ngFor="let facility of room.tienNghiDiKem.split(',')">
+                  <i class="fal fa-check-circle me-2"></i> {{ facility.trim() }}
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="row">
-        <!-- News Block -->
-        <div class="room-service-block-one col-lg-4 col-sm-6 wow fadeInUp">
-          <div class="inner-box">
-            <div class="image-box">
-              <figure class="image mb-0"><a href="room-details.html"><img src="assets/customer/images/resource/room-service1-1.jpg" alt=""></a></figure>
-            </div>
-            <div class="content-box">
-              <div class="inner-box">
-                <h4 class="title"><a href="room-details.html">Junior Suite</a></h4>
-                <div class="price">$150/ Night</div>
-              </div>
-              <div class="facilities-box align-items-center d-flex justify-content-between">
-                <ul class="facilities-list">
-                  <li><i class="fal fa-circle-user me-2"></i> 1-2 Persons</li>
-                  <li><i class="fal fa-bed me-2"></i> King Size Bed</li>
-                </ul>
-                <ul class="facilities-list">
-                  <li><i class="fal fa-bath me-2"></i> Bathtub</li>
-                  <li><i class="fal fa-wifi me-2"></i> Free Wifi</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
-        <!-- News Block -->
-        <div class="room-service-block-one col-lg-4 col-sm-6 wow fadeInUp" data-wow-delay="300ms">
-          <div class="inner-box">
-            <div class="image-box">
-              <figure class="image mb-0"><a href="room-details.html"><img src="assets/customer/images/resource/room-service1-2.jpg" alt=""></a></figure>
-            </div>
-            <div class="content-box">
-              <div class="inner-box">
-                <h4 class="title"><a href="room-details.html">Family Suite</a></h4>
-                <div class="price">$250/ Night</div>
-              </div>
-              <div class="facilities-box align-items-center d-flex justify-content-between">
-                <ul class="facilities-list">
-                  <li><i class="fal fa-circle-user me-2"></i> 1-2 Persons</li>
-                  <li><i class="fal fa-bed me-2"></i> King Size Bed</li>
-                </ul>
-                <ul class="facilities-list">
-                  <li><i class="fal fa-bath me-2"></i> Bathtub</li>
-                  <li><i class="fal fa-wifi me-2"></i> Free Wifi</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
-        <!-- News Block -->
-        <div class="room-service-block-one col-lg-4 col-sm-6 wow fadeInUp" data-wow-delay="600ms">
-          <div class="inner-box">
-            <div class="image-box">
-              <figure class="image mb-0"><a href="room-details.html"><img src="assets/customer/images/resource/room-service1-3.jpg" alt=""></a></figure>
-            </div>
-            <div class="content-box">
-              <div class="inner-box">
-                <h4 class="title"><a href="room-details.html">Business Suite</a></h4>
-                <div class="price">$550/ Night</div>
-              </div>
-              <div class="facilities-box align-items-center d-flex justify-content-between">
-                <ul class="facilities-list">
-                  <li><i class="fal fa-circle-user me-2"></i> 1-2 Persons</li>
-                  <li><i class="fal fa-bed me-2"></i> King Size Bed</li>
-                </ul>
-                <ul class="facilities-list">
-                  <li><i class="fal fa-bath me-2"></i> Bathtub</li>
-                  <li><i class="fal fa-wifi me-2"></i> Free Wifi</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
+      <!-- Hiển thị thông báo nếu không có phòng -->
+      <div *ngIf="roomTypes.length === 0" class="text-center col-12">
+        <p>No rooms available at the moment.</p>
       </div>
     </div>
-  </section>
-  <!-- End Room section -->
+  </div>
+</section>
+<!-- End Room section -->
   
   <!-- Testimonial Section Two -->
   <section class="testimonial-section-two pt-0">
@@ -250,11 +212,11 @@
               <div class="testimonial-block-two swiper-slide">
                 <div class="inner-box">
                   <div class="quote-icon"><img class="icon-img" src="assets/customer/images/icons/testi-shape1.png" alt=""></div>
-                  <div class="text">Staying at Hoteler was an unforgettable experience. The staff went above and beyond
-                    to ensure our comfort and satisfaction. The room was immaculate, with breath-taking views </div>
+                  <div class="text">Nghỉ tại Hoteler là một trải nghiệm khó quên. Đội ngũ nhân viên đã nỗ lực hết mình
+                    để đảm bảo sự thoải mái và hài lòng của chúng tôi. Phòng sạch sẽ, với tầm nhìn ngoạn mục </div>
                   <div class="info-box">
                     <h5 class="name">Jenny Wilson</h5>
-                    <span class="designation">Business Owner</span>
+                    <span class="designation">Chủ doanh nghiệp</span>
                   </div>
                 </div>
               </div>
@@ -262,11 +224,11 @@
               <div class="testimonial-block-two swiper-slide">
                 <div class="inner-box">
                   <div class="quote-icon"><img class="icon-img" src="assets/customer/images/icons/testi-shape1.png" alt=""></div>
-                  <div class="text">Staying at Hoteler was an unforgettable experience. The staff went above and beyond
-                    to ensure our comfort and satisfaction. The room was immaculate, with breath-taking views </div>
+                  <div class="text">Nghỉ tại Hoteler là một trải nghiệm khó quên. Đội ngũ nhân viên đã nỗ lực hết mình
+                    để đảm bảo sự thoải mái và hài lòng của chúng tôi. Phòng sạch sẽ, với tầm nhìn ngoạn mục </div>
                   <div class="info-box">
                     <h5 class="name">Marvin McKinney</h5>
-                    <span class="designation">President of Sales</span>
+                    <span class="designation">Chủ tịch bán hàng</span>
                   </div>
                 </div>
               </div>
@@ -274,11 +236,11 @@
               <div class="testimonial-block-two swiper-slide">
                 <div class="inner-box">
                   <div class="quote-icon"><img class="icon-img" src="assets/customer/images/icons/testi-shape1.png" alt=""></div>
-                  <div class="text">Staying at Hoteler was an unforgettable experience. The staff went above and beyond
-                    to ensure our comfort and satisfaction. The room was immaculate, with breath-taking views </div>
+                  <div class="text">Nghỉ tại Hoteler là một trải nghiệm khó quên. Đội ngũ nhân viên đã nỗ lực hết mình
+                    để đảm bảo sự thoải mái và hài lòng của chúng tôi. Phòng sạch sẽ, với tầm nhìn ngoạn mục </div>
                   <div class="info-box">
                     <h5 class="name">Jenny Wilson</h5>
-                    <span class="designation">Business Owner</span>
+                    <span class="designation">Chủ doanh nghiệp</span>
                   </div>
                 </div>
               </div>
@@ -437,8 +399,8 @@
     </div>
     <div class="auto-container">
       <div class="sec-title text-center wow fadeInUp">
-        <span class="sub-title">TEAM MEMBER</span>
-        <h2>Check Out Our Expert <br />Hoteler Members</h2>
+        <span class="sub-title">THÀNH VIÊN NHÓM</span>
+        <h2>Kiểm tra <br />các thành viên chuyên gia khách sạn của chúng tôi</h2>
       </div>
       <div class="row">
         <!-- Team block -->
@@ -587,8 +549,8 @@
               <div class="contact-form wow fadeInLeft">
                 <div class="icon-anchor-1 bounce-y"></div>
                 <div class="sec-title">
-                  <span class="sub-title style-three">Contact Us</span>
-                  <h2>Get in Touch</h2>
+                  <span class="sub-title style-three">Liên hệ với chúng tôi</span>
+                  <h2>Liên hệ</h2>
                 </div>
   
                 <!--Contact Form-->
@@ -596,37 +558,37 @@
                   <div class="row">
   
                     <div class="form-group col-lg-6 col-md-6">
-                      <input type="text" name="name" placeholder="Your Name" required>
+                      <input type="text" name="name" placeholder="Tên của bạn" required>
                     </div>
                     <div class="form-group col-lg-6 col-md-6">
-                      <input type="email" name="email" placeholder="Email Address" required>
+                      <input type="email" name="email" placeholder="Địa chỉ Email" required>
                     </div>
                     <div class="form-group col-lg-6 col-md-6">
-                      <input type="tex" name="phone" placeholder="Check In" required>
+                      <input type="tex" name="phone" placeholder="Ngày vào" required>
                     </div>
                     <div class="form-group col-lg-6 col-md-6">
-                      <input type="text" name="subject" placeholder="Check Out" required>
+                      <input type="text" name="subject" placeholder="Ngày ra" required>
                     </div>
                     <div class="form-group col-lg-12">
-                      <textarea name="textarea" placeholder="Write a Message" rows="2"></textarea>
+                      <textarea name="textarea" placeholder="Nội dung" rows="2"></textarea>
                     </div>
                     <div class="form-group col-lg-12">
                       <button type="submit" class="theme-btn btn-style-one bg-dark" name="submit-form"><span
-                          class="btn-title">Check Availability</span></button>
+                          class="btn-title">Gửi</span></button>
                     </div>
                   </div>
                 </form>
               </div>
               <!--End Contact Form -->
   
-              <div class="contact-block">
+              <div class="contact-block" *ngIf="hotel">
                 <div class="inner-box">
                   <figure class="image icon-contact1"><img src="assets/customer/images/icons/icon-call-2.png" alt="Image">
                   </figure>
                   <div class="content-box">
                     <figure class="icon-img"><img src="assets/customer/images/icons/icon-call-1.png" alt=""></figure>
-                    <span class="text">Call us for any inquiry</span>
-                    <a class="text-two" href="tel:+8801750050088">(801) 500 50 088</a>
+                    <span class="text">Hãy gọi cho chúng tôi để được giải đáp bất kỳ thắc mắc nào</span>
+                    <a class="text-two">{{hotel.sdt}}</a>
                   </div>
                 </div>
               </div>
