@@ -106,26 +106,14 @@ export class CheckoutComponent implements OnInit {
     
     this.isSubmittingInfo = true;
     
-    // Lưu thông tin khách hàng vào localStorage
+    // Chỉ lưu thông tin khách hàng vào localStorage, không gửi lên server
     if (this.isBrowser) {
       this.customerService.storeCustomerInfo(this.bookingId, this.customerInfo);
+      console.log('Đã lưu thông tin khách hàng vào localStorage, sẽ gửi lên server sau khi thanh toán thành công');
     }
     
-    // Gửi thông tin khách hàng lên server
-    this.customerService.submitCustomerInfo(this.bookingId, this.customerInfo)
-      .subscribe({
-        next: (response) => {
-          console.log('Customer info submitted successfully:', response);
-          // Tiếp tục đến bước thanh toán
-          this.loadPaymentDetails();
-        },
-        error: (error) => {
-          console.error('Error submitting customer info:', error);
-          alert('Có lỗi xảy ra khi gửi thông tin cá nhân: ' + 
-            (error.message || 'Vui lòng thử lại sau.'));
-          this.isSubmittingInfo = false;
-        }
-      });
+    // Chuyển ngay đến bước thanh toán
+    this.loadPaymentDetails();
   }
   
   // Tải thông tin thanh toán
@@ -205,6 +193,9 @@ export class CheckoutComponent implements OnInit {
     
     this.isCreatingPayment = true;
     
+    // Hiển thị thông báo cho người dùng
+    console.log('Tạo yêu cầu thanh toán với mã đặt phòng:', this.bookingId);
+    
     this.paymentService.createPayment(this.bookingId)
       .subscribe({
         next: (response) => {
@@ -217,16 +208,25 @@ export class CheckoutComponent implements OnInit {
               // Lưu bookingId vào localStorage để sử dụng sau khi thanh toán
               const bookingIdValue = this.bookingId as number; // Type assertion để tránh lỗi null
               this.bookingService.saveBookingId(bookingIdValue);
+              
+              // Thông báo chuyển hướng
+              console.log('Chuyển hướng đến cổng thanh toán VNPay...');
+              
               // Chuyển hướng đến URL thanh toán
               window.location.href = response.paymentUrl;
             }
           } else if (response && response.result && response.result.paymentUrl) {
             // Trường hợp API trả về trong cấu trúc result
-            // Lưu paymentId vào localStorage nếu có
+            // Lưu paymentId và bookingId vào localStorage nếu có
             if (this.isBrowser) {
               if (response.result.paymentId) {
                 localStorage.setItem('currentPaymentId', response.result.paymentId);
               }
+              
+              // Lưu bookingId vào localStorage để sử dụng sau khi thanh toán
+              const bookingIdValue = this.bookingId as number;
+              this.bookingService.saveBookingId(bookingIdValue);
+              
               // Chuyển hướng đến URL thanh toán
               window.location.href = response.result.paymentUrl;
             }

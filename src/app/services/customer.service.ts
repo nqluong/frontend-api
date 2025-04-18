@@ -23,25 +23,20 @@ export class CustomerService {
   
   // Phương thức mới để chuẩn bị dữ liệu khách hàng
   prepareCustomerData(customerInfo: CustomerInfo): CustomerData {
-    // Chuẩn bị dữ liệu gửi đi
-    const customerData: CustomerData = {
-      khachHang: {
-        hoTen: customerInfo.fullName,
-        ngaySinh: customerInfo.dateOfBirth,
-        gioiTinh: customerInfo.gender,
-        email: customerInfo.email,
-        sdt: customerInfo.phone
-      },
+    // Chuẩn bị dữ liệu cơ bản
+    const customerData: any = {
+      hoTen: customerInfo.fullName,
+      ngaySinh: customerInfo.dateOfBirth,
+      gioiTinh: customerInfo.gender,
+      email: customerInfo.email,
+      sdt: customerInfo.phone,
       taoTaiKhoan: customerInfo.createAccount
     };
 
     // Nếu tạo tài khoản, thêm thông tin tài khoản
     if (customerInfo.createAccount) {
-      customerData.taiKhoan = {
-        username: customerInfo.username,
-        password: customerInfo.password,
-        email: customerInfo.email
-      };
+      customerData.username = customerInfo.username;
+      customerData.password = customerInfo.password;
     }
     
     return customerData;
@@ -70,31 +65,26 @@ export class CustomerService {
     localStorage.removeItem(this.customerStorageKey);
   }
 
-  validateCustomerInfo(info: CustomerInfo): boolean {
-    if (!info.fullName || 
-        !info.dateOfBirth || 
-        !info.email || 
-        !info.phone) {
-      return false;
-    }
+  // Kiểm tra tính hợp lệ của thông tin khách hàng
+  validateCustomerInfo(customerInfo: CustomerInfo): boolean {
+    // Kiểm tra các trường bắt buộc
+    if (!customerInfo.fullName || !customerInfo.fullName.trim()) return false;
+    if (!customerInfo.dateOfBirth) return false;
+    if (!customerInfo.email || !customerInfo.email.trim()) return false;
+    if (!customerInfo.phone || !customerInfo.phone.trim()) return false;
     
     // Kiểm tra email hợp lệ
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(info.email)) {
-      return false;
-    }
+    if (!emailRegex.test(customerInfo.email)) return false;
     
     // Kiểm tra số điện thoại hợp lệ
     const phoneRegex = /^[0-9]{10,11}$/;
-    if (!phoneRegex.test(info.phone)) {
-      return false;
-    }
+    if (!phoneRegex.test(customerInfo.phone)) return false;
     
-    // Kiểm tra nếu tạo tài khoản thì username và password phải có
-    if (info.createAccount) {
-      if (!info.username || !info.password || info.password.length < 6) {
-        return false;
-      }
+    // Kiểm tra thông tin tài khoản nếu người dùng chọn tạo tài khoản
+    if (customerInfo.createAccount) {
+      if (!customerInfo.username || !customerInfo.username.trim()) return false;
+      if (!customerInfo.password || customerInfo.password.length < 6) return false;
     }
     
     return true;

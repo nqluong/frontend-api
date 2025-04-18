@@ -46,21 +46,18 @@ export class PaymentService {
   }
 
   createPayment(bookingId: number): Observable<any> {
-    // Tạo returnUrl từ URL hiện tại
-    let returnUrl = '';
-    if (typeof window !== 'undefined') {
-      const baseUrl = window.location.origin;
-      returnUrl = `${baseUrl}/payment-result`;
-    } else {
-      returnUrl = 'http://localhost:4200/payment-result';
-    }
+    // Tạo returnUrl từ URL hiện tại với origin để có URL đầy đủ
+    let returnUrl = window.location.origin + '/customer/payment-result';
     
-    // Cập nhật tham số theo yêu cầu API
+    // Lấy IP của người dùng (trong trường hợp này là localhost)
+    let ipAddress = '127.0.0.1';
+    
+    // Chuẩn bị dữ liệu thanh toán
     const paymentData = {
       maDatPhong: bookingId,
       ghiChu: "Thanh toán đặt phòng",
-      ipAddress: "127.0.0.1",  // Hoặc lấy IP thực của người dùng nếu cần
-      returnUrl: returnUrl     // Thêm returnUrl để backend lưu vào transactionId
+      ipAddress: ipAddress,
+      returnUrl: returnUrl     // URL quay về sau khi thanh toán
     };
     
     console.log('Creating payment with data:', paymentData);

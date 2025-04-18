@@ -2,6 +2,8 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { BookingResponse } from '../models/booking.model';
+import { map, catchError } from 'rxjs/operators';
+import { throwError } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -49,5 +51,37 @@ export class BookingService {
   
   clearPaymentId(): void {
     localStorage.removeItem('currentPaymentId');
+  }
+
+  // Finalize a booking after successful payment
+  finalizeBooking(bookingId: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/bookings/${bookingId}/finalize`, {})
+      .pipe(
+        map(response => {
+          console.log('Booking finalized successfully:', response);
+          return response;
+        }),
+        catchError(error => {
+          console.error('Error finalizing booking:', error);
+          return throwError(() => new Error('Không thể hoàn tất đặt phòng. Chi tiết lỗi: ' + 
+            (error.error?.message || error.message || 'Lỗi không xác định')));
+        })
+      );
+  }
+
+  // Get booking success information with customer details
+  getBookingSuccessInfo(bookingId: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/bookings/${bookingId}/success`)
+      .pipe(
+        map(response => {
+          console.log('Booking success info loaded:', response);
+          return response;
+        }),
+        catchError(error => {
+          console.error('Error loading booking success info:', error);
+          return throwError(() => new Error('Không thể tải thông tin đặt phòng. Chi tiết lỗi: ' + 
+            (error.error?.message || error.message || 'Lỗi không xác định')));
+        })
+      );
   }
 } 

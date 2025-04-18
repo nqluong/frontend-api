@@ -62,6 +62,9 @@
                     <div class="form-header">
                         <h3>Thông Tin Cá Nhân</h3>
                         <p>Vui lòng điền đầy đủ thông tin để hoàn tất đặt phòng</p>
+                        <div class="alert alert-info mt-3">
+                            <small>Thông tin của bạn sẽ được lưu tạm thời và chỉ được gửi lên hệ thống sau khi thanh toán thành công.</small>
+                        </div>
                     </div>
                     <form (ngSubmit)="submitCustomerInfo()">
                         <div class="row">
@@ -240,6 +243,9 @@
                         </div>
                         
                         <div class="payment-actions text-center mt-5">
+                            <div class="payment-notice mb-3">
+                                <small class="text-muted">Khi bấm "Thanh toán ngay", bạn sẽ được chuyển đến trang thanh toán VNPay và sau đó trở lại trang kết quả.</small>
+                            </div>
                             <button class="theme-btn btn-style-one me-3" (click)="createPayment()" [disabled]="isCreatingPayment">
                                 <span class="btn-title" *ngIf="!isCreatingPayment">Thanh toán ngay</span>
                                 <span class="btn-title" *ngIf="isCreatingPayment">Đang xử lý...</span>
