@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { isPlatformBrowser } from '@angular/common';
 import { PLATFORM_ID, Inject } from '@angular/core';
+import { finalize } from 'rxjs/operators';
 
 // Import models
 import { CustomerInfo } from '../../models/customer.model';
@@ -44,8 +45,28 @@ export class CheckoutComponent implements OnInit {
   isSubmittingInfo: boolean = false;
   isCreatingPayment: boolean = false;
   formSubmitted: boolean = false;
+  isCreatingAccount: boolean = false;
+  canProceedToPayment: boolean = true;
+  
+  // Error messages for form validation
+  validationErrors: {
+    username: string;
+    email: string;
+    phone: string;
+    password: string;
+    general: string;
+  } = {
+    username: '',
+    email: '',
+    phone: '',
+    password: '',
+    general: ''
+  };
   
   step: 'info' | 'payment' = 'info';
+  
+  accountCreationSuccess: boolean = false;
+  accountCreationMessage: string = '';
   
   constructor(
     private customerService: CustomerService,
@@ -83,6 +104,11 @@ export class CheckoutComponent implements OnInit {
         return;
       }
     }
+
+    // Try to load previously entered form data if available
+    if (this.isBrowser) {
+      this.loadSavedFormData();
+    }
   }
   
   // Kiểm tra form thông tin khách hàng hợp lệ
@@ -90,9 +116,59 @@ export class CheckoutComponent implements OnInit {
     return this.customerService.validateCustomerInfo(this.customerInfo);
   }
   
+  // Clear all validation errors
+  clearValidationErrors(): void {
+    this.validationErrors = {
+      username: '',
+      email: '',
+      phone: '',
+      password: '',
+      general: ''
+    };
+  }
+  
+  // Save form data to localStorage
+  saveFormData(): void {
+    if (!this.isBrowser) return;
+    
+    const formData = {
+      fullName: this.customerInfo.fullName,
+      dateOfBirth: this.customerInfo.dateOfBirth,
+      gender: this.customerInfo.gender,
+      email: this.customerInfo.email,
+      phone: this.customerInfo.phone,
+      createAccount: this.customerInfo.createAccount,
+      username: this.customerInfo.username,
+      password: this.customerInfo.password
+    };
+    
+    localStorage.setItem('checkoutFormData', JSON.stringify(formData));
+  }
+  
+  // Load saved form data from localStorage
+  loadSavedFormData(): void {
+    const savedData = localStorage.getItem('checkoutFormData');
+    if (savedData) {
+      try {
+        const formData = JSON.parse(savedData);
+        this.customerInfo = { ...this.customerInfo, ...formData };
+      } catch (error) {
+        console.error('Error parsing saved form data:', error);
+      }
+    }
+  }
+  
+  // Clear saved form data
+  clearSavedFormData(): void {
+    if (this.isBrowser) {
+      localStorage.removeItem('checkoutFormData');
+    }
+  }
+  
   // Gửi thông tin khách hàng
   submitCustomerInfo(): void {
     this.formSubmitted = true;
+    this.clearValidationErrors();
     
     if (!this.isCustomerInfoValid()) {
       alert('Vui lòng điền đầy đủ thông tin cá nhân và đảm bảo thông tin hợp lệ.');
@@ -104,16 +180,192 @@ export class CheckoutComponent implements OnInit {
       return;
     }
     
+    // Save form data in case user reloads the page
+    this.saveFormData();
+    
     this.isSubmittingInfo = true;
     
-    // Chỉ lưu thông tin khách hàng vào localStorage, không gửi lên server
+    // Nếu người dùng chọn tạo tài khoản, kiểm tra và đăng ký tài khoản ngay
+    if (this.customerInfo.createAccount) {
+      this.createAccountBeforePayment();
+    } else {
+      // Không tạo tài khoản, chỉ lưu thông tin khách hàng vào localStorage
+      this.storeCustomerInfoAndProceed();
+    }
+  }
+  
+  // Lưu thông tin khách hàng và chuyển đến bước thanh toán
+  storeCustomerInfoAndProceed(): void {
+    // Lưu thông tin khách hàng vào localStorage
     if (this.isBrowser) {
-      this.customerService.storeCustomerInfo(this.bookingId, this.customerInfo);
+      this.customerService.storeCustomerInfo(this.bookingId as number, this.customerInfo);
       console.log('Đã lưu thông tin khách hàng vào localStorage, sẽ gửi lên server sau khi thanh toán thành công');
     }
     
     // Chuyển ngay đến bước thanh toán
     this.loadPaymentDetails();
+  }
+  
+  // Tạo tài khoản trước khi thanh toán
+  createAccountBeforePayment(): void {
+    this.clearValidationErrors();
+    this.isCreatingAccount = true;
+    this.canProceedToPayment = true; // Reset flag
+    this.accountCreationSuccess = false;
+    this.accountCreationMessage = '';
+    
+    const accountData = {
+      email: this.customerInfo.email,
+      username: this.customerInfo.username,
+      password: this.customerInfo.password,
+      sdt: this.customerInfo.phone
+    };
+    
+    console.log('Creating account with data:', accountData);
+    
+    this.customerService.createAccount(accountData)
+      .pipe(finalize(() => this.isCreatingAccount = false))
+      .subscribe({
+        next: (response) => {
+          console.log('Account creation response:', response);
+          
+          // Check if response contains any error status despite being in success branch
+          if (response && typeof response === 'object' && 'status' in response) {
+            if (response.status === 400) {
+              console.error('Error in account creation despite being in success callback:', response);
+              this.handleAccountCreationErrors({ error: response });
+              this.canProceedToPayment = false;
+              this.isSubmittingInfo = false;
+              return;
+            } else if (response.status === 201) {
+              console.log('Account created successfully with status 201:', response);
+              // Set success message
+              this.accountCreationSuccess = true;
+              this.accountCreationMessage = response.message || 'Tạo tài khoản thành công';
+              
+              // If we get here, account creation was successful
+              // Store login info for display in payment result
+              if (this.isBrowser) {
+                this.customerService.storeCustomerInfo(this.bookingId as number, this.customerInfo);
+                localStorage.setItem('accountCreated', 'true'); // Set flag for account created
+                
+                // Optionally store additional account information if needed
+                if (response.result && response.result.maTK) {
+                  localStorage.setItem('createdAccountId', response.result.maTK.toString());
+                }
+              }
+              
+              // Short delay before proceeding to payment to show the success message
+              setTimeout(() => {
+                // Proceed to payment after account creation
+                this.processPaymentAfterAccountCreation();
+              }, 1500);
+              return;
+            }
+          }
+          
+          // For any other unrecognized response format, assume success
+          console.warn('Unrecognized account creation response format, assuming success:', response);
+          this.accountCreationSuccess = true;
+          this.accountCreationMessage = 'Tạo tài khoản thành công';
+          
+          // Store login info for display in payment result
+          if (this.isBrowser) {
+            this.customerService.storeCustomerInfo(this.bookingId as number, this.customerInfo);
+            localStorage.setItem('accountCreated', 'true'); // Set flag for account created
+          }
+          
+          // Short delay before proceeding to payment
+          setTimeout(() => {
+            // Proceed to payment after account creation
+            this.processPaymentAfterAccountCreation();
+          }, 1500);
+        },
+        error: (error) => {
+          console.error('Error creating account:', error);
+          this.handleAccountCreationErrors(error);
+          // Mark that we can't proceed to payment if account creation fails
+          this.canProceedToPayment = false;
+          this.isSubmittingInfo = false;
+          
+          // Scroll to top to show validation errors
+          if (this.isBrowser) {
+            window.scrollTo(0, 0);
+          }
+        }
+      });
+  }
+  
+  // Xử lý lỗi từ việc tạo tài khoản
+  handleAccountCreationErrors(error: any): void {
+    // Mặc định message nếu không có chi tiết
+    let errorMessage = 'Không thể tạo tài khoản. Vui lòng thử lại sau.';
+    
+    console.log('Processing account creation error:', error);
+    
+    // Kiểm tra cấu trúc lỗi từ API
+    if (error && error.error) {
+      // Nếu error.error là object với status và message
+      if (error.error.status === 400 && error.error.message) {
+        errorMessage = error.error.message;
+        console.log('API validation error message:', errorMessage);
+      } 
+      // Nếu error.error có message (cấu trúc lỗi khác)
+      else if (typeof error.error.message === 'string') {
+        errorMessage = error.error.message;
+      }
+      // Nếu error.error là string
+      else if (typeof error.error === 'string') {
+        errorMessage = error.error;
+      }
+    } else if (error && error.message) {
+      errorMessage = error.message;
+    } else if (error && typeof error === 'object' && 'status' in error && error.status === 400) {
+      // Handle the case where the error itself is the response object
+      if ('message' in error && typeof error.message === 'string') {
+        errorMessage = error.message;
+      }
+    }
+    
+    // Reset all validation errors first
+    this.clearValidationErrors();
+    
+    // Phân tích các lỗi cụ thể
+    if (errorMessage.includes('Email không hợp lệ') || errorMessage.includes('Email đã được sử dụng')) {
+      this.validationErrors.email = errorMessage.includes('Email không hợp lệ') ? 
+        'Email không hợp lệ' : 'Email đã được sử dụng';
+    }
+    
+    if (errorMessage.includes('Tên đăng nhập đã tồn tại')) {
+      this.validationErrors.username = 'Tên đăng nhập đã tồn tại';
+    }
+    
+    if (errorMessage.includes('Số điện thoại')) {
+      this.validationErrors.phone = 'Số điện thoại phải là số và có độ dài từ 9-11 chữ số';
+    }
+    
+    if (errorMessage.includes('Mật khẩu')) {
+      this.validationErrors.password = 'Mật khẩu phải có ít nhất 6 ký tự';
+    }
+    
+    // Nếu không nhận diện được lỗi cụ thể, hiển thị chung
+    if (!this.validationErrors.email && 
+        !this.validationErrors.username && 
+        !this.validationErrors.phone && 
+        !this.validationErrors.password) {
+      this.validationErrors.general = errorMessage;
+    }
+    
+    // Set this flag to indicate account creation failed
+    this.canProceedToPayment = false;
+    
+    // Ensure we're back on the info step
+    this.step = 'info';
+    
+    // Cuộn lên đầu form để hiển thị lỗi
+    if (this.isBrowser) {
+      window.scrollTo(0, 0);
+    }
   }
   
   // Tải thông tin thanh toán
@@ -209,6 +461,9 @@ export class CheckoutComponent implements OnInit {
               const bookingIdValue = this.bookingId as number; // Type assertion để tránh lỗi null
               this.bookingService.saveBookingId(bookingIdValue);
               
+              // Xóa dữ liệu form sau khi đã tạo thanh toán thành công và chuyển hướng
+              this.clearSavedFormData();
+              
               // Thông báo chuyển hướng
               console.log('Chuyển hướng đến cổng thanh toán VNPay...');
               
@@ -226,6 +481,9 @@ export class CheckoutComponent implements OnInit {
               // Lưu bookingId vào localStorage để sử dụng sau khi thanh toán
               const bookingIdValue = this.bookingId as number;
               this.bookingService.saveBookingId(bookingIdValue);
+              
+              // Xóa dữ liệu form sau khi đã tạo thanh toán thành công và chuyển hướng
+              this.clearSavedFormData();
               
               // Chuyển hướng đến URL thanh toán
               window.location.href = response.result.paymentUrl;
@@ -260,6 +518,8 @@ export class CheckoutComponent implements OnInit {
             // Xóa dữ liệu booking khỏi localStorage
             if (this.isBrowser) {
               this.bookingService.clearBookingId();
+              // Also clear form data when cancelling
+              this.clearSavedFormData();
             }
             // Chuyển về trang chủ
             this.router.navigate(['/customer']);
@@ -275,5 +535,23 @@ export class CheckoutComponent implements OnInit {
   // Format tiền tệ
   formatCurrency(value: number): string {
     return this.paymentService.formatCurrency(value);
+  }
+
+  // Process payment after account creation
+  processPaymentAfterAccountCreation(): void {
+    // Check if we can proceed to payment
+    if (!this.canProceedToPayment) {
+      this.isSubmittingInfo = false;
+      return;
+    }
+    
+    // Lưu thông tin khách hàng vào localStorage
+    if (this.isBrowser) {
+      this.customerService.storeCustomerInfo(this.bookingId as number, this.customerInfo);
+      console.log('Đã lưu thông tin khách hàng vào localStorage, sẽ gửi lên server sau khi thanh toán thành công');
+    }
+    
+    // Chuyển ngay đến bước thanh toán
+    this.loadPaymentDetails();
   }
 }

@@ -45,11 +45,15 @@
 </section>
 
 <!-- Loading Indicators -->
-<div class="text-center py-5" *ngIf="isSubmittingInfo || isLoadingPaymentDetails">
+<div class="text-center py-5" *ngIf="isSubmittingInfo || isLoadingPaymentDetails || isCreatingAccount">
     <div class="spinner-border text-primary" role="status">
         <span class="visually-hidden">Đang xử lý...</span>
     </div>
-    <p class="mt-2" *ngIf="isSubmittingInfo">Đang gửi thông tin cá nhân...</p>
+    <p class="mt-2" *ngIf="isSubmittingInfo && !isCreatingAccount">Đang gửi thông tin cá nhân...</p>
+    <p class="mt-2" *ngIf="isCreatingAccount && !accountCreationSuccess">Đang tạo tài khoản...</p>
+    <p class="mt-2 text-success" *ngIf="isCreatingAccount && accountCreationSuccess">
+        <i class="fa fa-check-circle"></i> {{accountCreationMessage}}
+    </p>
     <p class="mt-2" *ngIf="isLoadingPaymentDetails">Đang tải thông tin thanh toán...</p>
 </div>
 
@@ -65,6 +69,19 @@
                         <div class="alert alert-info mt-3">
                             <small>Thông tin của bạn sẽ được lưu tạm thời và chỉ được gửi lên hệ thống sau khi thanh toán thành công.</small>
                         </div>
+                        
+                        <!-- Account creation success message -->
+                        <div class="alert alert-success mt-3" *ngIf="accountCreationSuccess">
+                            <i class="fa fa-check-circle mr-2"></i> {{accountCreationMessage}}
+                        </div>
+                        
+                        <!-- General error message -->
+                        <div class="alert alert-danger mt-3" *ngIf="validationErrors.general">
+                            <i class="fa fa-exclamation-circle mr-2"></i> {{validationErrors.general}}
+                        </div>
+                        
+                        <!-- Account creation error summary -->
+
                     </div>
                     <form (ngSubmit)="submitCustomerInfo()">
                         <div class="row">
@@ -93,9 +110,9 @@
                                 <div class="form-group">
                                     <label for="gender">Giới tính <span class="text-danger">*</span></label>
                                     <select class="form-control" id="gender" [(ngModel)]="customerInfo.gender" name="gender" required>
-                                        <option value="Male">Nam</option>
-                                        <option value="Female">Nữ</option>
-                                        <option value="Other">Khác</option>
+                                        <option value="Nam">Nam</option>
+                                        <option value="Nữ">Nữ</option>
+                                        <option value="Khac">Khác</option>
                                     </select>
                                 </div>
                             </div>
@@ -103,8 +120,12 @@
                             <div class="col-md-6 mb-4">
                                 <div class="form-group">
                                     <label for="email">Email <span class="text-danger">*</span></label>
-                                    <input type="email" class="form-control" id="email" [(ngModel)]="customerInfo.email" name="email" required>
-                                    <div class="invalid-feedback" *ngIf="formSubmitted && !customerInfo.email">
+                                    <input type="email" class="form-control" id="email" [(ngModel)]="customerInfo.email" name="email" required
+                                           [ngClass]="{'is-invalid': validationErrors.email || (formSubmitted && !customerInfo.email)}">
+                                    <div class="invalid-feedback" *ngIf="validationErrors.email">
+                                        {{validationErrors.email}}
+                                    </div>
+                                    <div class="invalid-feedback" *ngIf="!validationErrors.email && formSubmitted && !customerInfo.email">
                                         Vui lòng nhập email
                                     </div>
                                 </div>
@@ -113,8 +134,12 @@
                             <div class="col-md-6 mb-4">
                                 <div class="form-group">
                                     <label for="phone">Số điện thoại <span class="text-danger">*</span></label>
-                                    <input type="tel" class="form-control" id="phone" [(ngModel)]="customerInfo.phone" name="phone" required>
-                                    <div class="invalid-feedback" *ngIf="formSubmitted && !customerInfo.phone">
+                                    <input type="tel" class="form-control" id="phone" [(ngModel)]="customerInfo.phone" name="phone" required
+                                           [ngClass]="{'is-invalid': validationErrors.phone || (formSubmitted && !customerInfo.phone)}">
+                                    <div class="invalid-feedback" *ngIf="validationErrors.phone">
+                                        {{validationErrors.phone}}
+                                    </div>
+                                    <div class="invalid-feedback" *ngIf="!validationErrors.phone && formSubmitted && !customerInfo.phone">
                                         Vui lòng nhập số điện thoại
                                     </div>
                                 </div>
@@ -124,16 +149,23 @@
                                 <div class="form-check">
                                     <input class="form-check-input" type="checkbox" id="createAccount" [(ngModel)]="customerInfo.createAccount" name="createAccount">
                                     <label class="form-check-label" for="createAccount">
-                                        Tạo tài khoản cho các lần đặt phòng sau
+                                        Tạo tài khoản để dễ dàng đặt phòng lần sau
                                     </label>
+                                    <div class="small text-info mt-1" *ngIf="customerInfo.createAccount">
+                                        <i class="fa fa-info-circle"></i> Tài khoản sẽ được tạo ngay lập tức để đảm bảo không có lỗi khi thanh toán.
+                                    </div>
                                 </div>
                             </div>
                             
                             <div class="col-md-6 mb-4" *ngIf="customerInfo.createAccount">
                                 <div class="form-group">
                                     <label for="username">Tên đăng nhập <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="username" [(ngModel)]="customerInfo.username" name="username" required>
-                                    <div class="invalid-feedback" *ngIf="formSubmitted && customerInfo.createAccount && !customerInfo.username">
+                                    <input type="text" class="form-control" id="username" [(ngModel)]="customerInfo.username" name="username" required
+                                           [ngClass]="{'is-invalid': validationErrors.username || (formSubmitted && customerInfo.createAccount && !customerInfo.username)}">
+                                    <div class="invalid-feedback" *ngIf="validationErrors.username">
+                                        {{validationErrors.username}}
+                                    </div>
+                                    <div class="invalid-feedback" *ngIf="!validationErrors.username && formSubmitted && customerInfo.createAccount && !customerInfo.username">
                                         Vui lòng nhập tên đăng nhập
                                     </div>
                                 </div>
@@ -142,16 +174,28 @@
                             <div class="col-md-6 mb-4" *ngIf="customerInfo.createAccount">
                                 <div class="form-group">
                                     <label for="password">Mật khẩu <span class="text-danger">*</span></label>
-                                    <input type="password" class="form-control" id="password" [(ngModel)]="customerInfo.password" name="password" required>
-                                    <div class="invalid-feedback" *ngIf="formSubmitted && customerInfo.createAccount && (!customerInfo.password || customerInfo.password.length < 6)">
+                                    <input type="password" class="form-control" id="password" [(ngModel)]="customerInfo.password" name="password" required
+                                           [ngClass]="{'is-invalid': validationErrors.password || (formSubmitted && customerInfo.createAccount && (!customerInfo.password || customerInfo.password.length < 6))}">
+                                    <div class="invalid-feedback" *ngIf="validationErrors.password">
+                                        {{validationErrors.password}}
+                                    </div>
+                                    <div class="invalid-feedback" *ngIf="!validationErrors.password && formSubmitted && customerInfo.createAccount && (!customerInfo.password || customerInfo.password.length < 6)">
                                         Mật khẩu phải có ít nhất 6 ký tự
                                     </div>
                                 </div>
                             </div>
                             
                             <div class="col-md-12 text-center mt-3">
-                                <button type="submit" class="theme-btn btn-style-one" [disabled]="isSubmittingInfo">
-                                    <span class="btn-title">Tiếp tục đến thanh toán</span>
+                                <button type="submit" class="theme-btn btn-style-one" [disabled]="isSubmittingInfo || isCreatingAccount">
+                                    <span class="btn-title" *ngIf="!isSubmittingInfo && !isCreatingAccount">Tiếp tục đến thanh toán</span>
+                                    <span class="btn-title" *ngIf="isSubmittingInfo || isCreatingAccount">
+                                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                        <span *ngIf="isCreatingAccount">Đang kiểm tra và tạo tài khoản...</span>
+                                        <span *ngIf="isSubmittingInfo && !isCreatingAccount">Đang xử lý thông tin...</span>
+                                    </span>
+                                </button>
+                                <button type="button" class="theme-btn btn-style-three ms-2" (click)="cancelBooking()">
+                                    <span class="btn-title">Hủy đặt phòng</span>
                                 </button>
                             </div>
                         </div>

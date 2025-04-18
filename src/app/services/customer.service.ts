@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, catchError, throwError, map } from 'rxjs';
 import { CustomerInfo, CustomerData, StoredCustomerInfo } from '../models/customer.model';
 
 @Injectable({
@@ -88,5 +88,70 @@ export class CustomerService {
     }
     
     return true;
+  }
+
+  // Create a new account
+  createAccount(accountData: {
+    email: string;
+    username: string;
+    password: string;
+    sdt: string;
+    role?: string;
+  }): Observable<any> {
+    // Set default role if not provided
+    const data = {
+      ...accountData,
+      role: accountData.role || 'GUEST'
+    };
+    
+    console.log('Creating account with data:', data);
+    
+    return this.http.post(`${this.apiUrl}/accounts`, data)
+      .pipe(
+        map(response => {
+          console.log('Account creation response:', response);
+          
+          // Check if response contains error status (API might return errors in success branch)
+          if (response && 'status' in response) {
+            if ((response as any).status === 400) {
+              // If response has error status, throw an error to be caught by the error handler
+              throw {
+                error: response
+              };
+            } else if ((response as any).status === 201) {
+              // This is a successful account creation
+              console.log('Account created successfully with status 201');
+              return response;
+            }
+          }
+          return response;
+        }),
+        catchError(error => {
+          console.error('Error creating account:', error);
+          
+          // Improve error handling to extract validation messages
+          let errorResponse = error;
+          
+          // Check if the error is a proper API response (with status code 400/etc)
+          if (error.error && error.error.status === 400 && error.error.message) {
+            // This is a structured API error from our backend
+            const apiError = {
+              status: error.error.status,
+              message: error.error.message,
+              // Add any other fields from the API error response
+              time: error.error.time
+            };
+            
+            console.log('Received API error:', apiError);
+            errorResponse = {
+              ...error,
+              error: apiError // Replace generic error with parsed API error
+            };
+          }
+          
+          // Return the enhanced error for better error handling in the component
+          return throwError(() => errorResponse);
+        })
+      );
   }
 } 

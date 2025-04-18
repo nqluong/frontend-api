@@ -138,6 +138,11 @@ export class PaymentResultComponent implements OnInit {
       this.processSuccessfulPayment();
       // Lấy thêm thông tin chi tiết về đặt phòng
       this.getBookingDetails();
+      
+      // Clear any saved form data from the checkout page
+      if (this.isBrowser) {
+        localStorage.removeItem('checkoutFormData');
+      }
     } else {
       this.isSuccess = false;
       this.isProcessing = false;
@@ -325,15 +330,23 @@ export class PaymentResultComponent implements OnInit {
       const isCreatingAccount = storedInfo.customerInfo.createAccount;
       console.log('Khách hàng đã chọn' + (isCreatingAccount ? '' : ' không') + ' tạo tài khoản');
       
+      // Kiểm tra xem tài khoản đã được tạo trước khi thanh toán chưa
+      const accountAlreadyCreated = localStorage.getItem('accountCreated') === 'true';
+      
+      // Nếu yêu cầu tạo tài khoản và chưa được tạo, thì đặt cờ để hiển thị thông báo
+      if (isCreatingAccount) {
+        this.accountCreated = true;
+      }
+      
       // 1. Gửi thông tin khách hàng lên server
       this.customerService.submitCustomerInfo(this.bookingId, storedInfo.customerInfo)
         .subscribe({
           next: (response) => {
             console.log('Thông tin khách hàng đã được gửi thành công:', response);
             
-            if (isCreatingAccount) {
-              console.log('Tài khoản đã được tạo thành công với username:', storedInfo.customerInfo.username);
-              this.accountCreated = true;
+            // Xóa flag đánh dấu tài khoản đã tạo
+            if (accountAlreadyCreated) {
+              localStorage.removeItem('accountCreated');
             }
             
             // 2. Finalize đặt phòng sau khi gửi thông tin khách hàng thành công
@@ -390,75 +403,4 @@ export class PaymentResultComponent implements OnInit {
     this.processSuccessfulPayment();
   }
 
-  // Add print function for booking details
-  printBookingDetails(): void {
-    if (!this.isBrowser) return;
-    
-    const printContents = document.querySelector('.booking-details')?.innerHTML;
-    if (!printContents) return;
-    
-    const originalContents = document.body.innerHTML;
-    
-    const printCSS = `
-      <style>
-        @media print {
-          body { font-family: Arial, sans-serif; }
-          .booking-details { max-width: 800px; margin: 0 auto; }
-          .details-heading { color: #333; font-size: 20px; text-align: center; margin-bottom: 5px; }
-          .details-note { color: #666; font-size: 14px; text-align: center; margin-bottom: 20px; }
-          .details-section { margin-bottom: 20px; }
-          .details-section h5 { color: #444; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
-          .booking-info { background: #f8f9fa; border-radius: 8px; padding: 15px; }
-          .info-item { margin-bottom: 10px; }
-          .print-section { display: none; }
-        }
-      </style>
-    `;
-    
-    // Create a header with hotel logo/name
-    const printHeader = `
-      <div style="text-align: center; margin-bottom: 20px;">
-        <h2>Khách Sạn ABC</h2>
-        <p>123 Đường ABC, Thành phố XYZ</p>
-        <p>SĐT: 0123 456 789 | Email: info@hotel.com</p>
-        <hr>
-      </div>
-    `;
-    
-    // Create a document for printing with proper formatting
-    const printDocument = `
-      <html>
-        <head>
-          <title>Thông Tin Đặt Phòng #${this.bookingId}</title>
-          ${printCSS}
-        </head>
-        <body>
-          ${printHeader}
-          <div class="booking-details">
-            ${printContents}
-          </div>
-          <div style="text-align: center; margin-top: 30px;">
-            <p>Cảm ơn bạn đã lựa chọn khách sạn của chúng tôi!</p>
-          </div>
-        </body>
-      </html>
-    `;
-    
-    // Open a new window for printing
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) {
-      alert('Vui lòng cho phép cửa sổ pop-up để in thông tin đặt phòng.');
-      return;
-    }
-    
-    printWindow.document.open();
-    printWindow.document.write(printDocument);
-    printWindow.document.close();
-    
-    // Wait for resources to load before printing
-    printWindow.onload = () => {
-      printWindow.print();
-      // Don't close the window after printing to allow user to see the preview
-    };
-  }
 } 
