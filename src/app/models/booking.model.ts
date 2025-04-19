@@ -20,6 +20,8 @@ export interface RoomDisplay {
   tenPhong: string;
   gia: number;
   loaiPhong: string;
-  soNguoi: string;
+  soNguoi?: string;
   tienNghi: string[];
+  tinhTrang?: string;
+  anhPhong?: string[];
 } 

@@ -9,6 +9,7 @@ import { RoomDisplay } from '../../models/booking.model';
 
 // Import services
 import { BookingService } from '../../services/booking.service';
+import { RoomService } from '../../services/room.service';
 
 @Component({
   selector: 'app-rooms',
@@ -23,11 +24,15 @@ export class RoomsComponent implements OnInit {
   checkOutDate: string = '';
   isCreatingBooking: boolean = false;
   isBrowser: boolean;
+  isSearchResult: boolean = false;
+  currentPage: number = 0;
+  totalPages: number = 0;
 
   constructor(
     private route: ActivatedRoute, 
     private router: Router,
     private bookingService: BookingService,
+    private roomService: RoomService,
     @Inject(PLATFORM_ID) platformId: Object
   ) {
     this.isBrowser = isPlatformBrowser(platformId);
@@ -38,6 +43,7 @@ export class RoomsComponent implements OnInit {
       this.searchResults = navigation.extras.state['searchResults'];
       this.checkInDate = navigation.extras.state['checkIn'];
       this.checkOutDate = navigation.extras.state['checkOut'];
+      this.isSearchResult = true;
       console.log('Navigation state data:', this.searchResults);
       console.log('Check-in date:', this.checkInDate);
       console.log('Check-out date:', this.checkOutDate);
@@ -50,8 +56,49 @@ export class RoomsComponent implements OnInit {
       this.searchResults = window.history.state.searchResults;
       this.checkInDate = window.history.state.checkIn;
       this.checkOutDate = window.history.state.checkOut;
+      this.isSearchResult = true;
       console.log('History state data:', this.searchResults);
     }
+    
+    // Nếu không có kết quả tìm kiếm, tải danh sách phòng từ API
+    if (this.searchResults.length === 0) {
+      this.loadAllRooms();
+    }
+  }
+  
+  // Hàm tải tất cả phòng
+  loadAllRooms(page?: number): void {
+    if (page !== undefined) {
+      this.currentPage = page;
+    }
+    
+    this.roomService.getAllRooms(this.currentPage).subscribe({
+      next: (response) => {
+        if (response && response.status === 200 && response.result) {
+          // Chuyển đổi dữ liệu từ API sang định dạng hiển thị
+          this.searchResults = response.result.content.map((room: any) => this.transformRoomData(room));
+          this.currentPage = response.result.currentPage - 1; // API trả về page bắt đầu từ 1
+          this.totalPages = response.result.totalPages;
+          console.log('All rooms loaded:', this.searchResults);
+        }
+      },
+      error: (error) => {
+        console.error('Error loading rooms:', error);
+      }
+    });
+  }
+  
+  // Chuyển đổi dữ liệu
+  private transformRoomData(room: any): RoomDisplay {
+    return {
+      id: room.id,
+      tenPhong: `${room.loaiPhong} ${room.tenPhong}`,
+      gia: room.gia,
+      loaiPhong: room.loaiPhong,
+      tinhTrang: room.tinhTrang,
+      tienNghi: room.tienNghiDiKem ? room.tienNghiDiKem.split(',').map((item: string) => item.trim()) : [],
+      anhPhong: room.anhPhong || []
+    };
   }
 
   // Kiểm tra và sửa định dạng ngày tháng nếu cần
@@ -112,6 +159,13 @@ export class RoomsComponent implements OnInit {
   bookRoom(roomId: number) {
     if (this.isCreatingBooking) {
       return; // Tránh gửi nhiều request cùng lúc
+    }
+
+    // Nếu không phải là từ kết quả tìm kiếm, phải yêu cầu người dùng chọn ngày
+    if (!this.isSearchResult) {
+      alert('Vui lòng quay lại trang chủ để chọn ngày Check-in và Check-out trước khi đặt phòng.');
+      this.router.navigate(['/customer']);
+      return;
     }
 
     if (!this.checkInDate || !this.checkOutDate) {

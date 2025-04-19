@@ -1,0 +1,63 @@
+/* Styles for the simple image gallery */
+.simple-slider {
+    position: relative;
+    margin-bottom: 30px;
+}
+
+.main-image {
+    overflow: hidden;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.main-image img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.main-image:hover img {
+    transform: scale(1.05);
+}
+
+.thumbnail-item {
+    transition: all 0.3s ease;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.thumbnail-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Booking form styles */
+.sidebar__post form {
+    padding: 25px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.sidebar__post form .form-control {
+    border: 1px solid #e1e1e1;
+    border-radius: 4px;
+    padding: 12px 15px;
+    height: auto;
+    transition: border-color 0.3s ease;
+}
+
+.sidebar__post form .form-control:focus {
+    border-color: #D2A24D;
+    box-shadow: 0 0 0 0.2rem rgba(210, 162, 77, 0.25);
+}
+
+.sidebar__post .btn-style-one {
+    transition: all 0.3s ease;
+}
+
+.sidebar__post .btn-style-one:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(210, 162, 77, 0.3);
+}

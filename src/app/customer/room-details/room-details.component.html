@@ -2,232 +2,226 @@
 <section class="page-title" style="background-image: url(assets/customer/images/background/page-title-bg.png);">
     <div class="auto-container">
         <div class="title-outer text-center">
-            <h1 class="title">Room Details</h1>
+            <h1 class="title">Chi tiết phòng</h1>
             <ul class="page-breadcrumb">
-                <li><a href="index.html">Home</a></li>
-                <li>Room Details</li>
+                <li><a routerLink="/customer">Trang chủ</a></li>
+                <li><a routerLink="/customer/rooms">Phòng</a></li>
+                <li>Chi tiết phòng</li>
             </ul>
         </div>
     </div>
 </section>
 <!-- end main-content -->
 
+<!-- Loading spinner -->
+<div class="container text-center my-5" *ngIf="isLoading">
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Đang tải...</span>
+    </div>
+    <p class="mt-3">Đang tải thông tin phòng...</p>
+</div>
+
+<!-- Error message -->
+<div class="container my-5" *ngIf="!isLoading && errorMessage">
+    <div class="alert alert-danger">
+        {{ errorMessage }}
+        <a routerLink="/customer/rooms" class="d-block mt-3">Quay lại danh sách phòng</a>
+    </div>
+</div>
+
 <!--Room Details Start-->
-<section class="blog-details pt-120 pb-120">
+<section class="blog-details pt-120 pb-120" *ngIf="!isLoading && !errorMessage && room">
     <div class="container">
         <div class="row">
             <div class="col-xl-8 col-lg-7 product-details rd-page">
-                <div class="bxslider">
-                    <div class="slider-content">
-                        <figure class="image-box"><a href="assets/customer/images/resource/room-1.jpg" class="lightbox-image" data-fancybox="gallery"><img src="assets/customer/images/resource/room-1.jpg" alt=""></a></figure>
-                        <div class="slider-pager">
-                            <ul class="thumb-box">
-                                <li class="mb-0"><a class="active" data-slide-index="0" href="#"><figure><img src="assets/customer/images/resource/room-1.jpg" alt=""></figure></a></li>
-                                <li class="mb-0"><a data-slide-index="1" href="#"><figure><img src="assets/customer/images/resource/room-2.jpg" alt=""></figure></a></li>
-                                <li class="mb-0"><a data-slide-index="2" href="#"><figure><img src="assets/customer/images/resource/room-4.jpg" alt=""></figure></a></li>
-                                <li class="mb-0"><a data-slide-index="3" href="#"><figure><img src="assets/customer/images/resource/room-2.jpg" alt=""></figure></a></li>
-                            </ul>
-                        </div>
+                <!-- Sử dụng solution đơn giản thay vì bxSlider -->
+                <div class="simple-slider">
+                    <!-- Hiển thị ảnh chính -->
+                    <div class="main-image">
+                        <figure class="image-box" *ngIf="selectedImage">
+                            <a [href]="'assets/images/rooms/' + selectedImage" 
+                               class="lightbox-image" 
+                               data-fancybox="gallery">
+                                <img [src]="'assets/images/rooms/' + selectedImage" 
+                                     [alt]="room ? room.tenPhong : ''"
+                                     onError="this.src='assets/customer/images/resource/room-1.jpg'"
+                                     class="img-fluid">
+                            </a>
+                        </figure>
+                        
+                        <!-- Default image nếu không có ảnh nào -->
+                        <figure class="image-box" *ngIf="!selectedImage">
+                            <a href="assets/customer/images/resource/room-1.jpg" 
+                               class="lightbox-image" 
+                               data-fancybox="gallery">
+                                <img src="assets/customer/images/resource/room-1.jpg" 
+                                     [alt]="room ? room.tenPhong : ''"
+                                     class="img-fluid">
+                            </a>
+                        </figure>
                     </div>
-                    <div class="slider-content">
-                        <figure class="image-box"><a href="assets/customer/images/resource/room-2.jpg" class="lightbox-image" data-fancybox="gallery"><img src="assets/customer/images/resource/room-2.jpg" alt=""></a></figure>
-                        <div class="slider-pager">
-                            <ul class="thumb-box">
-                                <li class="mb-0"><a class="active" data-slide-index="0" href="#"><figure><img src="assets/customer/images/resource/room-1.jpg" alt=""></figure></a></li>
-                                <li class="mb-0"><a data-slide-index="1" href="#"><figure><img src="assets/customer/images/resource/room-2.jpg" alt=""></figure></a></li>
-                                <li class="mb-0"><a data-slide-index="2" href="#"><figure><img src="assets/customer/images/resource/room-4.jpg" alt=""></figure></a></li>
-                                <li class="mb-0"><a data-slide-index="3" href="#"><figure><img src="assets/customer/images/resource/room-2.jpg" alt=""></figure></a></li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="slider-content">
-                        <figure class="image-box"><a href="assets/customer/images/resource/room-4.jpg" class="lightbox-image" data-fancybox="gallery"><img src="assets/customer/images/resource/room-4.jpg" alt=""></a></figure>
-                        <div class="slider-pager">
-                            <ul class="thumb-box">
-                                <li class="mb-0"><a class="active" data-slide-index="0" href="#"><figure><img src="assets/customer/images/resource/room-1.jpg" alt=""></figure></a></li>
-                                <li class="mb-0"><a data-slide-index="1" href="#"><figure><img src="assets/customer/images/resource/room-2.jpg" alt=""></figure></a></li>
-                                <li class="mb-0"><a data-slide-index="2" href="#"><figure><img src="assets/customer/images/resource/room-4.jpg" alt=""></figure></a></li>
-                                <li class="mb-0"><a data-slide-index="3" href="#"><figure><img src="assets/customer/images/resource/room-2.jpg" alt=""></figure></a></li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="slider-content">
-                        <figure class="image-box"><a href="assets/customer/images/resource/room-2.jpg" class="lightbox-image" data-fancybox="gallery"><img src="assets/customer/images/resource/room-2.jpg" alt=""></a></figure>
-                        <div class="slider-pager">
-                            <ul class="thumb-box">
-                                <li class="mb-0"><a class="active" data-slide-index="0" href="#"><figure><img src="assets/customer/images/resource/room-1.jpg" alt=""></figure></a></li>
-                                <li class="mb-0"><a data-slide-index="1" href="#"><figure><img src="assets/customer/images/resource/room-2.jpg" alt=""></figure></a></li>
-                                <li class="mb-0"><a data-slide-index="2" href="#"><figure><img src="assets/customer/images/resource/room-4.jpg" alt=""></figure></a></li>
-                                <li class="mb-0"><a data-slide-index="3" href="#"><figure><img src="assets/customer/images/resource/room-2.jpg" alt=""></figure></a></li>
-                            </ul>
+                    
+                    <!-- Thumbnail navigation -->
+                    <div class="thumbnail-navigation mt-4" *ngIf="room?.anhPhong && room.anhPhong.length > 0">
+                        <div class="d-flex flex-wrap justify-content-start">
+                            <div *ngFor="let image of room.anhPhong; let i = index" 
+                                 class="thumbnail-item me-2 mb-2" 
+                                 style="width: 80px; height: 60px; cursor: pointer; border: 2px solid transparent;"
+                                 [ngStyle]="{'border-color': selectedImage === image ? '#D2A24D' : 'transparent'}"
+                                 (click)="selectImage(image)">
+                                <img [src]="'assets/images/rooms/' + image" 
+                                     [alt]="'Ảnh ' + (i+1) + ' - ' + room.tenPhong"
+                                     style="width: 100%; height: 100%; object-fit: cover;"
+                                     onError="this.src='assets/customer/images/resource/room-1.jpg'">
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="room-details__left">
+
+                <div class="room-details__left mt-4">
                     <div class="wrapper">
-                        <h3>Description of Room</h3>
-                        <p class="text">Mauris non dignissim purus, ac commodo diam. Donec sit amet lacinia nulla. Aliquam quis purus in justo pulvinar tempor. Aliquam tellus nulla, sollicitudin at euismod nec, feugiat at nisi. Quisque vitae odio nec lacus interdum tempus. Phasellus a rhoncus erat. Vivamus vel eros vitae est aliquet pellentesque vitae et nunc. Sed vitae leo vitae nisl pellentesque semper.</p>
+                        <h3>Phòng: {{room.tenPhong}} </h3>
+                        <p class="text">{{room.moTa || 'Không có mô tả chi tiết cho phòng này.'}}</p>
                         <div class="row justify-content-center">
                             <div class="col-xl-12">
                                 <div class="room-details__content-right mb-40 mt-20">
                                     <div class="room-details__details-box">
                                         <div class="row">
                                             <div class="col-6 col-md-3">
-                                                <p class="text mb-0">Room Size</p>
-                                                <h6>600Sq</h6>
+                                                <p class="text mb-0">Loại phòng</p>
+                                                <h6>{{room.loaiPhong}}</h6>
                                             </div>
                                             <div class="col-6 col-md-3">
-                                                <p class="text mb-0">Rooms Bed</p>
-                                                <h6>2 Single Bed</h6>
+                                                <p class="text mb-0">Sức chứa</p>
+                                                <h6>{{room.loaiPhong === 'Phòng Đơn' ? '1 người' : 
+                                                      room.loaiPhong === 'Phòng Đôi' ? '2 người' : 
+                                                      '4 người'}}</h6>
                                             </div>
                                             <div class="col-6 col-md-3">
-                                                <p class="text mb-0">Occupancy</p>
-                                                <h6>Three Persons</h6>
-                                            </div>
-                                            <div class="col-6 col-md-3">
-                                                <p class="text mb-0">View</p>
-                                                <h6>Sea View</h6>
+                                                <p class="text mb-0">Giá phòng</p>
+                                                <h6>{{room.gia | currency:'VND':'symbol':'1.0-0'}}/đêm</h6>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <p class="text">Mauris non dignissim purus, ac commodo diam. Donec sit amet lacinia nulla. Aliquam quis purus in justo pulvinar tempor. Aliquam tellus nulla, sollicitudin at euismod nec, feugiat at nisi. Quisque vitae odio nec lacus interdum tempus. Phasellus a rhoncus erat. Vivamus vel eros vitae est aliquet pellentesque vitae et nunc. Sed vitae leo vitae nisl pellentesque semper.</p>
                     </div>
                     <div class="mt-40">
-                        <h4>Room Facilities</h4>
+                        <h4>Tiện nghi phòng</h4>
                         <div class="row room-facility-list mb-40">
-                            <div class="col-sm-6 col-xl-4">
+                            <!-- Wifi -->
+                            <div class="col-sm-6 col-xl-4" *ngIf="hasTienNghi('wifi')">
                                 <div class="list-one d-flex align-items-center me-sm-4 mb-3">
-                                    <div class="icon text-theme-color1 mr-10 flex-shrink-0"><i class="far fa-air-conditioner"></i></div>
-                                    <h6 class="title m-0">Air Conditionar</h6>
+                                    <div class="icon text-theme-color1 mr-10 flex-shrink-0"><i class="fa fa-wifi"></i></div>
+                                    <h6 class="title m-0">Wifi</h6>
                                 </div>
                             </div>
-                            <div class="col-sm-6 col-xl-4">
+                            <!-- TV -->
+                            <div class="col-sm-6 col-xl-4" *ngIf="hasTienNghi('tv')">
                                 <div class="list-one d-flex align-items-center me-sm-4 mb-3">
-                                    <div class="icon text-theme-color1 mr-10 flex-shrink-0"><i class="fas fa-swimming-pool"></i></div>
-                                    <h6 class="title m-0">Swiming Pool</h6>
+                                    <div class="icon text-theme-color1 mr-10 flex-shrink-0"><i class="fa fa-tv"></i></div>
+                                    <h6 class="title m-0">TV</h6>
                                 </div>
                             </div>
-                            <div class="col-sm-6 col-xl-4">
+                            <!-- Điều hòa -->
+                            <div class="col-sm-6 col-xl-4" *ngIf="hasTienNghi('điều hòa') || hasTienNghi('air conditioning')">
                                 <div class="list-one d-flex align-items-center me-sm-4 mb-3">
-                                    <div class="icon text-theme-color1 mr-10 flex-shrink-0"><i class="fas fa-dumbbell"></i></div>
-                                    <h6 class="title m-0">Gymnasium</h6>
+                                    <div class="icon text-theme-color1 mr-10 flex-shrink-0"><i class="fa fa-snowflake"></i></div>
+                                    <h6 class="title m-0">Điều hòa</h6>
                                 </div>
                             </div>
-                            <div class="col-sm-6 col-xl-4">
+                            <!-- Bồn tắm -->
+                            <div class="col-sm-6 col-xl-4" *ngIf="hasTienNghi('bồn tắm') || hasTienNghi('bathtub')">
                                 <div class="list-one d-flex align-items-center me-sm-4 mb-3">
-                                    <div class="icon text-theme-color1 mr-10 flex-shrink-0"><i class="fas fa-parking-circle"></i></div>
-                                    <h6 class="title m-0">Parking</h6>
+                                    <div class="icon text-theme-color1 mr-10 flex-shrink-0"><i class="fa fa-bath"></i></div>
+                                    <h6 class="title m-0">Bồn tắm</h6>
                                 </div>
                             </div>
-                            <div class="col-sm-6 col-xl-4">
+                            <!-- Minibar -->
+                            <div class="col-sm-6 col-xl-4" *ngIf="hasTienNghi('minibar')">
                                 <div class="list-one d-flex align-items-center me-sm-4 mb-3">
-                                    <div class="icon text-theme-color1 mr-10 flex-shrink-0"><i class="fas fa-shield-check"></i></div>
-                                    <h6 class="title m-0">Security</h6>
+                                    <div class="icon text-theme-color1 mr-10 flex-shrink-0"><i class="fa fa-glass-martini"></i></div>
+                                    <h6 class="title m-0">Minibar</h6>
                                 </div>
                             </div>
-                            <div class="col-sm-6 col-xl-4">
+                            <!-- Bếp -->
+                            <div class="col-sm-6 col-xl-4" *ngIf="hasTienNghi('bếp') || hasTienNghi('kitchenette')">
                                 <div class="list-one d-flex align-items-center me-sm-4">
-                                    <div class="icon text-theme-color1 mr-10 flex-shrink-0"><i class="fas fa-child"></i></div>
-                                    <h6 class="title m-0">Playground</h6>
+                                    <div class="icon text-theme-color1 mr-10 flex-shrink-0"><i class="fa fa-utensils"></i></div>
+                                    <h6 class="title m-0">Bếp</h6>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="d-sm-flex align-items-sm-center justify-content-sm-between pt-40 pb-40 border-top">
-                        <h6 class="my-sm-0">Share Details</h6>
-                        <div class="blog-details__social-list"> <a href="room-details.html"><i class="fab fa-x-twitter"></i></a> <a href="room-details.html"><i class="fab fa-facebook"></i></a> <a href="room-details.html"><i class="fab fa-pinterest-p"></i></a> <a href="room-details.html"><i class="fab fa-instagram"></i></a> </div>
-                    </div>
-                    <div class="p-4 p-lg-5 bg-light">
-                        <h4 class="mt-0">Send Us Your Question</h4>
-                        <form id="contact_form" name="contact_form" class="" action="https://html.kodesolution.com/2025/hoteler-html/includes/sendmail.php" method="post">
-                            <div class="row">
-                                <div class="col-sm-6 col-xl-4">
-                                    <div class="mb-3">
-                                        <input name="form_name" class="form-control bg-white" type="text" placeholder="Enter Name">
-                                    </div>
-                                </div>
-                                <div class="col-sm-6 col-xl-4">
-                                    <div class="mb-3">
-                                        <input name="form_email" class="form-control bg-white required email" type="email" placeholder="Enter Email">
-                                    </div>
-                                </div>
-                                <div class="col-xl-4">
-                                    <div class="mb-3">
-                                        <input name="form_phone" class="form-control bg-white required phone" type="number" placeholder="Enter Phone">
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="mb-3">
-                                <textarea name="form_message" class="form-control bg-white required" rows="5" placeholder="Enter Message"></textarea>
-                            </div>
-                            <div class="mb-0">
-                                <input name="form_botcheck" class="form-control" type="hidden" value="">
-                                <button type="submit" class="theme-btn btn-style-one" data-loading-text="Please wait..."><span class="btn-title">Submit Comment</span></button>
-                            </div>
-                        </form>
                     </div>
                 </div>
             </div>
             <div class="col-xl-4 col-lg-5">
                 <div class="sidebar">
                     <div class="sidebar__post mb-30">
-                        <form id="contact_form2" name="contact_form" class="" action="https://html.kodesolution.com/2025/hoteler-html/includes/sendmail.php" method="post">
+                        <form (ngSubmit)="bookRoom()" #bookingForm="ngForm">
                             <div class="row">
                                 <div class="col-sm-12">
                                     <div class="mb-3">
-                                    <label class="form-label">Check In</label>
-                                        <input name="form_name" class="form-control bg-white" type="text" placeholder="Arrive Date">
+                                    <label class="form-label">Ngày nhận phòng</label>
+                                        <input 
+                                            type="date" 
+                                            name="checkIn" 
+                                            class="form-control bg-white" 
+                                            [(ngModel)]="bookingData.checkIn"
+                                            required
+                                        >
                                     </div>
                                 </div>
                                 <div class="col-sm-12">
                                     <div class="mb-3">
-                                    <label class="form-label">Check Out</label>
-                                        <input name="form_name" class="form-control bg-white" type="text" placeholder="Departure Date">
+                                    <label class="form-label">Ngày trả phòng</label>
+                                        <input 
+                                            type="date" 
+                                            name="checkOut" 
+                                            class="form-control bg-white" 
+                                            [(ngModel)]="bookingData.checkOut"
+                                            required
+                                        >
                                     </div>
                                 </div>
-                                <div class="col-sm-12">
-                                    <div class="mb-3">
-                                    <label class="form-label">Guests</label>
-                                    <select class="form-select form-control bg-white">
-                                      <option selected disabled value="">Select</option>
-                                      <option>1</option>
-                                      <option>2</option>
-                                      <option>3</option>
-                                      <option>4</option>
-                                      <option>More</option>
-                                    </select>
-                                    </div>
-                                </div>
+                               
                             </div>
                             <div class="mb-3">
-                                <input name="form_botcheck" class="form-control" type="hidden" value="">
-                                <button type="submit" class="theme-btn btn-style-one w-100" data-loading-text="Please wait..."><span class="btn-title">Book Now</span></button>
+                                <button 
+                                    type="submit" 
+                                    class="theme-btn btn-style-one w-100" 
+                                    [disabled]="isCreatingBooking || !bookingForm.valid"
+                                >
+                                    <span class="btn-title" *ngIf="!isCreatingBooking">Đặt phòng ngay</span>
+                                    <span class="btn-title" *ngIf="isCreatingBooking">
+                                        <i class="fa fa-spinner fa-spin"></i> Đang xử lý...
+                                    </span>
+                                </button>
                             </div>
                         </form>
                     </div>
-                    <div class="sidebar__single sidebar__post">
-                        <h3 class="sidebar__title">Compare Room</h3>
+                    <!-- Các phòng cùng loại -->
+                    <div class="sidebar__single sidebar__post" *ngIf="room">
+                        <h3 class="sidebar__title">Thông tin phòng {{room.loaiPhong}}</h3>
                         <ul class="sidebar__post-list list-unstyled">
                             <li>
-                                <div class="sidebar__post-image"> <img src="assets/customer/images/resource/news-info-1.jpg" alt=""> </div>
+                                <div class="sidebar__post-image"> 
+                                    <img *ngIf="room.anhPhong && room.anhPhong.length > 0" 
+                                         [src]="'assets/images/rooms/' + room.anhPhong[0]" 
+                                         [alt]="room.tenPhong"
+                                         onError="this.src='assets/customer/images/resource/news-info-1.jpg'">
+                                    <img *ngIf="!room.anhPhong || room.anhPhong.length === 0" 
+                                         src="assets/customer/images/resource/news-info-1.jpg" 
+                                         [alt]="room.tenPhong">
+                                </div>
                                 <div class="sidebar__post-content">
-                                    <h3> <span class="sidebar__post-content-meta"><i class="fas fa-door-open"></i>Economy Room</span> <a href="#">$175/Night</a>
+                                    <h3> 
+                                        <span class="sidebar__post-content-meta">
+                                            <i class="fas fa-door-open"></i>{{room.loaiPhong}}
+                                        </span> 
+                                        <a href="#">{{room.gia | currency:'VND':'symbol':'1.0-0'}}/đêm</a>
                                     </h3>
-                                </div>
-                            </li>
-                            <li>
-                                <div class="sidebar__post-image"> <img src="assets/customer/images/resource/news-info-2.jpg" alt=""> </div>
-                                <div class="sidebar__post-content">
-                                    <h3> <span class="sidebar__post-content-meta"><i class="fas fa-door-open"></i>Deluxe Room</span> <a href="#">$250</a> </h3>
-                                </div>
-                            </li>
-                            <li>
-                                <div class="sidebar__post-image"> <img src="assets/customer/images/resource/news-info-1.jpg" alt=""> </div>
-                                <div class="sidebar__post-content">
-                                    <h3> <span class="sidebar__post-content-meta"><i class="fas fa-door-open"></i>Super Deluxe Room</span> <a href="#">$320</a> </h3>
                                 </div>
                             </li>
                         </ul>

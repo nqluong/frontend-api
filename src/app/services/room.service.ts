@@ -14,4 +14,14 @@ export class RoomService {
   getRoomTypes(): Observable<any> {
     return this.http.get(`${this.apiUrl}/typeroom`);
   }
+  
+  // Hàm lấy tất cả các phòng với phân trang
+  getAllRooms(page: number = 0, size: number = 10): Observable<any> {
+    return this.http.get(`${this.apiUrl}?page=${page}&size=${size}`);
+  }
+  
+  // Hàm lấy chi tiết phòng theo ID
+  getRoomById(roomId: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/${roomId}`);
+  }
 }

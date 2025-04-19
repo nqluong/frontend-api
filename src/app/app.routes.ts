@@ -84,7 +84,7 @@ export const routes: Routes = [
         children: [
             { path: '', component: HomeComponent },
             { path: 'rooms', component: RoomsComponent },
-            { path: 'room-details', component: RoomDetailsComponent },
+            { path: 'room-details/:id', component: RoomDetailsComponent },
             { path: 'contact', component: ContactComponent },
             { path: 'service', component: ServiceComponent },
             { path: 'checkout', component: CheckoutComponent },

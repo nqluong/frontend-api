@@ -2,7 +2,8 @@
 <section class="page-title" style="background-image: url(assets/customer/images/background/page-title-bg.png);">
     <div class="auto-container">
         <div class="title-outer text-center">
-            <h1 class="title">Kết Quả Tìm Kiếm</h1>
+            <h1 class="title" *ngIf="isSearchResult">Kết Quả Tìm Kiếm</h1>
+            <h1 class="title" *ngIf="!isSearchResult">Danh Sách Phòng</h1>
             <ul class="page-breadcrumb">
                 <li><a routerLink="/customer">Trang Chủ</a></li>
                 <li>Danh Sách Phòng</li>
@@ -21,11 +22,24 @@
                 <div class="inner-box wow fadeIn">
                     <div class="image-box">
                         <figure class="image-2 overlay-anim">
-                            <img src="assets/customer/images/resource/room-1.jpg" [alt]="room.tenPhong">
+                            <!-- Sử dụng ảnh đầu tiên từ anhPhong nếu có, nếu không thì sử dụng ảnh mặc định -->
+                            <a [routerLink]="['/customer/room-details', room.id]">
+                                <img 
+                                    *ngIf="room.anhPhong && room.anhPhong.length > 0" 
+                                    [src]="'assets/images/' + room.anhPhong[0]" 
+                                    [alt]="room.tenPhong"
+                                    onError="this.src='assets/customer/images/resource/room-1.jpg'"
+                                >
+                                <img 
+                                    *ngIf="!room.anhPhong || room.anhPhong.length === 0" 
+                                    src="assets/customer/images/resource/room-1.jpg" 
+                                    [alt]="room.tenPhong"
+                                >
+                            </a>
                         </figure>
                     </div>
                     <div class="content-box">
-                        <h6 class="title">{{room.tenPhong}}</h6>
+                        <h6 class="title"><a [routerLink]="['/customer/room-details', room.id]">{{room.tenPhong}}</a></h6>
                         <span class="price">{{room.gia | currency:'VND':'symbol':'1.0-0'}} / ĐÊM</span>
                     </div>
                     <div class="box-caption">
@@ -35,8 +49,10 @@
                                 <a href="javascript:void(0)">
                                     <i class="fa" [class.fa-wifi]="tienNghi.includes('Wifi')"
                                        [class.fa-tv]="tienNghi.includes('TV')"
-                                       [class.fa-snowflake]="tienNghi.includes('Điều hòa')"
-                                       [class.fa-utensils]="tienNghi.includes('Bếp')"></i>
+                                       [class.fa-snowflake]="tienNghi.includes('Điều hòa') || tienNghi.includes('Air Conditioning')"
+                                       [class.fa-utensils]="tienNghi.includes('Bếp') || tienNghi.includes('Kitchenette')"
+                                       [class.fa-bath]="tienNghi.includes('Bathtub')"
+                                       [class.fa-laptop]="tienNghi.includes('Desk')"></i>
                                 </a>
                             </li>
                             <li><a href="javascript:void(0)"><i class="fa fa-bed"></i></a></li>
@@ -59,6 +75,25 @@
                 <a routerLink="/customer" class="theme-btn btn-style-one mt-4">
                     <span class="btn-title">Quay lại trang chủ</span>
                 </a>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination-box" *ngIf="!isSearchResult && totalPages > 1">
+            <div class="text-center mt-5">
+                <ul class="styled-pagination">
+                    <li><a href="javascript:void(0)" class="prev" [ngClass]="{'disabled': currentPage === 0}" (click)="currentPage > 0 && loadAllRooms(currentPage - 1)">
+                        <i class="fa fa-angle-left"></i>
+                    </a></li>
+
+                    <li *ngFor="let page of [].constructor(totalPages); let i = index">
+                        <a href="javascript:void(0)" [ngClass]="{'current': i === currentPage}" (click)="loadAllRooms(i)">{{ i + 1 }}</a>
+                    </li>
+
+                    <li><a href="javascript:void(0)" class="next" [ngClass]="{'disabled': currentPage === totalPages - 1}" (click)="currentPage < totalPages - 1 && loadAllRooms(currentPage + 1)">
+                        <i class="fa fa-angle-right"></i>
+                    </a></li>
+                </ul>
             </div>
         </div>
     </div>
