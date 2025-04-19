@@ -20,14 +20,16 @@
           <div class="checkout-field">
             <h4>Ngày Vào</h4>
             <div class="chk-field">
-              <input class="date-pick" type="date" [(ngModel)]="searchParams.checkIn" name="checkIn" required/>
+              <input class="date-pick" type="date" [(ngModel)]="searchParams.checkIn" name="checkIn" required 
+                     (change)="onDateChange('checkIn', $event)"/>
               <i class="fas fa-calendar"></i>
             </div>
           </div>
           <div class="checkout-field">
             <h4>Ngày Ra</h4>
             <div class="chk-field">
-              <input class="date-pick" type="date" [(ngModel)]="searchParams.checkOut" name="checkOut" required/>
+              <input class="date-pick" type="date" [(ngModel)]="searchParams.checkOut" name="checkOut" required
+                     (change)="onDateChange('checkOut', $event)"/>
               <i class="fas fa-calendar"></i>
             </div>
           </div>

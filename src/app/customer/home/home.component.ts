@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, AfterViewInit } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -42,7 +42,7 @@ interface RoomDisplay {
   templateUrl: './home.component.html',
   styleUrl: './home.component.css'
 })
-export class HomeComponent implements OnInit{
+export class HomeComponent implements OnInit, AfterViewInit {
   searchParams = {
     checkIn: '',
     checkOut: '',
@@ -59,6 +59,17 @@ export class HomeComponent implements OnInit{
     private roomService: RoomService,
     private hotelsService: HotelsService
   ) {}
+
+  // Xử lý sự kiện khi ngày thay đổi
+  onDateChange(field: 'checkIn' | 'checkOut', event: any): void {
+    console.log(`Date change for ${field}:`, event.target.value);
+    
+    // Đảm bảo định dạng ngày đúng
+    if (event.target.value) {
+      // Giữ nguyên giá trị từ input type="date" (format yyyy-mm-dd)
+      this.searchParams[field] = event.target.value;
+    }
+  }
 
   // Hàm chuyển đổi loại phòng sang số người
   private mapRoomTypeToCapacity(loaiPhong: string): string {
@@ -95,25 +106,51 @@ export class HomeComponent implements OnInit{
     }
 
     try {
-      // Chuyển đổi chuỗi ngày thành đối tượng Date
-      const [year, month, day] = dateStr.split('-').map(num => parseInt(num, 10));
+      let date: Date;
       
-      // Xác minh năm hợp lệ (tránh vấn đề về năm lạ như 1915, 1917)
-      const currentYear = new Date().getFullYear();
-      const validYear = (year >= currentYear && year <= currentYear + 10) ? year : currentYear;
+      // Kiểm tra các định dạng phổ biến
+      if (dateStr.includes('/')) {
+        // Định dạng dd/mm/yyyy 
+        const [day, month, year] = dateStr.split('/').map(num => parseInt(num, 10));
+        date = new Date(year, month - 1, day, 7, 0, 0);
+      } 
+      else if (dateStr.includes('-')) {
+        // Có thể là yyyy-mm-dd hoặc dd-mm-yyyy
+        const parts = dateStr.split('-').map(num => parseInt(num, 10));
+        
+        // Kiểm tra nếu phần đầu tiên là năm (4 chữ số và > 1000)
+        if (parts[0] > 1000 && String(parts[0]).length === 4) {
+          // Định dạng yyyy-mm-dd
+          const [year, month, day] = parts;
+          date = new Date(year, month - 1, day, 7, 0, 0);
+        } else {
+          // Định dạng dd-mm-yyyy
+          const [day, month, year] = parts;
+          date = new Date(year, month - 1, day, 7, 0, 0);
+        }
+      } 
+      else {
+        // Thử phân tích dưới dạng timestamp hoặc chuỗi ngày hợp lệ khác
+        date = new Date(dateStr);
+      }
       
-      // Tạo đối tượng Date với năm đã xác minh
-      const date = new Date(validYear, month - 1, day, 7, 0, 0); // Set giờ là 7:00:00
-
       // Kiểm tra tính hợp lệ của ngày
       if (isNaN(date.getTime())) {
         throw new Error('Ngày không hợp lệ');
       }
-
+      
+      // Xác minh năm hợp lệ (tránh vấn đề về năm lạ)
+      const currentYear = new Date().getFullYear();
+      const year = date.getFullYear();
+      
+      if (year < currentYear || year > currentYear + 10) {
+        date.setFullYear(currentYear);
+      }
+      
       // Format theo định dạng ISO 8601 với timezone
       return date.toISOString().replace('Z', '+07:00');
     } catch (error) {
-      console.error('Error formatting date:', error);
+      console.error('Error formatting date:', error, 'for input:', dateStr);
       return '';
     }
   }
@@ -121,6 +158,92 @@ export class HomeComponent implements OnInit{
   ngOnInit(): void {
     this.loadRooms();
     this.loadHotel();
+    // Reset date inputs
+    this.resetDateInputs();
+  }
+
+  ngAfterViewInit(): void {
+    // Reinitialize custom datepicker if it exists
+    this.initializeCustomDatepicker();
+  }
+
+  private resetDateInputs(): void {
+    // Reset search params when entering the page
+    this.searchParams = {
+      checkIn: '',
+      checkOut: '',
+      roomType: ''
+    };
+  }
+
+  private initializeCustomDatepicker(): void {
+    if (typeof window !== 'undefined') {
+      // Đợi DOM load xong và styles được áp dụng
+      setTimeout(() => {
+        const win = window as any;
+        
+        // Nếu có hàm khởi tạo datepicker từ thư viện bên thứ ba
+        if (win.initDatepicker) {
+          win.initDatepicker();
+        }
+        
+        // Áp dụng khởi tạo tùy chỉnh của chúng ta
+        const dateElements = document.querySelectorAll('.custom-datepicker');
+        dateElements.forEach(el => {
+          // Thêm class để đánh dấu element đã được khởi tạo
+          el.classList.add('date-pick-initialized');
+          
+          // Log để xác nhận việc khởi tạo
+          console.log('Date picker initialized:', el);
+          
+          // Xử lý sự kiện click cho datepicker tùy chỉnh
+          const inputElement = el as HTMLInputElement;
+          const parent = inputElement.parentElement;
+          const iconElement = parent?.querySelector('i.fas.fa-calendar');
+          
+          // Hàm tạo hiệu ứng ripple
+          const createRipple = (event: MouseEvent) => {
+            const ripple = document.createElement('span');
+            ripple.classList.add('ripple');
+            parent?.appendChild(ripple);
+            
+            setTimeout(() => {
+              ripple.remove();
+            }, 600); // Thời gian của animation
+          };
+          
+          // Xử lý sự kiện focus
+          inputElement.onfocus = () => {
+            if (iconElement) {
+              iconElement.classList.add('active');
+              parent?.classList.add('focused');
+            }
+          };
+          
+          // Xử lý sự kiện blur
+          inputElement.onblur = () => {
+            if (iconElement) {
+              iconElement.classList.remove('active');
+              parent?.classList.remove('focused');
+            }
+          };
+          
+          // Xử lý sự kiện click
+          inputElement.onclick = (event) => {
+            createRipple(event as MouseEvent);
+          };
+          
+          // Xử lý click vào icon để mở datepicker
+          if (iconElement) {
+            (iconElement as HTMLElement).onclick = (event) => {
+              createRipple(event as MouseEvent);
+              inputElement.showPicker();
+              inputElement.focus();
+            };
+          }
+        });
+      }, 300);
+    }
   }
 
   // Hàm lấy danh sách phòng từ backend
@@ -151,22 +274,66 @@ export class HomeComponent implements OnInit{
 
   searchRooms(): void {
     // Kiểm tra dữ liệu đầu vào
+    console.log('Raw check-in date:', this.searchParams.checkIn, 'type:', typeof this.searchParams.checkIn);
+    console.log('Raw check-out date:', this.searchParams.checkOut, 'type:', typeof this.searchParams.checkOut);
+    
     if (!this.searchParams.checkIn || !this.searchParams.checkOut) {
       alert('Vui lòng chọn ngày check-in và check-out');
       return;
     }
 
-    // Kiểm tra ngày check-out phải sau ngày check-in
-    const checkInDate = new Date(this.searchParams.checkIn);
-    const checkOutDate = new Date(this.searchParams.checkOut);
-    
-    if (checkOutDate <= checkInDate) {
-      alert('Ngày check-out phải sau ngày check-in');
+    // Chuyển đổi chuỗi ngày thành đối tượng Date
+    try {
+      // Phân tích ngày theo định dạng dd-mm-yyyy
+      let checkInParts, checkOutParts;
+      
+      if (this.searchParams.checkIn.includes('-')) {
+        checkInParts = this.searchParams.checkIn.split('-');
+        // Kiểm tra nếu đang ở định dạng dd-mm-yyyy
+        if (checkInParts.length === 3 && parseInt(checkInParts[0]) <= 31) {
+          const [day, month, year] = checkInParts.map(p => parseInt(p, 10));
+          this.searchParams.checkIn = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+        }
+      }
+      
+      if (this.searchParams.checkOut.includes('-')) {
+        checkOutParts = this.searchParams.checkOut.split('-');
+        // Kiểm tra nếu đang ở định dạng dd-mm-yyyy
+        if (checkOutParts.length === 3 && parseInt(checkOutParts[0]) <= 31) {
+          const [day, month, year] = checkOutParts.map(p => parseInt(p, 10));
+          this.searchParams.checkOut = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+        }
+      }
+      
+      console.log('Reformatted check-in:', this.searchParams.checkIn);
+      console.log('Reformatted check-out:', this.searchParams.checkOut);
+      
+      // Nếu đã chuyển đổi đúng, tiếp tục
+      const checkInDate = new Date(this.searchParams.checkIn);
+      const checkOutDate = new Date(this.searchParams.checkOut);
+      
+      console.log('Parsed check-in date:', checkInDate);
+      console.log('Parsed check-out date:', checkOutDate);
+      
+      if (isNaN(checkInDate.getTime()) || isNaN(checkOutDate.getTime())) {
+        throw new Error('Invalid date format');
+      }
+      
+      if (checkOutDate <= checkInDate) {
+        alert('Ngày check-out phải sau ngày check-in');
+        return;
+      }
+    } catch (error) {
+      console.error('Date parsing error:', error);
+      alert('Lỗi định dạng ngày. Vui lòng nhập ngày theo định dạng yyyy-mm-dd.');
       return;
     }
 
     const checkIn = this.formatDateTime(this.searchParams.checkIn);
     const checkOut = this.formatDateTime(this.searchParams.checkOut);
+
+    console.log('Formatted check-in date:', checkIn);
+    console.log('Formatted check-out date:', checkOut);
 
     // Kiểm tra xem ngày đã được format hợp lệ chưa
     if (!checkIn || !checkOut) {

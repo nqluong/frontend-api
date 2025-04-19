@@ -95,7 +95,6 @@ export class RoomsComponent implements OnInit {
       tenPhong: `${room.loaiPhong} ${room.tenPhong}`,
       gia: room.gia,
       loaiPhong: room.loaiPhong,
-      tinhTrang: room.tinhTrang,
       tienNghi: room.tienNghiDiKem ? room.tienNghiDiKem.split(',').map((item: string) => item.trim()) : [],
       anhPhong: room.anhPhong || []
     };
