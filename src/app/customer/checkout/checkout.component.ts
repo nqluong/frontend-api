@@ -48,6 +48,9 @@ export class CheckoutComponent implements OnInit {
   isCreatingAccount: boolean = false;
   canProceedToPayment: boolean = true;
   
+  accountCreationSuccess: boolean = false;
+  accountCreationMessage: string = '';
+  
   // Error messages for form validation
   validationErrors: {
     username: string;
@@ -64,9 +67,6 @@ export class CheckoutComponent implements OnInit {
   };
   
   step: 'info' | 'payment' = 'info';
-  
-  accountCreationSuccess: boolean = false;
-  accountCreationMessage: string = '';
   
   constructor(
     private customerService: CustomerService,
@@ -90,13 +90,19 @@ export class CheckoutComponent implements OnInit {
         checkIn: this.checkIn,
         checkOut: this.checkOut
       });
+      
+      // Save booking details to localStorage
+      if (this.isBrowser && this.bookingId) {
+        this.saveBookingDetailsToLocalStorage();
+      }
     }
   }
   
   ngOnInit(): void {
     // Nếu không có thông tin booking từ navigation state, thử lấy từ localStorage
-    if (!this.bookingId && this.isBrowser) {
-      this.bookingId = this.bookingService.getBookingId();
+    if ((!this.bookingId || !this.roomName || !this.checkIn || !this.checkOut) && this.isBrowser) {
+      this.loadBookingDetailsFromLocalStorage();
+      
       if (!this.bookingId) {
         // Không tìm thấy booking, chuyển về trang chủ
         alert('Không tìm thấy thông tin đặt phòng. Vui lòng thử lại.');
@@ -108,6 +114,89 @@ export class CheckoutComponent implements OnInit {
     // Try to load previously entered form data if available
     if (this.isBrowser) {
       this.loadSavedFormData();
+    }
+  }
+  
+  // Save all booking details to localStorage
+  saveBookingDetailsToLocalStorage(): void {
+    if (!this.isBrowser || !this.bookingId) return;
+    
+    try {
+      // Make sure dates are in ISO format before saving
+      let checkInFormatted = this.checkIn;
+      let checkOutFormatted = this.checkOut;
+      
+      // Ensure dates are in ISO format
+      if (this.checkIn && typeof this.checkIn === 'string' && !this.checkIn.includes('T')) {
+        // Try to convert to ISO string if not already
+        checkInFormatted = new Date(this.checkIn).toISOString();
+      }
+      
+      if (this.checkOut && typeof this.checkOut === 'string' && !this.checkOut.includes('T')) {
+        // Try to convert to ISO string if not already
+        checkOutFormatted = new Date(this.checkOut).toISOString();
+      }
+      
+      const bookingDetails = {
+        bookingId: this.bookingId,
+        roomName: this.roomName,
+        checkIn: checkInFormatted,
+        checkOut: checkOutFormatted
+      };
+      
+      console.log('Saving booking details to localStorage:', bookingDetails);
+      localStorage.setItem('currentBookingDetails', JSON.stringify(bookingDetails));
+      // Keep the individual bookingId item for backward compatibility
+      this.bookingService.saveBookingId(this.bookingId);
+    } catch (error) {
+      console.error('Error saving booking details to localStorage:', error);
+      // Still save the bookingId as fallback
+      if (this.bookingId) {
+        this.bookingService.saveBookingId(this.bookingId);
+      }
+    }
+  }
+  
+  // Load all booking details from localStorage
+  loadBookingDetailsFromLocalStorage(): void {
+    if (!this.isBrowser) return;
+    
+    // Try to get complete booking details
+    const storedDetails = localStorage.getItem('currentBookingDetails');
+    if (storedDetails) {
+      try {
+        const details = JSON.parse(storedDetails);
+        this.bookingId = details.bookingId;
+        this.roomName = details.roomName || '';
+        this.checkIn = details.checkIn || '';
+        this.checkOut = details.checkOut || '';
+        console.log('Loaded booking details from localStorage:', details);
+      } catch (error) {
+        console.error('Error parsing stored booking details:', error);
+      }
+    } else {
+      // Fallback to just bookingId if complete details are not available
+      this.bookingId = this.bookingService.getBookingId();
+    }
+  }
+  
+  // Calculate stay duration correctly
+  calculateStayDuration(): number {
+    if (!this.checkIn || !this.checkOut) return 0;
+    
+    try {
+      const checkInDate = new Date(this.checkIn);
+      const checkOutDate = new Date(this.checkOut);
+      
+      // Calculate the difference in milliseconds
+      const diffTime = Math.abs(checkOutDate.getTime() - checkInDate.getTime());
+      // Convert to days
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      return diffDays > 0 ? diffDays : 1; // Ensure at least 1 day
+    } catch (error) {
+      console.error('Error calculating stay duration:', error);
+      return 1; // Default to 1 day on error
     }
   }
   
@@ -196,10 +285,20 @@ export class CheckoutComponent implements OnInit {
   
   // Lưu thông tin khách hàng và chuyển đến bước thanh toán
   storeCustomerInfoAndProceed(): void {
+    // Ensure we have a valid bookingId
+    if (!this.bookingId) {
+      console.error('Missing bookingId when storing customer info');
+      alert('Không tìm thấy thông tin đặt phòng. Vui lòng thử lại.');
+      return;
+    }
+    
+    // First save booking details to ensure consistency
+    this.saveBookingDetailsToLocalStorage();
+    
     // Lưu thông tin khách hàng vào localStorage
     if (this.isBrowser) {
-      this.customerService.storeCustomerInfo(this.bookingId as number, this.customerInfo);
-      console.log('Đã lưu thông tin khách hàng vào localStorage, sẽ gửi lên server sau khi thanh toán thành công');
+      this.customerService.storeCustomerInfo(this.bookingId, this.customerInfo);
+      console.log('Đã lưu thông tin khách hàng vào localStorage với bookingId=' + this.bookingId);
     }
     
     // Chuyển ngay đến bước thanh toán
@@ -386,38 +485,53 @@ export class CheckoutComponent implements OnInit {
           if (response && (response.maDatPhong || response.bookingId)) {
             this.paymentDetails = response;
             
-            // Kiểm tra và sửa lỗi số ngày thuê nếu cần
-            if (this.paymentDetails && this.paymentDetails.soNgayThue && this.paymentDetails.soNgayThue > 100) {
-              console.warn('Số ngày thuê bất thường:', this.paymentDetails.soNgayThue);
+            // Chỉ sửa lỗi số ngày thuê nếu giá trị từ backend không hợp lệ (>100 hoặc <=0)
+            if (this.paymentDetails && this.paymentDetails.soNgayThue && 
+                (this.paymentDetails.soNgayThue > 100 || this.paymentDetails.soNgayThue <= 0)) {
+              console.warn('Số ngày thuê từ backend không hợp lệ:', this.paymentDetails.soNgayThue);
               
-              // Tính lại số ngày từ checkIn và checkOut đã lưu
-              if (this.checkIn && this.checkOut) {
-                try {
-                  const checkInDate = new Date(this.checkIn);
-                  const checkOutDate = new Date(this.checkOut);
-                  // Tính số ngày giữa hai ngày
-                  const diffTime = Math.abs(checkOutDate.getTime() - checkInDate.getTime());
-                  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                  
-                  if (diffDays > 0 && diffDays < 100 && this.paymentDetails) {
-                    this.paymentDetails.soNgayThue = diffDays;
-                    if (this.paymentDetails.giaPhong) {
-                      this.paymentDetails.tongTienPhong = this.paymentDetails.giaPhong * diffDays;
-                      this.paymentDetails.tongTienThanhToan = (this.paymentDetails.tongTienPhong || 0) + 
-                        (this.paymentDetails.tongTienDichVu || 0);
-                    }
-                    console.log('Đã sửa số ngày thuê thành:', diffDays);
-                  }
-                } catch (error) {
-                  console.error('Lỗi khi tính toán số ngày thuê:', error);
+              // Tính lại số ngày từ checkIn và checkOut
+              const correctDays = this.calculateStayDuration();
+              console.log('Đã tính toán số ngày thuê mới:', correctDays);
+              
+              if (correctDays > 0 && this.paymentDetails) {
+                // Update payment details với số ngày thuê đúng
+                this.paymentDetails.soNgayThue = correctDays;
+                if (this.paymentDetails.giaPhong) {
+                  // Tính lại tổng tiền phòng
+                  this.paymentDetails.tongTienPhong = this.paymentDetails.giaPhong * correctDays;
+                  // Cập nhật tổng tiền thanh toán
+                  this.paymentDetails.tongTienThanhToan = (this.paymentDetails.tongTienPhong || 0) + 
+                    (this.paymentDetails.tongTienDichVu || 0);
                 }
+                console.log('Đã cập nhật thông tin thanh toán với số ngày thuê mới:', this.paymentDetails);
               }
+            } else if (this.paymentDetails) {
+              console.log('Sử dụng số ngày thuê từ backend:', this.paymentDetails.soNgayThue);
             }
             
             this.step = 'payment';
           } else if (response && response.status === 200 && response.result) {
             // Trường hợp API trả về trong cấu trúc result
             this.paymentDetails = response.result;
+            
+            // Chỉ kiểm tra giá trị số ngày thuê nếu không hợp lệ từ backend
+            if (this.paymentDetails && this.paymentDetails.soNgayThue && 
+                (this.paymentDetails.soNgayThue > 100 || this.paymentDetails.soNgayThue <= 0)) {
+              console.warn('Số ngày thuê từ backend không hợp lệ:', this.paymentDetails.soNgayThue);
+              const correctDays = this.calculateStayDuration();
+              if (correctDays > 0 && this.paymentDetails) {
+                this.paymentDetails.soNgayThue = correctDays;
+                if (this.paymentDetails.giaPhong) {
+                  this.paymentDetails.tongTienPhong = this.paymentDetails.giaPhong * correctDays;
+                  this.paymentDetails.tongTienThanhToan = (this.paymentDetails.tongTienPhong || 0) + 
+                    (this.paymentDetails.tongTienDichVu || 0);
+                }
+              }
+            } else if (this.paymentDetails) {
+              console.log('Sử dụng số ngày thuê từ backend:', this.paymentDetails.soNgayThue);
+            }
+            
             this.step = 'payment';
           } else {
             alert('Không thể tải thông tin thanh toán. Vui lòng thử lại.');
@@ -443,6 +557,16 @@ export class CheckoutComponent implements OnInit {
       return;
     }
     
+    // Ensure customer info is properly saved with the correct bookingId before proceeding
+    if (this.isBrowser) {
+      // Double-check that we have customer info saved
+      const storedInfo = this.customerService.getStoredCustomerInfo();
+      if (!storedInfo || storedInfo.bookingId !== this.bookingId) {
+        console.log('Re-saving customer info before payment to ensure consistency');
+        this.customerService.storeCustomerInfo(this.bookingId, this.customerInfo);
+      }
+    }
+    
     this.isCreatingPayment = true;
     
     // Hiển thị thông báo cho người dùng
@@ -457,9 +581,8 @@ export class CheckoutComponent implements OnInit {
           if (response && response.paymentUrl) {
             // Trường hợp API trả về trực tiếp paymentUrl
             if (this.isBrowser) {
-              // Lưu bookingId vào localStorage để sử dụng sau khi thanh toán
-              const bookingIdValue = this.bookingId as number; // Type assertion để tránh lỗi null
-              this.bookingService.saveBookingId(bookingIdValue);
+              // Lưu booking details vào localStorage để sử dụng sau khi thanh toán
+              this.saveBookingDetailsToLocalStorage();
               
               // Xóa dữ liệu form sau khi đã tạo thanh toán thành công và chuyển hướng
               this.clearSavedFormData();
@@ -478,9 +601,8 @@ export class CheckoutComponent implements OnInit {
                 localStorage.setItem('currentPaymentId', response.result.paymentId);
               }
               
-              // Lưu bookingId vào localStorage để sử dụng sau khi thanh toán
-              const bookingIdValue = this.bookingId as number;
-              this.bookingService.saveBookingId(bookingIdValue);
+              // Lưu thông tin đặt phòng vào localStorage
+              this.saveBookingDetailsToLocalStorage();
               
               // Xóa dữ liệu form sau khi đã tạo thanh toán thành công và chuyển hướng
               this.clearSavedFormData();
@@ -545,10 +667,21 @@ export class CheckoutComponent implements OnInit {
       return;
     }
     
+    // Ensure we have a valid bookingId
+    if (!this.bookingId) {
+      console.error('Missing bookingId when processing payment after account creation');
+      alert('Không tìm thấy thông tin đặt phòng. Vui lòng thử lại.');
+      this.isSubmittingInfo = false;
+      return;
+    }
+    
+    // First save booking details to ensure consistency
+    this.saveBookingDetailsToLocalStorage();
+    
     // Lưu thông tin khách hàng vào localStorage
     if (this.isBrowser) {
-      this.customerService.storeCustomerInfo(this.bookingId as number, this.customerInfo);
-      console.log('Đã lưu thông tin khách hàng vào localStorage, sẽ gửi lên server sau khi thanh toán thành công');
+      this.customerService.storeCustomerInfo(this.bookingId, this.customerInfo);
+      console.log('Đã lưu thông tin khách hàng vào localStorage với bookingId=' + this.bookingId);
     }
     
     // Chuyển ngay đến bước thanh toán

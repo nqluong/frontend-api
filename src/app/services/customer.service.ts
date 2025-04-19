@@ -14,11 +14,20 @@ export class CustomerService {
 
   // Phương thức này bây giờ chỉ gửi thông tin khách hàng đến backend
   submitCustomerInfo(bookingId: number, customerInfo: CustomerInfo): Observable<any> {
+    console.log('Chuẩn bị gửi thông tin khách hàng đến backend:', { bookingId, customerInfo });
+    
     // Chuẩn bị dữ liệu gửi đi
     const customerData: CustomerData = this.prepareCustomerData(customerInfo);
+    console.log('Dữ liệu khách hàng đã chuẩn bị:', customerData);
     
     // Gửi thông tin khách hàng lên server
-    return this.http.put(`${this.apiUrl}/bookings/${bookingId}/customer-info`, customerData);
+    return this.http.put(`${this.apiUrl}/bookings/${bookingId}/customer-info`, customerData)
+      .pipe(
+        catchError(error => {
+          console.error('Lỗi gửi thông tin khách hàng:', error);
+          return throwError(() => error);
+        })
+      );
   }
   
   // Phương thức mới để chuẩn bị dữ liệu khách hàng
@@ -53,9 +62,15 @@ export class CustomerService {
 
   // Lấy thông tin khách hàng từ localStorage
   getStoredCustomerInfo(): StoredCustomerInfo | null {
-    const storedInfo = localStorage.getItem(this.customerStorageKey);
-    if (storedInfo) {
-      return JSON.parse(storedInfo);
+    try {
+      const storedInfo = localStorage.getItem(this.customerStorageKey);
+      if (storedInfo) {
+        const parsedInfo = JSON.parse(storedInfo);
+        console.log('Đã lấy thông tin khách hàng từ localStorage:', parsedInfo);
+        return parsedInfo;
+      }
+    } catch (error) {
+      console.error('Lỗi khi đọc thông tin khách hàng từ localStorage:', error);
     }
     return null;
   }

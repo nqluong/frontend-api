@@ -79,6 +79,41 @@ export class PaymentResultComponent implements OnInit {
     });
   }
   
+  // Load booking details from localStorage
+  loadBookingDetailsFromLocalStorage(): void {
+    if (!this.isBrowser) return;
+    
+    // Try to get complete booking details first
+    const storedDetails = localStorage.getItem('currentBookingDetails');
+    if (storedDetails) {
+      try {
+        const details = JSON.parse(storedDetails);
+        if (!this.bookingId) {
+          this.bookingId = details.bookingId;
+        }
+        
+        if (!this.roomName && details.roomName) {
+          this.roomName = details.roomName;
+        }
+        
+        if (!this.checkInDate && details.checkIn) {
+          this.checkInDate = new Date(details.checkIn).toLocaleDateString('vi-VN');
+        }
+        
+        if (!this.checkOutDate && details.checkOut) {
+          this.checkOutDate = new Date(details.checkOut).toLocaleDateString('vi-VN');
+        }
+        
+        console.log('Loaded booking details from localStorage:', details);
+      } catch (error) {
+        console.error('Error parsing stored booking details:', error);
+      }
+    } else if (!this.bookingId) {
+      // Fallback to just bookingId
+      this.bookingId = this.bookingService.getBookingId();
+    }
+  }
+  
   // Xử lý tham số từ callback trực tiếp của VNPAY
   processVnpayCallback(params: any): void {
     this.isProcessing = true;
@@ -116,7 +151,7 @@ export class PaymentResultComponent implements OnInit {
 
     // Nếu không có bookingId từ tham số, thử lấy từ localStorage
     if (!this.bookingId && this.isBrowser) {
-      this.bookingId = this.bookingService.getBookingId();
+      this.loadBookingDetailsFromLocalStorage();
       if (!this.bookingId) {
         this.isProcessing = false;
         this.isSuccess = false;
@@ -142,6 +177,11 @@ export class PaymentResultComponent implements OnInit {
       // Clear any saved form data from the checkout page
       if (this.isBrowser) {
         localStorage.removeItem('checkoutFormData');
+        
+        // Check for account creation flag
+        if (localStorage.getItem('accountCreated') === 'true') {
+          this.accountCreated = true;
+        }
       }
     } else {
       this.isSuccess = false;
@@ -158,6 +198,11 @@ export class PaymentResultComponent implements OnInit {
     if (!this.bookingId) {
       this.isProcessing = false;
       return;
+    }
+    
+    // Load the booking details from localStorage first as a fallback
+    if (this.isBrowser) {
+      this.loadBookingDetailsFromLocalStorage();
     }
     
     // Use forkJoin to call both APIs in parallel
@@ -217,12 +262,21 @@ export class PaymentResultComponent implements OnInit {
           this.serviceAmount = paymentDetails.tongTienDichVu || 0;
           this.serviceList = paymentDetails.dichVuList || [];
           
+          // Only calculate stay duration if backend value is clearly invalid
+          if (this.stayDuration > 100 || this.stayDuration <= 0) {
+            console.warn('Số ngày thuê từ backend không hợp lệ:', this.stayDuration);
+            this.calculateStayDuration();
+          } else {
+            console.log('Sử dụng số ngày thuê từ backend:', this.stayDuration);
+          }
+          
           // Format dates for display
           this.formatDates();
           
-          // Xóa bookingId khỏi localStorage sau khi thanh toán thành công
+          // Xóa bookingId và booking details khỏi localStorage sau khi thanh toán thành công
           if (this.isBrowser && this.isSuccess) {
             this.bookingService.clearBookingId();
+            localStorage.removeItem('currentBookingDetails');
           }
           
           this.isProcessing = false;
@@ -236,65 +290,33 @@ export class PaymentResultComponent implements OnInit {
     });
   }
   
-  // Fallback method to get at least payment details if the combined approach fails
-  loadPaymentDetailsOnly(): void {
-    if (!this.bookingId) {
-      this.isProcessing = false;
-      return;
-    }
+  // Calculate stay duration correctly from dates if available
+  calculateStayDuration(): void {
+    if (!this.checkInDate || !this.checkOutDate) return;
     
-    const bookingIdNumber: number = this.bookingId;
-    
-    this.paymentService.getPaymentDetails(bookingIdNumber)
-      .subscribe({
-        next: (response) => {
-          console.log('Fallback: Payment details loaded:', response);
-          
-          if (response && (response.maDatPhong || response.bookingId)) {
-            this.roomName = response.phongInfo || response.roomName || '';
-            this.amount = response.tongTienThanhToan || response.totalAmount || 0;
-            this.roomRate = response.giaPhong || 0;
-            this.stayDuration = response.soNgayThue || 0;
-            this.roomAmount = response.tongTienPhong || 0;
-            this.serviceAmount = response.tongTienDichVu || 0;
-            this.serviceList = response.dichVuList || [];
-          } else if (response && response.status === 200 && response.result) {
-            const result = response.result;
-            this.roomName = result.phongInfo || result.roomName || '';
-            this.amount = result.tongTienThanhToan || result.totalAmount || 0;
-            this.roomRate = result.giaPhong || 0;
-            this.stayDuration = result.soNgayThue || 0;
-            this.roomAmount = result.tongTienPhong || 0;
-            this.serviceAmount = result.tongTienDichVu || 0;
-            this.serviceList = result.dichVuList || [];
-          }
-          
-          // Also try to get customer info from localStorage
-          if (this.isBrowser) {
-            const storedInfo = this.customerService.getStoredCustomerInfo();
-            if (storedInfo && storedInfo.bookingId === this.bookingId) {
-              this.customerName = this.customerName || storedInfo.customerInfo.fullName;
-              this.customerEmail = this.customerEmail || storedInfo.customerInfo.email;
-              this.customerPhone = this.customerPhone || storedInfo.customerInfo.phone;
-            }
-          }
-          
-          // Format dates if needed
-          this.formatDates();
-          
-          // Xóa bookingId khỏi localStorage sau khi thanh toán thành công
-          if (this.isBrowser && this.isSuccess) {
-            this.bookingService.clearBookingId();
-          }
-          
-          this.isProcessing = false;
-        },
-        error: (error) => {
-          console.error('Error in fallback loading payment details:', error);
-          // Vẫn hiển thị thành công nhưng không có thông tin chi tiết
-          this.isProcessing = false;
+    try {
+      const checkInDate = new Date(this.checkInDate);
+      const checkOutDate = new Date(this.checkOutDate);
+      
+      // Calculate the difference in milliseconds
+      const diffTime = Math.abs(checkOutDate.getTime() - checkInDate.getTime());
+      // Convert to days
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      if (diffDays > 0 && diffDays < 100) {
+        this.stayDuration = diffDays;
+        
+        // Update related calculated fields
+        if (this.roomRate > 0) {
+          this.roomAmount = this.roomRate * this.stayDuration;
+          this.amount = this.roomAmount + this.serviceAmount;
         }
-      });
+        
+        console.log('Corrected stay duration to:', diffDays);
+      }
+    } catch (error) {
+      console.error('Error calculating stay duration:', error);
+    }
   }
   
   // Format dates for display
@@ -317,15 +339,24 @@ export class PaymentResultComponent implements OnInit {
   // Xử lý các bước cần thiết sau khi thanh toán thành công
   processSuccessfulPayment(): void {
     if (!this.bookingId || !this.isBrowser) {
+      console.error('Không thể xử lý thanh toán: bookingId thiếu hoặc không phải môi trường browser');
       return;
     }
     
-    console.log('Thanh toán thành công, bắt đầu xử lý đặt phòng...');
+    console.log('Thanh toán thành công, bắt đầu xử lý đặt phòng với mã: ' + this.bookingId);
     
     // Lấy thông tin khách hàng từ localStorage
     const storedInfo = this.customerService.getStoredCustomerInfo();
+    console.log('Thông tin khách hàng từ localStorage:', storedInfo);
     
-    if (storedInfo && storedInfo.bookingId === this.bookingId) {
+    if (storedInfo) {
+      console.log('So sánh bookingId:', {
+        storedBookingId: storedInfo.bookingId,
+        currentBookingId: this.bookingId,
+        match: storedInfo.bookingId === this.bookingId
+      });
+      
+      // Allow submission even if bookingId doesn't exactly match - the current one is more important
       // Kiểm tra xem người dùng có chọn tạo tài khoản không
       const isCreatingAccount = storedInfo.customerInfo.createAccount;
       console.log('Khách hàng đã chọn' + (isCreatingAccount ? '' : ' không') + ' tạo tài khoản');
@@ -338,7 +369,8 @@ export class PaymentResultComponent implements OnInit {
         this.accountCreated = true;
       }
       
-      // 1. Gửi thông tin khách hàng lên server
+      // 1. Gửi thông tin khách hàng lên server - sử dụng bookingId hiện tại, không phải từ stored info
+      console.log('Đang gửi thông tin khách hàng lên server với bookingId=', this.bookingId);
       this.customerService.submitCustomerInfo(this.bookingId, storedInfo.customerInfo)
         .subscribe({
           next: (response) => {
@@ -357,12 +389,16 @@ export class PaymentResultComponent implements OnInit {
           },
           error: (error) => {
             console.error('Lỗi khi gửi thông tin khách hàng:', error);
+            // Chi tiết lỗi để debug
+            if (error.error && error.error.message) {
+              console.error('Chi tiết lỗi từ server:', error.error.message);
+            }
             // Vẫn tiếp tục finalize đặt phòng ngay cả khi có lỗi với thông tin khách hàng
             this.finalizeBooking();
           }
         });
     } else {
-      console.log('Không tìm thấy thông tin khách hàng trong localStorage hoặc mã đặt phòng không khớp');
+      console.log('Không tìm thấy thông tin khách hàng trong localStorage');
       // Vẫn finalize đặt phòng ngay cả khi không có thông tin khách hàng
       this.finalizeBooking();
     }
@@ -403,4 +439,86 @@ export class PaymentResultComponent implements OnInit {
     this.processSuccessfulPayment();
   }
 
+  // Fallback method to get at least payment details if the combined approach fails
+  loadPaymentDetailsOnly(): void {
+    if (!this.bookingId) {
+      this.isProcessing = false;
+      return;
+    }
+    
+    // Try to load booking details from localStorage first
+    if (this.isBrowser && (!this.checkInDate || !this.checkOutDate || !this.roomName)) {
+      this.loadBookingDetailsFromLocalStorage();
+    }
+    
+    const bookingIdNumber: number = this.bookingId;
+    
+    this.paymentService.getPaymentDetails(bookingIdNumber)
+      .subscribe({
+        next: (response) => {
+          console.log('Fallback: Payment details loaded:', response);
+          
+          if (response && (response.maDatPhong || response.bookingId)) {
+            this.roomName = response.phongInfo || response.roomName || this.roomName;
+            this.amount = response.tongTienThanhToan || response.totalAmount || 0;
+            this.roomRate = response.giaPhong || 0;
+            this.stayDuration = response.soNgayThue || 0;
+            this.roomAmount = response.tongTienPhong || 0;
+            this.serviceAmount = response.tongTienDichVu || 0;
+            this.serviceList = response.dichVuList || [];
+            
+            // Only recalculate if backend value is clearly invalid
+            if (this.stayDuration > 100 || this.stayDuration <= 0) {
+              console.warn('Số ngày thuê từ backend không hợp lệ:', this.stayDuration);
+              this.calculateStayDuration();
+            } else {
+              console.log('Sử dụng số ngày thuê từ backend:', this.stayDuration);
+            }
+          } else if (response && response.status === 200 && response.result) {
+            const result = response.result;
+            this.roomName = result.phongInfo || result.roomName || this.roomName;
+            this.amount = result.tongTienThanhToan || result.totalAmount || 0;
+            this.roomRate = result.giaPhong || 0;
+            this.stayDuration = result.soNgayThue || 0;
+            this.roomAmount = result.tongTienPhong || 0;
+            this.serviceAmount = result.tongTienDichVu || 0;
+            this.serviceList = result.dichVuList || [];
+            
+            // Only recalculate if backend value is clearly invalid
+            if (this.stayDuration > 100 || this.stayDuration <= 0) {
+              console.warn('Số ngày thuê từ backend không hợp lệ:', this.stayDuration);
+              this.calculateStayDuration();
+            } else {
+              console.log('Sử dụng số ngày thuê từ backend:', this.stayDuration);
+            }
+          }
+          
+          // Also try to get customer info from localStorage
+          if (this.isBrowser) {
+            const storedInfo = this.customerService.getStoredCustomerInfo();
+            if (storedInfo && storedInfo.bookingId === this.bookingId) {
+              this.customerName = this.customerName || storedInfo.customerInfo.fullName;
+              this.customerEmail = this.customerEmail || storedInfo.customerInfo.email;
+              this.customerPhone = this.customerPhone || storedInfo.customerInfo.phone;
+            }
+          }
+          
+          // Format dates if needed
+          this.formatDates();
+          
+          // Xóa bookingId và details khỏi localStorage sau khi thanh toán thành công
+          if (this.isBrowser && this.isSuccess) {
+            this.bookingService.clearBookingId();
+            localStorage.removeItem('currentBookingDetails');
+          }
+          
+          this.isProcessing = false;
+        },
+        error: (error) => {
+          console.error('Error in fallback loading payment details:', error);
+          // Vẫn hiển thị thành công nhưng không có thông tin chi tiết
+          this.isProcessing = false;
+        }
+      });
+  }
 } 
