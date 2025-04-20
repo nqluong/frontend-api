@@ -56,7 +56,14 @@
                                 <label>Trạng thái <span class="text-danger">*</span></label>
                                 <select class="form-control" formControlName="tinhTrang" 
                                         [ngClass]="{ 'is-invalid': submitted && f['tinhTrang'].errors }">
-                                    <!-- ... -->
+                                    <option value="">Chọn trạng thái</option>
+                                    <option *ngFor="let status of statusOptions" [value]="status">
+                                        {{status === 'AVAILABLE' ? 'Trống' : 
+                                            status === 'BOOKED' ? 'Đã đặt' : 
+                                            status === 'OCCUPIED' ? 'Đang ở' : 
+                                            status === 'CLEANING' ? 'Đang dọn' : 
+                                            'Bảo trì'}}
+                                    </option>
                                 </select>
                                 <div *ngIf="submitted && f['tinhTrang'].errors" class="invalid-feedback">
                                     <div *ngIf="f['tinhTrang'].errors?.['required']">Vui lòng chọn trạng thái</div>
