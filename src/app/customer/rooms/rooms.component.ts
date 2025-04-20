@@ -204,18 +204,25 @@ export class RoomsComponent implements OnInit, AfterViewInit {
     }
     
     // Check for date conflicts with existing bookings
-    const hasConflict = this.bookedDates.some(booking => {
-      // Check if check-in date falls within a booking period
-      const checkInConflict = checkInDate >= booking.start && checkInDate < booking.end;
-      
-      // Check if check-out date falls within a booking period
-      const checkOutConflict = checkOutDate > booking.start && checkOutDate <= booking.end;
-      
-      // Check if booking period falls within our selected dates
-      const bookingWithinSelection = checkInDate <= booking.start && checkOutDate >= booking.end;
-      
-      return checkInConflict || checkOutConflict || bookingWithinSelection;
-    });
+    // Kiểm tra xem ngày check-in có bị xung đột không (sử dụng isDateBooked)
+    if (this.isDateBooked(this.bookingDates.checkIn)) {
+      alert('Ngày check-in đã được đặt. Vui lòng chọn ngày khác.');
+      return;
+    }
+    
+    // Kiểm tra xem có ngày nào trong khoảng thời gian đã chọn bị đặt chưa
+    let currentDate = new Date(checkInDate);
+    let hasConflict = false;
+    
+    while (currentDate < checkOutDate) {
+      if (this.isDateBooked(currentDate.toISOString().split('T')[0])) {
+        console.log(`Conflict detected on date: ${currentDate.toISOString().split('T')[0]}`);
+        hasConflict = true;
+        break;
+      }
+      // Move to next day
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
 
     if (hasConflict) {
       alert('Phòng đã được đặt trong khoảng thời gian bạn chọn. Vui lòng chọn ngày khác.');
@@ -546,12 +553,17 @@ export class RoomsComponent implements OnInit, AfterViewInit {
       const endDate = new Date(booking.end);
       
       // Add each date in the booking period to disabled dates
+      // Chỉ disable các ngày từ ngày check-in đến trước ngày check-out
+      // (không bao gồm ngày check-out để có thể đặt phòng ngay sau khi booking cũ kết thúc)
       while (currentDate < endDate) {
         disabledDates.push(new Date(currentDate));
         currentDate.setDate(currentDate.getDate() + 1);
       }
+      
+      console.log(`Disabled range: ${booking.start.toISOString().split('T')[0]} to ${new Date(endDate.getTime() - 86400000).toISOString().split('T')[0]}`);
     });
     
+    console.log(`Total disabled dates: ${disabledDates.length}`);
     return disabledDates;
   }
 
@@ -584,10 +596,29 @@ export class RoomsComponent implements OnInit, AfterViewInit {
             booking.status === 'CONFIRMED');
           
           // Transform the bookings into date ranges
-          this.bookedDates = confirmedBookings.map(booking => ({
-            start: new Date(booking.checkInTime),
-            end: new Date(booking.checkOutTime)
-          }));
+          this.bookedDates = confirmedBookings.map(booking => {
+            const start = new Date(booking.checkInTime);
+            let end = new Date(booking.checkOutTime);
+            
+            // Xử lý trường hợp đặc biệt: checkIn và checkOut cùng ngày
+            // Trong trường hợp này, sử dụng toàn bộ ngày đó cho booking
+            if (end.getTime() === start.getTime()) {
+              console.log(`Booking ${booking.bookingId} has same day check-in/check-out: ${start.toISOString().split('T')[0]}`);
+              // Đặt thời gian kết thúc là cuối ngày
+              end.setHours(23, 59, 59, 999);
+            } else {
+              // Đối với booking bình thường, kéo dài booking đến hết ngày checkout
+              // để đảm bảo không ai có thể đặt phòng vào ngày checkout
+              end.setHours(23, 59, 59, 999);
+            }
+            
+            console.log(`Parsed booking: ${booking.bookingId}, Start: ${start.toISOString()}, End: ${end.toISOString()}`);
+            
+            return {
+              start: start,
+              end: end
+            };
+          });
           
           console.log('Booked dates:', this.bookedDates);
           
@@ -618,8 +649,9 @@ export class RoomsComponent implements OnInit, AfterViewInit {
     const date = new Date(dateStr);
     
     return this.bookedDates.some(booking => {
-      // Check if date falls within a booking period (inclusive of check-in, exclusive of check-out)
-      return (date >= booking.start && date < booking.end);
+      // Check if date falls within a booking period
+      // Trong khoảng từ ngày check-in đến hết ngày check-out
+      return (date >= booking.start && date <= booking.end);
     });
   }
 
