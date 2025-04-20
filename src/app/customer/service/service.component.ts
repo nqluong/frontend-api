@@ -36,6 +36,7 @@ export class ServiceComponent implements OnInit {
   // Dịch vụ đã chọn
   selectedServices: { [key: number]: number } = {}; // maDV: số lượng
   isAddingServices = false;
+  
 
   constructor(
     private serviceService: ServiceService,
@@ -132,11 +133,27 @@ export class ServiceComponent implements OnInit {
   }
   
   // Thay đổi số lượng dịch vụ
-  updateQuantity(serviceId: number, quantity: number): void {
-    if (quantity > 0) {
-      this.selectedServices[serviceId] = quantity;
-    } else {
+  updateQuantity(serviceId: number, quantity: number | string): void {
+    // Ensure quantity is a number
+    const numQuantity = typeof quantity === 'string' ? parseInt(quantity, 10) : quantity;
+    
+    // Validate that we have a valid positive number
+    if (!isNaN(numQuantity) && numQuantity > 0) {
+      this.selectedServices[serviceId] = numQuantity;
+      console.log(`Service ${serviceId} quantity updated to ${numQuantity}`);
+    } else if (numQuantity <= 0) {
+      // If quantity is zero or negative, remove the service and uncheck the checkbox
       delete this.selectedServices[serviceId];
+      
+      // Find and uncheck the checkbox
+      const checkbox = document.getElementById(`service-toggle-${serviceId}`) as HTMLInputElement;
+      if (checkbox) {
+        checkbox.checked = false;
+      }
+      
+      console.log(`Service ${serviceId} removed due to zero/negative quantity`);
+    } else {
+      console.error(`Invalid quantity value: ${quantity}`);
     }
     
     console.log('Updated services:', this.selectedServices);

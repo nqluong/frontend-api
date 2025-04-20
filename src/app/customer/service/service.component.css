@@ -260,6 +260,10 @@
 
 .quantity-selector {
     margin-top: 15px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border-radius: 5px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
 .quantity-selector label {
@@ -267,11 +271,26 @@
     font-size: 14px;
     color: #555;
     margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.quantity-value {
+    min-width: 40px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #2c3e50;
+    text-align: center;
 }
 
 .btn-outline-secondary {
     border-color: #ccc;
     color: #333;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
 }
 
 .btn-outline-secondary:hover {

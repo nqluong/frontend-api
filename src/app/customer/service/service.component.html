@@ -101,28 +101,26 @@
                             </div>
                             
                             <!-- Hiển thị số lượng khi đã chọn dịch vụ -->
-                            <div class="quantity-selector" *ngIf="selectedServices[service.maDV]">
+                            <div class="quantity-selector" *ngIf="selectedServices[service.maDV] > 0">
                                 <label>Số lượng:</label>
                                 <div class="d-flex justify-content-center align-items-center mt-2">
                                     <button class="btn btn-sm btn-outline-secondary" 
                                         (click)="updateQuantity(service.maDV, (selectedServices[service.maDV] || 0) - 1)">
-                                        -
+                                        <i class="fa fa-minus"></i>
                                     </button>
-                                    <input type="number" class="form-control mx-2" style="width: 60px; text-align: center;"
-                                        [(ngModel)]="selectedServices[service.maDV]" 
-                                        (change)="updateQuantity(service.maDV, selectedServices[service.maDV] || 0)">
+                                    <div class="quantity-value mx-3">{{ selectedServices[service.maDV] }}</div>
                                     <button class="btn btn-sm btn-outline-secondary" 
                                         (click)="updateQuantity(service.maDV, (selectedServices[service.maDV] || 0) + 1)">
-                                        +
+                                        <i class="fa fa-plus"></i>
                                     </button>
                                 </div>
                             </div>
                         </div>
                         
                         <!-- Nút đặt ngay cho khách chưa đặt phòng -->
-                        <a href="javascript:void(0)" class="theme-btn btn-style-two mt-4" *ngIf="!bookingId">
+                        <!-- <a href="javascript:void(0)" class="theme-btn btn-style-two mt-4" *ngIf="!bookingId">
                             <span class="btn-title">Đặt Ngay</span>
-                        </a>
+                        </a> -->
                     </div>
                 </div>
             </div>
@@ -166,6 +164,9 @@
                 <p>Hiện tại không có dịch vụ nào được tìm thấy. Vui lòng thử lại sau.</p>
             </div>
         </div>
+        
+        <!-- Debug toggle button (only in development) -->
+        
     </div>
 </section>
 <!-- End Service Section -->

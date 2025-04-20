@@ -68,7 +68,7 @@
             <div class="inner-box">
               <figure class="image"><img src="assets/customer/images/resource/service1-1.jpg" alt=""></figure>
               <div class="content-box">
-                <h6 class="title"><a href="room-details.html">Family Discount</a></h6>
+                <h6 class="title"><a [routerLink]="['/customer/rooms']" [queryParams]="{type: 'Phòng VIP'}">Family Discount</a></h6>
               </div>
             </div>
           </div>
@@ -77,7 +77,7 @@
             <div class="inner-box">
               <figure class="image"><img src="assets/customer/images/resource/service1-2.jpg" alt=""></figure>
               <div class="content-box">
-                <h6 class="title"><a href="room-details.html">Couples offer</a></h6>
+                <h6 class="title"><a [routerLink]="['/customer/rooms']" [queryParams]="{type: 'Phòng Đôi'}">Couples offer</a></h6>
               </div>
             </div>
           </div>
@@ -86,7 +86,7 @@
             <div class="inner-box">
               <figure class="image"><img src="assets/customer/images/resource/service1-3.jpg" alt=""></figure>
               <div class="content-box">
-                <h6 class="title"><a href="room-details.html">Buy One Get One Free</a></h6>
+                <h6 class="title"><a [routerLink]="['/customer/rooms']" [queryParams]="{type: 'Phòng Đơn'}">Buy One Get One Free</a></h6>
               </div>
             </div>
           </div>
@@ -129,7 +129,7 @@
               <li><i class="icon fa fa-circle-check"></i>{{ hotel.moTa}}</li>
               </ul>
             <div class="btn-box">
-              <a href="page-about.html" class="theme-btn btn-style-one"><span class="btn-title">Khám phá thêm</span></a>
+              <a [routerLink]="['/customer/rooms']" class="theme-btn btn-style-one"><span class="btn-title">Khám phá thêm</span></a>
             </div>
           </div>
         </div>
@@ -164,7 +164,7 @@
         <div class="inner-box">
           <div class="image-box">
             <figure class="image mb-0">
-              <a href="room-details.html">
+              <a [routerLink]="['/customer/room-details', room.id]" [queryParams]="{checkIn: searchParams.checkIn, checkOut: searchParams.checkOut}">
                 <img [src]="'assets/customer/images/resource/room-service1-1.jpg'" alt="Room Image" />
               </a>
             </figure>
@@ -172,7 +172,7 @@
           <div class="content-box">
             <div class="inner-box">
               <h4 class="title">
-                <a href="room-details.html">{{ room.loaiPhong }} {{ room.tenPhong }}</a>
+                <a [routerLink]="['/customer/room-details', room.id]" [queryParams]="{checkIn: searchParams.checkIn, checkOut: searchParams.checkOut}">{{ room.loaiPhong }} {{ room.tenPhong }}</a>
               </h4>
               <div class="price">{{ room.gia | currency:'VND' }}/ Night</div>
             </div>

@@ -43,7 +43,7 @@
                         <span class="price">{{room.gia | currency:'VND':'symbol':'1.0-0'}} / ĐÊM</span>
                     </div>
                     <div class="box-caption">
-                        <a href="javascript:void(0)" class="book-btn" (click)="bookRoom(room.id)">ĐẶT NGAY</a>
+                        <a href="javascript:void(0)" class="book-btn" (click)="openBookingModal(room.id)">ĐẶT NGAY</a>
                         <ul class="bx-links">
                             <li *ngFor="let tienNghi of room.tienNghi">
                                 <a href="javascript:void(0)">
@@ -99,3 +99,55 @@
     </div>
 </section>
 <!-- End rooms-section -->
+
+<!-- Booking Modal -->
+<div class="custom-modal" id="bookingModal" role="dialog" aria-modal="true" aria-labelledby="bookingModalLabel" *ngIf="showBookingModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="bookingModalLabel">Chọn ngày đặt phòng</h2>
+                <button type="button" class="btn-close" (click)="closeBookingModal()" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body">
+                <form (ngSubmit)="confirmBooking()" #bookingForm="ngForm">
+                    <div class="mb-3">
+                        <label for="checkInDate" class="form-label">Ngày nhận phòng</label>
+                        <input 
+                            type="date" 
+                            class="form-control" 
+                            id="checkInDate" 
+                            [(ngModel)]="bookingDates.checkIn" 
+                            name="checkIn"
+                            aria-required="true"
+                            required
+                        >
+                    </div>
+                    <div class="mb-3">
+                        <label for="checkOutDate" class="form-label">Ngày trả phòng</label>
+                        <input 
+                            type="date" 
+                            class="form-control" 
+                            id="checkOutDate" 
+                            [(ngModel)]="bookingDates.checkOut" 
+                            name="checkOut"
+                            aria-required="true"
+                            required
+                        >
+                    </div>
+                    <p class="small text-muted">Phòng đã chọn: ID #{{selectedRoomId}}</p>
+                    <div class="text-center">
+                        <button type="submit" class="theme-btn btn-style-one" [disabled]="!bookingForm.valid">
+                            <span class="btn-title">Xác nhận đặt phòng</span>
+                        </button>
+                        <button type="button" class="theme-btn btn-style-two ms-2" (click)="closeBookingModal()">
+                            <span class="btn-title">Hủy</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Overlay for modal -->
+<div class="modal-backdrop" *ngIf="showBookingModal" (click)="closeBookingModal()"></div>

@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { isPlatformBrowser } from '@angular/common';
 import { PLATFORM_ID, Inject } from '@angular/core';
 import { finalize } from 'rxjs/operators';
+import { HttpClient, HttpParams } from '@angular/common/http';
 
 // Import models
 import { CustomerInfo } from '../../models/customer.model';
@@ -14,6 +15,7 @@ import { PaymentDetail } from '../../models/payment.model';
 import { CustomerService } from '../../services/customer.service';
 import { BookingService } from '../../services/booking.service';
 import { PaymentService } from '../../services/payment.service';
+import { ServiceService } from '../../services/service.service';
 
 @Component({
   selector: 'app-checkout',
@@ -68,10 +70,15 @@ export class CheckoutComponent implements OnInit {
   
   step: 'info' | 'payment' = 'info';
   
+  // Add a new property to track service removal status
+  isRemovingService: boolean = false;
+  
   constructor(
     private customerService: CustomerService,
     private bookingService: BookingService,
     private paymentService: PaymentService,
+    private serviceService: ServiceService,
+    private http: HttpClient,
     private router: Router,
     @Inject(PLATFORM_ID) platformId: Object
   ) {
@@ -686,5 +693,47 @@ export class CheckoutComponent implements OnInit {
     
     // Chuyển ngay đến bước thanh toán
     this.loadPaymentDetails();
+  }
+
+  // Method to remove a service from the booking
+  removeService(serviceId: number): void {
+    if (!this.bookingId) {
+      alert('Không tìm thấy thông tin đặt phòng. Không thể xóa dịch vụ.');
+      return;
+    }
+    
+    if (!confirm('Bạn có chắc chắn muốn xóa dịch vụ này?')) {
+      return;
+    }
+    
+    this.isRemovingService = true;
+    
+    // Build the API endpoint parameters
+    const params = new HttpParams()
+      .set('maDV', serviceId.toString())
+      .set('maDP', this.bookingId.toString());
+    
+    this.http.delete('http://localhost:8080/hotelbooking/bookservice', { params })
+      .pipe(finalize(() => this.isRemovingService = false))
+      .subscribe({
+        next: (response: any) => {
+          console.log('Service removed successfully:', response);
+          
+          // Check if the response indicates success
+          if (response && response.status === 200) {
+            alert('Đã xóa dịch vụ thành công.');
+            
+            // Reload payment details to reflect the changes
+            this.loadPaymentDetails();
+          } else {
+            alert('Có lỗi xảy ra khi xóa dịch vụ. Vui lòng thử lại.');
+          }
+        },
+        error: (error) => {
+          console.error('Error removing service:', error);
+          alert('Có lỗi xảy ra khi xóa dịch vụ: ' + 
+            (error.message || 'Vui lòng thử lại sau.'));
+        }
+      });
   }
 }

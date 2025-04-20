@@ -2,7 +2,7 @@ import { Component, OnInit, AfterViewInit } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { RoomService } from '../../services/room.service';
 import { HotelsService } from '../../services/hotels.service';
 import { Hotel } from '../../models/hotels.model';
@@ -38,7 +38,7 @@ interface RoomDisplay {
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css'
 })

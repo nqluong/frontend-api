@@ -45,7 +45,7 @@
 </section>
 
 <!-- Loading Indicators -->
-<div class="text-center py-5" *ngIf="isSubmittingInfo || isLoadingPaymentDetails || isCreatingAccount">
+<div class="text-center py-5" *ngIf="isSubmittingInfo || isLoadingPaymentDetails || isCreatingAccount || isRemovingService">
     <div class="spinner-border text-primary" role="status">
         <span class="visually-hidden">Đang xử lý...</span>
     </div>
@@ -55,6 +55,7 @@
         <i class="fa fa-check-circle"></i> {{accountCreationMessage}}
     </p>
     <p class="mt-2" *ngIf="isLoadingPaymentDetails">Đang tải thông tin thanh toán...</p>
+    <p class="mt-2" *ngIf="isRemovingService">Đang xóa dịch vụ...</p>
 </div>
 
 <!-- Customer Info Form -->
@@ -254,6 +255,7 @@
                                     <div class="col-price">Giá</div>
                                     <div class="col-qty">SL</div>
                                     <div class="col-total">Thành tiền</div>
+                                    <div class="col-action">Xóa</div>
                                 </div>
                                 
                                 <!-- Sử dụng dichVuList nếu có -->
@@ -262,6 +264,12 @@
                                     <div class="col-price">{{formatCurrency(service.gia)}}</div>
                                     <div class="col-qty">{{service.soLuong}}</div>
                                     <div class="col-total">{{formatCurrency(service.thanhTien)}}</div>
+                                    <div class="col-action">
+                                        <button type="button" class="btn btn-sm btn-danger" title="Xóa dịch vụ" 
+                                                (click)="removeService(service.maDv)">
+                                            <i class="fa fa-times"></i>
+                                        </button>
+                                    </div>
                                 </div>
                                 
                                 <!-- Sử dụng services nếu có -->
@@ -270,6 +278,12 @@
                                     <div class="col-price">{{formatCurrency(service.price)}}</div>
                                     <div class="col-qty">{{service.quantity}}</div>
                                     <div class="col-total">{{formatCurrency(service.total)}}</div>
+                                    <div class="col-action">
+                                        <button type="button" class="btn btn-sm btn-danger" title="Xóa dịch vụ" 
+                                                (click)="removeService(service.serviceId)">
+                                            <i class="fa fa-times"></i>
+                                        </button>
+                                    </div>
                                 </div>
                                 
                                 <div class="table-footer">

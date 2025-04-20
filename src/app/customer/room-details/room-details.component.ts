@@ -40,6 +40,16 @@ export class RoomDetailsComponent implements OnInit {
       this.roomId = +params['id']; // Convert string to number
       this.loadRoomDetails();
     });
+    
+    // Get check-in and check-out dates from query parameters if available
+    this.route.queryParams.subscribe(params => {
+      if (params['checkIn']) {
+        this.bookingData.checkIn = params['checkIn'];
+      }
+      if (params['checkOut']) {
+        this.bookingData.checkOut = params['checkOut'];
+      }
+    });
   }
 
   // Phương thức chọn ảnh
@@ -157,13 +167,13 @@ export class RoomDetailsComponent implements OnInit {
               }
             });
           } else {
-            alert('Có lỗi xảy ra khi tạo đơn đặt phòng. Vui lòng thử lại.');
+            alert('Phòng không còn trống trong thời gian bạn chọn. Vui lòng chọn thời gian khác.');
           }
           this.isCreatingBooking = false;
         },
         error: (error) => {
           console.error('Error creating temporary booking:', error);
-          alert('Có lỗi xảy ra khi tạo đơn đặt phòng. Vui lòng thử lại sau.');
+          alert('Phòng không còn trống trong thời gian bạn chọn. Vui lòng chọn thời gian khác.');
           this.isCreatingBooking = false;
         }
       });

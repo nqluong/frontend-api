@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { isPlatformBrowser } from '@angular/common';
 import { PLATFORM_ID, Inject } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 
 // Import models
 import { RoomDisplay } from '../../models/booking.model';
@@ -14,7 +15,7 @@ import { RoomService } from '../../services/room.service';
 @Component({
   selector: 'app-rooms',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './rooms.component.html',
   styleUrl: './rooms.component.css'
 })
@@ -27,6 +28,23 @@ export class RoomsComponent implements OnInit {
   isSearchResult: boolean = false;
   currentPage: number = 0;
   totalPages: number = 0;
+  
+  // Properties for booking modal
+  showBookingModal: boolean = false;
+  selectedRoomId: number | null = null;
+  bookingDates = {
+    checkIn: '',
+    checkOut: ''
+  };
+
+  // Handle keyboard events for modal accessibility
+  @HostListener('document:keydown', ['$event'])
+  handleKeyboardEvent(event: KeyboardEvent) {
+    // Close modal on Escape key
+    if (this.showBookingModal && event.key === 'Escape') {
+      this.closeBookingModal();
+    }
+  }
 
   constructor(
     private route: ActivatedRoute, 
@@ -64,6 +82,86 @@ export class RoomsComponent implements OnInit {
     if (this.searchResults.length === 0) {
       this.loadAllRooms();
     }
+    
+    // If we already have check-in and check-out dates from search, initialize the booking dates
+    if (this.checkInDate && this.checkOutDate) {
+      // Format dates for input[type=date] (YYYY-MM-DD)
+      const checkInDate = new Date(this.checkInDate);
+      const checkOutDate = new Date(this.checkOutDate);
+      
+      if (!isNaN(checkInDate.getTime()) && !isNaN(checkOutDate.getTime())) {
+        this.bookingDates.checkIn = checkInDate.toISOString().split('T')[0];
+        this.bookingDates.checkOut = checkOutDate.toISOString().split('T')[0];
+      }
+    } else {
+      // Set default dates (today and tomorrow)
+      const today = new Date();
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      
+      this.bookingDates.checkIn = today.toISOString().split('T')[0];
+      this.bookingDates.checkOut = tomorrow.toISOString().split('T')[0];
+    }
+  }
+  
+  // Methods for booking modal
+  openBookingModal(roomId: number): void {
+    this.selectedRoomId = roomId;
+    this.showBookingModal = true;
+    
+    // Focus trap implementation - prevent background scrolling
+    if (this.isBrowser) {
+      document.body.style.overflow = 'hidden';
+      
+      // Focus the first input after modal is shown
+      setTimeout(() => {
+        const firstInput = document.getElementById('checkInDate');
+        if (firstInput) {
+          firstInput.focus();
+        }
+      }, 100);
+    }
+  }
+  
+  closeBookingModal(): void {
+    this.showBookingModal = false;
+    this.selectedRoomId = null;
+    
+    // Re-enable scrolling
+    if (this.isBrowser) {
+      document.body.style.overflow = '';
+    }
+  }
+  
+  confirmBooking(): void {
+    console.log('Confirming booking with room ID:', this.selectedRoomId);
+    
+    if (!this.selectedRoomId || !this.bookingDates.checkIn || !this.bookingDates.checkOut) {
+      alert('Vui lòng chọn ngày check-in và check-out');
+      return;
+    }
+    
+    // Validate dates
+    const checkInDate = new Date(this.bookingDates.checkIn);
+    const checkOutDate = new Date(this.bookingDates.checkOut);
+    
+    if (checkOutDate <= checkInDate) {
+      alert('Ngày check-out phải sau ngày check-in');
+      return;
+    }
+    
+    // Format dates for API
+    const checkInFormatted = this.fixDateFormat(this.bookingDates.checkIn);
+    const checkOutFormatted = this.fixDateFormat(this.bookingDates.checkOut);
+    
+    // Store the room ID before closing the modal
+    const roomId = this.selectedRoomId;
+    
+    // Close modal and proceed with booking
+    this.closeBookingModal();
+    
+    // Use the stored roomId
+    this.bookRoom(roomId, checkInFormatted, checkOutFormatted);
   }
   
   // Hàm tải tất cả phòng
@@ -155,28 +253,32 @@ export class RoomsComponent implements OnInit {
     }
   }
 
-  bookRoom(roomId: number) {
+  bookRoom(roomId: number, checkIn?: string, checkOut?: string) {
     if (this.isCreatingBooking) {
       return; // Tránh gửi nhiều request cùng lúc
     }
 
-    // Nếu không phải là từ kết quả tìm kiếm, phải yêu cầu người dùng chọn ngày
-    if (!this.isSearchResult) {
-      alert('Vui lòng quay lại trang chủ để chọn ngày Check-in và Check-out trước khi đặt phòng.');
-      this.router.navigate(['/customer']);
+    // Use passed parameters if provided, otherwise use existing dates
+    const checkInToUse = checkIn || this.checkInDate;
+    const checkOutToUse = checkOut || this.checkOutDate;
+
+    // If we don't have dates and didn't get them as parameters, we should have shown the modal
+    if (!checkInToUse || !checkOutToUse) {
+      console.error('Missing check-in or check-out dates');
       return;
     }
-
-    if (!this.checkInDate || !this.checkOutDate) {
-      alert('Không tìm thấy thông tin ngày check-in và check-out. Vui lòng quay lại trang tìm kiếm.');
+    
+    if (!roomId) {
+      console.error('Missing room ID');
+      alert('Lỗi: Không tìm thấy thông tin phòng. Vui lòng thử lại.');
       return;
     }
 
     this.isCreatingBooking = true;
 
     // Sửa lại định dạng ngày nếu cần
-    const checkInFixed = this.fixDateFormat(this.checkInDate);
-    const checkOutFixed = this.fixDateFormat(this.checkOutDate);
+    const checkInFixed = this.fixDateFormat(checkInToUse);
+    const checkOutFixed = this.fixDateFormat(checkOutToUse);
 
     console.log('Creating temporary booking with params:', {
       roomId: roomId,
