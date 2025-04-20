@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class RoomService {
-  private apiUrl = 'http://localhost:8080/hotelbooking/rooms'; // Thay bằng URL API của bạn
+  private apiUrl = 'http://localhost:8080/hotelbooking/rooms'; 
 
   constructor(private http: HttpClient) {}
 
@@ -23,5 +23,10 @@ export class RoomService {
   // Hàm lấy chi tiết phòng theo ID
   getRoomById(roomId: number): Observable<any> {
     return this.http.get(`${this.apiUrl}/${roomId}`);
+  }
+
+  // Hàm lấy danh sách booking của một phòng
+  getRoomBookings(roomId: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/${roomId}/bookings`);
   }
 }

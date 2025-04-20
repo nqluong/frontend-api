@@ -113,23 +113,30 @@
                     <div class="mb-3">
                         <label for="checkInDate" class="form-label">Ngày nhận phòng</label>
                         <input 
-                            type="date" 
+                            type="text" 
                             class="form-control" 
                             id="checkInDate" 
                             [(ngModel)]="bookingDates.checkIn" 
                             name="checkIn"
+                            #checkInPicker
+                            placeholder="Chọn ngày nhận phòng"
+                            readonly
                             aria-required="true"
                             required
                         >
+                    
                     </div>
                     <div class="mb-3">
                         <label for="checkOutDate" class="form-label">Ngày trả phòng</label>
                         <input 
-                            type="date" 
+                            type="text" 
                             class="form-control" 
                             id="checkOutDate" 
                             [(ngModel)]="bookingDates.checkOut" 
                             name="checkOut"
+                            #checkOutPicker
+                            placeholder="Chọn ngày trả phòng"
+                            readonly
                             aria-required="true"
                             required
                         >

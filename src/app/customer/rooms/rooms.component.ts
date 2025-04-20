@@ -1,9 +1,12 @@
-import { Component, OnInit, HostListener } from '@angular/core';
+import { Component, OnInit, HostListener, ViewChild, ElementRef, AfterViewInit, Renderer2 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { isPlatformBrowser } from '@angular/common';
 import { PLATFORM_ID, Inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import flatpickr from 'flatpickr';
+import type { Instance as FlatpickrInstance } from 'flatpickr/dist/types/instance';
+import 'flatpickr/dist/flatpickr.min.css';
 
 // Import models
 import { RoomDisplay } from '../../models/booking.model';
@@ -12,6 +15,19 @@ import { RoomDisplay } from '../../models/booking.model';
 import { BookingService } from '../../services/booking.service';
 import { RoomService } from '../../services/room.service';
 
+interface RoomBooking {
+  bookingId: number;
+  checkInTime: string;
+  checkOutTime: string;
+  status: string;
+}
+
+interface RoomBookingsResponse {
+  roomId: number;
+  roomName: string;
+  bookings: RoomBooking[];
+}
+
 @Component({
   selector: 'app-rooms',
   standalone: true,
@@ -19,7 +35,10 @@ import { RoomService } from '../../services/room.service';
   templateUrl: './rooms.component.html',
   styleUrl: './rooms.component.css'
 })
-export class RoomsComponent implements OnInit {
+export class RoomsComponent implements OnInit, AfterViewInit {
+  @ViewChild('checkInPicker') checkInPicker!: ElementRef;
+  @ViewChild('checkOutPicker') checkOutPicker!: ElementRef;
+  
   searchResults: RoomDisplay[] = [];
   checkInDate: string = '';
   checkOutDate: string = '';
@@ -36,6 +55,16 @@ export class RoomsComponent implements OnInit {
     checkIn: '',
     checkOut: ''
   };
+  
+  // Booking dates availability
+  bookedDates: {start: Date, end: Date}[] = [];
+  isLoadingBookings: boolean = false;
+  today = new Date();
+  minDate = this.formatDateForInput(this.today);
+  
+  // Flatpickr instances
+  checkInFlatpickr: FlatpickrInstance | null = null;
+  checkOutFlatpickr: FlatpickrInstance | null = null;
 
   // Handle keyboard events for modal accessibility
   @HostListener('document:keydown', ['$event'])
@@ -51,7 +80,8 @@ export class RoomsComponent implements OnInit {
     private router: Router,
     private bookingService: BookingService,
     private roomService: RoomService,
-    @Inject(PLATFORM_ID) platformId: Object
+    @Inject(PLATFORM_ID) platformId: Object,
+    private renderer: Renderer2
   ) {
     this.isBrowser = isPlatformBrowser(platformId);
     
@@ -69,6 +99,11 @@ export class RoomsComponent implements OnInit {
   }
 
   ngOnInit() {
+    // Ensure Flatpickr CSS is loaded
+    if (this.isBrowser) {
+      this.ensureFlatpickrCssLoaded();
+    }
+    
     // Backup plan: Nếu không lấy được từ navigation state, thử lấy từ history state
     if (this.isBrowser && this.searchResults.length === 0 && window.history.state?.searchResults) {
       this.searchResults = window.history.state.searchResults;
@@ -104,28 +139,46 @@ export class RoomsComponent implements OnInit {
     }
   }
   
+  ngAfterViewInit(): void {
+    // We'll initialize Flatpickr when the modal is opened
+  }
+  
   // Methods for booking modal
   openBookingModal(roomId: number): void {
     this.selectedRoomId = roomId;
     this.showBookingModal = true;
     
+    // Load room bookings for this room
+    this.loadRoomBookings(roomId);
+    
     // Focus trap implementation - prevent background scrolling
     if (this.isBrowser) {
       document.body.style.overflow = 'hidden';
-      
-      // Focus the first input after modal is shown
-      setTimeout(() => {
-        const firstInput = document.getElementById('checkInDate');
-        if (firstInput) {
-          firstInput.focus();
-        }
-      }, 100);
     }
+    
+    // Initialize Flatpickr after modal is shown with a longer delay
+    // to ensure the modal DOM is fully rendered
+    setTimeout(() => {
+      console.log('Initializing Flatpickr in modal');
+      this.initFlatpickrWithDirectQuery();
+    }, 500);
   }
   
   closeBookingModal(): void {
+    // Destroy Flatpickr instances
+    if (this.checkInFlatpickr) {
+      this.checkInFlatpickr.destroy();
+      this.checkInFlatpickr = null;
+    }
+    
+    if (this.checkOutFlatpickr) {
+      this.checkOutFlatpickr.destroy();
+      this.checkOutFlatpickr = null;
+    }
+    
     this.showBookingModal = false;
     this.selectedRoomId = null;
+    this.bookedDates = [];
     
     // Re-enable scrolling
     if (this.isBrowser) {
@@ -147,6 +200,25 @@ export class RoomsComponent implements OnInit {
     
     if (checkOutDate <= checkInDate) {
       alert('Ngày check-out phải sau ngày check-in');
+      return;
+    }
+    
+    // Check for date conflicts with existing bookings
+    const hasConflict = this.bookedDates.some(booking => {
+      // Check if check-in date falls within a booking period
+      const checkInConflict = checkInDate >= booking.start && checkInDate < booking.end;
+      
+      // Check if check-out date falls within a booking period
+      const checkOutConflict = checkOutDate > booking.start && checkOutDate <= booking.end;
+      
+      // Check if booking period falls within our selected dates
+      const bookingWithinSelection = checkInDate <= booking.start && checkOutDate >= booking.end;
+      
+      return checkInConflict || checkOutConflict || bookingWithinSelection;
+    });
+
+    if (hasConflict) {
+      alert('Phòng đã được đặt trong khoảng thời gian bạn chọn. Vui lòng chọn ngày khác.');
       return;
     }
     
@@ -317,5 +389,266 @@ export class RoomsComponent implements OnInit {
           this.isCreatingBooking = false;
         }
       });
+  }
+
+  // Ensure Flatpickr CSS is loaded
+  private ensureFlatpickrCssLoaded(): void {
+    // Check if the stylesheet is already loaded
+    const existingLink = document.querySelector('link[href*="flatpickr.min.css"]');
+    
+    if (!existingLink) {
+      console.log('Adding Flatpickr CSS to document head');
+      const linkElement = this.renderer.createElement('link');
+      this.renderer.setAttribute(linkElement, 'rel', 'stylesheet');
+      this.renderer.setAttribute(linkElement, 'type', 'text/css');
+      this.renderer.setAttribute(linkElement, 'href', 'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css');
+      this.renderer.appendChild(document.head, linkElement);
+    }
+  }
+
+  // Initialize Flatpickr using direct DOM queries
+  initFlatpickrWithDirectQuery(): void {
+    // Find inputs directly in the DOM
+    const checkInElement = document.querySelector('#checkInDate');
+    const checkOutElement = document.querySelector('#checkOutDate');
+    
+    console.log('Direct DOM query results:', {
+      checkInElement,
+      checkOutElement
+    });
+    
+    // Initialize checkIn picker
+    if (checkInElement) {
+      console.log('Initializing checkIn picker using direct DOM query');
+      try {
+        this.checkInFlatpickr = flatpickr(checkInElement, {
+          dateFormat: 'Y-m-d',
+          minDate: 'today',
+          disable: this.getDisabledDates(),
+          onChange: (selectedDates: Date[]) => {
+            if (selectedDates.length > 0) {
+              this.bookingDates.checkIn = this.formatDateForInput(selectedDates[0]);
+              this.updateCheckOutMinDate(selectedDates[0]);
+            }
+          }
+        });
+        console.log('checkIn flatpickr initialized successfully', this.checkInFlatpickr);
+      } catch (error) {
+        console.error('Error initializing checkIn flatpickr:', error);
+      }
+    } else {
+      console.warn('checkIn element not found with direct DOM query');
+      
+      // Fallback to ViewChild reference if available
+      if (this.checkInPicker?.nativeElement) {
+        console.log('Falling back to ViewChild for checkIn');
+        this.initCheckInFlatpickr();
+      }
+    }
+    
+    // Initialize checkOut picker
+    if (checkOutElement) {
+      console.log('Initializing checkOut picker using direct DOM query');
+      try {
+        this.checkOutFlatpickr = flatpickr(checkOutElement, {
+          dateFormat: 'Y-m-d',
+          minDate: this.bookingDates.checkIn || 'today',
+          disable: this.getDisabledDates(),
+          onChange: (selectedDates: Date[]) => {
+            if (selectedDates.length > 0) {
+              this.bookingDates.checkOut = this.formatDateForInput(selectedDates[0]);
+            }
+          }
+        });
+        console.log('checkOut flatpickr initialized successfully', this.checkOutFlatpickr);
+      } catch (error) {
+        console.error('Error initializing checkOut flatpickr:', error);
+      }
+    } else {
+      console.warn('checkOut element not found with direct DOM query');
+      
+      // Fallback to ViewChild reference if available
+      if (this.checkOutPicker?.nativeElement) {
+        console.log('Falling back to ViewChild for checkOut');
+        this.initCheckOutFlatpickr();
+      }
+    }
+  }
+
+  // Initialize checkIn Flatpickr using ViewChild
+  initCheckInFlatpickr(): void {
+    try {
+      this.checkInFlatpickr = flatpickr(this.checkInPicker.nativeElement, {
+        dateFormat: 'Y-m-d',
+        minDate: 'today',
+        disable: this.getDisabledDates(),
+        onChange: (selectedDates: Date[]) => {
+          if (selectedDates.length > 0) {
+            this.bookingDates.checkIn = this.formatDateForInput(selectedDates[0]);
+            this.updateCheckOutMinDate(selectedDates[0]);
+          }
+        }
+      });
+      console.log('checkIn flatpickr initialized successfully via ViewChild', this.checkInFlatpickr);
+    } catch (error) {
+      console.error('Error initializing checkIn flatpickr via ViewChild:', error);
+    }
+  }
+
+  // Initialize checkOut Flatpickr using ViewChild
+  initCheckOutFlatpickr(): void {
+    try {
+      this.checkOutFlatpickr = flatpickr(this.checkOutPicker.nativeElement, {
+        dateFormat: 'Y-m-d',
+        minDate: this.bookingDates.checkIn || 'today',
+        disable: this.getDisabledDates(),
+        onChange: (selectedDates: Date[]) => {
+          if (selectedDates.length > 0) {
+            this.bookingDates.checkOut = this.formatDateForInput(selectedDates[0]);
+          }
+        }
+      });
+      console.log('checkOut flatpickr initialized successfully via ViewChild', this.checkOutFlatpickr);
+    } catch (error) {
+      console.error('Error initializing checkOut flatpickr via ViewChild:', error);
+    }
+  }
+
+  // Original initialization method (now being replaced)
+  initFlatpickr(): void {
+    // Redirect to new method
+    this.initFlatpickrWithDirectQuery();
+  }
+
+  // Update checkOut min date when checkIn changes
+  updateCheckOutMinDate(date: Date): void {
+    if (this.checkOutFlatpickr) {
+      const nextDay = new Date(date);
+      nextDay.setDate(nextDay.getDate() + 1);
+      
+      this.checkOutFlatpickr.set('minDate', nextDay);
+      
+      // If current checkout date is before new minDate, clear it
+      const checkOutDate = this.bookingDates.checkOut ? new Date(this.bookingDates.checkOut) : null;
+      if (checkOutDate && checkOutDate <= date) {
+        this.bookingDates.checkOut = '';
+      }
+    }
+  }
+
+  // Get disabled dates array for Flatpickr
+  getDisabledDates(): Date[] {
+    const disabledDates: Date[] = [];
+    
+    // For each booking, add all dates in the range to the disabled array
+    this.bookedDates.forEach(booking => {
+      const currentDate = new Date(booking.start);
+      const endDate = new Date(booking.end);
+      
+      // Add each date in the booking period to disabled dates
+      while (currentDate < endDate) {
+        disabledDates.push(new Date(currentDate));
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
+    });
+    
+    return disabledDates;
+  }
+
+  // Update flatpickr when new booking data is loaded
+  updateFlatpickr(): void {
+    if (this.checkInFlatpickr) {
+      this.checkInFlatpickr.set('disable', this.getDisabledDates());
+    }
+    
+    if (this.checkOutFlatpickr) {
+      this.checkOutFlatpickr.set('disable', this.getDisabledDates());
+    }
+  }
+
+  // Format date for input type="date"
+  formatDateForInput(date: Date): string {
+    return date.toISOString().split('T')[0];
+  }
+
+  // Load room bookings to check availability
+  loadRoomBookings(roomId: number): void {
+    this.isLoadingBookings = true;
+    this.bookedDates = [];
+    
+    this.roomService.getRoomBookings(roomId).subscribe({
+      next: (response: RoomBookingsResponse) => {
+        if (response && response.bookings) {
+          // Filter to include only CONFIRMED bookings
+          const confirmedBookings = response.bookings.filter(booking => 
+            booking.status === 'CONFIRMED');
+          
+          // Transform the bookings into date ranges
+          this.bookedDates = confirmedBookings.map(booking => ({
+            start: new Date(booking.checkInTime),
+            end: new Date(booking.checkOutTime)
+          }));
+          
+          console.log('Booked dates:', this.bookedDates);
+          
+          // Update or Initialize Flatpickr with the new booking data
+          setTimeout(() => {
+            if (this.checkInFlatpickr || this.checkOutFlatpickr) {
+              console.log('Updating existing Flatpickr instances');
+              this.updateFlatpickr();
+            } else {
+              console.log('Initializing Flatpickr after loading bookings');
+              this.initFlatpickrWithDirectQuery();
+            }
+          }, 300);
+        }
+        this.isLoadingBookings = false;
+      },
+      error: (error) => {
+        console.error('Error loading room bookings:', error);
+        this.isLoadingBookings = false;
+      }
+    });
+  }
+
+  // Check if a date is booked
+  isDateBooked(dateStr: string): boolean {
+    if (!dateStr || this.bookedDates.length === 0) return false;
+    
+    const date = new Date(dateStr);
+    
+    return this.bookedDates.some(booking => {
+      // Check if date falls within a booking period (inclusive of check-in, exclusive of check-out)
+      return (date >= booking.start && date < booking.end);
+    });
+  }
+
+  // Handle date selection for check-in
+  onCheckInDateChange() {
+    if (this.bookingDates.checkIn) {
+      const checkInDate = new Date(this.bookingDates.checkIn);
+      
+      // Find the next booked date after check-in
+      let nextBookedDate: Date | null = null;
+      
+      for (const booking of this.bookedDates) {
+        if (booking.start > checkInDate) {
+          if (!nextBookedDate || booking.start < nextBookedDate) {
+            nextBookedDate = booking.start;
+          }
+        }
+      }
+      
+      // Set default check-out to the day before next booking, or check-in + 1 day
+      const nextDay = new Date(checkInDate);
+      nextDay.setDate(nextDay.getDate() + 1);
+      
+      if (nextBookedDate && nextBookedDate <= nextDay) {
+        // Don't set check-out if next day is booked
+        this.bookingDates.checkOut = '';
+      } else {
+        this.bookingDates.checkOut = this.formatDateForInput(nextDay);
+      }
+    }
   }
 }

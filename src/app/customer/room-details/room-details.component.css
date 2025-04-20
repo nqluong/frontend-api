@@ -61,3 +61,60 @@
     transform: translateY(-3px);
     box-shadow: 0 5px 15px rgba(210, 162, 77, 0.3);
 }
+
+.booking-note {
+    background-color: #f8f9fa;
+    padding: 10px;
+    border-radius: 5px;
+    border-left: 3px solid #e6b31e;
+}
+
+.booking-note ul {
+    margin-top: 5px;
+    margin-bottom: 0;
+}
+
+.booking-note small.text-danger {
+    color: #dc3545;
+}
+
+/* Styling for disabled dates */
+input[type="date"]::-webkit-calendar-picker-indicator {
+    background-color: transparent;
+    cursor: pointer;
+}
+
+/* Styles for Flatpickr date picker */
+.flatpickr-day.flatpickr-disabled,
+.flatpickr-day.flatpickr-disabled:hover {
+    background-color: #ffcccb !important;
+    color: #e53935 !important;
+    border-color: #ffcccb !important;
+    cursor: not-allowed !important;
+    font-weight: bold !important;
+    text-decoration: line-through !important;
+}
+
+.flatpickr-day.today {
+    border-color: #e6b31e !important;
+}
+
+.flatpickr-day.selected {
+    background: #e6b31e !important;
+    border-color: #e6b31e !important;
+}
+
+.flatpickr-day:hover {
+    background: #f8f2e0 !important;
+    border-color: #e6b31e !important;
+}
+
+/* Add custom styling to make the date picker look better */
+.flatpickr-calendar {
+    box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1) !important;
+    border-radius: 8px !important;
+}
+
+.flatpickr-day {
+    border-radius: 4px !important;
+}
