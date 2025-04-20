@@ -259,6 +259,19 @@ export class HomeComponent implements OnInit, AfterViewInit {
     });
   }
 
+  getFacilityIcon(facility: string): string {
+    const iconMap: { [key: string]: string } = {
+      'Wifi': 'fa fa-wifi',
+      'TV': 'fa fa-tv',
+      'Bồn tắm': 'fa fa-bath'
+      // thêm các tiện ích khác nếu có
+    };
+  
+    const key = facility.toLowerCase();
+    return iconMap[key] || 'fal fa-check-circle'; // mặc định nếu không khớp
+  }
+  
+
   loadHotel(): void {
     this.hotelsService.getHotels().subscribe({
       next: (data) => {

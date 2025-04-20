@@ -183,9 +183,10 @@
               </ul>
               <ul class="facilities-list">
                 <li *ngFor="let facility of room.tienNghiDiKem.split(',')">
-                  <i class="fal fa-check-circle me-2"></i> {{ facility.trim() }}
+                  <i [ngClass]="getFacilityIcon(facility.trim())" class="me-2"></i>
+                  {{ facility.trim() }}
                 </li>
-              </ul>
+              </ul>              
             </div>
           </div>
         </div>
