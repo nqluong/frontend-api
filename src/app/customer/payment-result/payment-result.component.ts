@@ -4,6 +4,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { isPlatformBrowser } from '@angular/common';
 import { PLATFORM_ID, Inject } from '@angular/core';
 import { forkJoin } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
 
 // Import services
 import { PaymentService } from '../../services/payment.service';
@@ -56,7 +57,8 @@ export class PaymentResultComponent implements OnInit {
     private paymentService: PaymentService,
     private bookingService: BookingService,
     private customerService: CustomerService,
-    @Inject(PLATFORM_ID) platformId: Object
+    @Inject(PLATFORM_ID) platformId: Object,
+    private http: HttpClient
   ) {
     this.isBrowser = isPlatformBrowser(platformId);
   }
@@ -349,59 +351,125 @@ export class PaymentResultComponent implements OnInit {
     const storedInfo = this.customerService.getStoredCustomerInfo();
     console.log('Thông tin khách hàng từ localStorage:', storedInfo);
     
+    // Kiểm tra xem người dùng đã đăng nhập chưa và có thông tin khách hàng chưa
+    const loggedInAccountID = localStorage.getItem('loggedInAccountID');
+    const existingCustomerID = localStorage.getItem('customerID');
+    
     if (storedInfo) {
-      console.log('So sánh bookingId:', {
-        storedBookingId: storedInfo.bookingId,
-        currentBookingId: this.bookingId,
-        match: storedInfo.bookingId === this.bookingId
-      });
-      
-      // Allow submission even if bookingId doesn't exactly match - the current one is more important
-      // Kiểm tra xem người dùng có chọn tạo tài khoản không
-      const isCreatingAccount = storedInfo.customerInfo.createAccount;
-      console.log('Khách hàng đã chọn' + (isCreatingAccount ? '' : ' không') + ' tạo tài khoản');
-      
-      // Kiểm tra xem tài khoản đã được tạo trước khi thanh toán chưa
-      const accountAlreadyCreated = localStorage.getItem('accountCreated') === 'true';
-      
-      // Nếu yêu cầu tạo tài khoản và chưa được tạo, thì đặt cờ để hiển thị thông báo
-      if (isCreatingAccount) {
-        this.accountCreated = true;
+      // Nếu đã đăng nhập nhưng chưa có thông tin khách hàng, tạo thông tin khách hàng mới
+      if (loggedInAccountID && !existingCustomerID) {
+        console.log('Tài khoản đã đăng nhập nhưng chưa có thông tin khách hàng');
+        this.createCustomerInfoThenLinkAndFinalize(parseInt(loggedInAccountID), storedInfo.customerInfo);
+      } else {
+        // Kiểm tra xem người dùng có chọn tạo tài khoản không
+        const isCreatingAccount = storedInfo.customerInfo.createAccount;
+        console.log('Khách hàng đã chọn' + (isCreatingAccount ? '' : ' không') + ' tạo tài khoản');
+        
+        // Kiểm tra xem tài khoản đã được tạo trước khi thanh toán chưa
+        const accountAlreadyCreated = localStorage.getItem('accountCreated') === 'true';
+        
+        // Nếu yêu cầu tạo tài khoản và chưa được tạo, thì đặt cờ để hiển thị thông báo
+        if (isCreatingAccount) {
+          this.accountCreated = true;
+        }
+        
+        // Gửi thông tin khách hàng lên server
+        console.log('Đang gửi thông tin khách hàng lên server với bookingId=', this.bookingId);
+        this.customerService.submitCustomerInfo(this.bookingId, storedInfo.customerInfo)
+          .subscribe({
+            next: (response) => {
+              console.log('Thông tin khách hàng đã được gửi thành công:', response);
+              
+              // Xóa flag đánh dấu tài khoản đã tạo
+              if (accountAlreadyCreated) {
+                localStorage.removeItem('accountCreated');
+              }
+              
+              // Finalize đặt phòng sau khi gửi thông tin khách hàng thành công
+              this.finalizeBooking();
+              
+              // Xóa thông tin khách hàng khỏi localStorage sau khi đã gửi thành công
+              this.customerService.clearStoredCustomerInfo();
+            },
+            error: (error) => {
+              console.error('Lỗi khi gửi thông tin khách hàng:', error);
+              // Chi tiết lỗi để debug
+              if (error.error && error.error.message) {
+                console.error('Chi tiết lỗi từ server:', error.error.message);
+              }
+              // Vẫn tiếp tục finalize đặt phòng ngay cả khi có lỗi với thông tin khách hàng
+              this.finalizeBooking();
+            }
+          });
       }
-      
-      // 1. Gửi thông tin khách hàng lên server - sử dụng bookingId hiện tại, không phải từ stored info
-      console.log('Đang gửi thông tin khách hàng lên server với bookingId=', this.bookingId);
-      this.customerService.submitCustomerInfo(this.bookingId, storedInfo.customerInfo)
-        .subscribe({
-          next: (response) => {
-            console.log('Thông tin khách hàng đã được gửi thành công:', response);
-            
-            // Xóa flag đánh dấu tài khoản đã tạo
-            if (accountAlreadyCreated) {
-              localStorage.removeItem('accountCreated');
-            }
-            
-            // 2. Finalize đặt phòng sau khi gửi thông tin khách hàng thành công
-            this.finalizeBooking();
-            
-            // Xóa thông tin khách hàng khỏi localStorage sau khi đã gửi thành công
-            this.customerService.clearStoredCustomerInfo();
-          },
-          error: (error) => {
-            console.error('Lỗi khi gửi thông tin khách hàng:', error);
-            // Chi tiết lỗi để debug
-            if (error.error && error.error.message) {
-              console.error('Chi tiết lỗi từ server:', error.error.message);
-            }
-            // Vẫn tiếp tục finalize đặt phòng ngay cả khi có lỗi với thông tin khách hàng
-            this.finalizeBooking();
-          }
-        });
     } else {
       console.log('Không tìm thấy thông tin khách hàng trong localStorage');
       // Vẫn finalize đặt phòng ngay cả khi không có thông tin khách hàng
       this.finalizeBooking();
     }
+  }
+  
+  // Tạo thông tin khách hàng cho tài khoản đã đăng nhập rồi mới liên kết và finalizeBooking
+  createCustomerInfoThenLinkAndFinalize(accountId: number, customerInfo: any): void {
+    console.log('Tạo thông tin khách hàng cho tài khoản đã đăng nhập:', accountId);
+    
+    // Chuẩn bị dữ liệu khách hàng từ form
+    const customerData = {
+      hoTen: customerInfo.fullName,
+      ngaySinh: customerInfo.dateOfBirth,
+      gioiTinh: customerInfo.gender,
+      email: customerInfo.email,
+      sdt: customerInfo.phone,
+      maTK: accountId
+    };
+    
+    // Gọi API tạo thông tin khách hàng
+    this.http.post('http://localhost:8080/hotelbooking/customers', customerData)
+      .subscribe({
+        next: (response: any) => {
+          console.log('Kết quả tạo thông tin khách hàng:', response);
+          
+          if (response && response.status === 201 && response.result) {
+            // Lấy mã khách hàng từ kết quả API
+            if (response.result.maKH) {
+              const customerId = response.result.maKH;
+              localStorage.setItem('customerID', customerId.toString());
+              
+              // Liên kết thông tin khách hàng với đặt phòng
+              if (this.bookingId) {
+                this.linkCustomerToBooking(customerId, this.bookingId).subscribe({
+                  next: (linkResponse) => {
+                    console.log('Đã liên kết thông tin khách hàng với đặt phòng:', linkResponse);
+                    // Gọi finalizeBooking sau khi đã liên kết thành công
+                    this.finalizeBooking();
+                  },
+                  error: (linkError) => {
+                    console.error('Lỗi khi liên kết thông tin khách hàng:', linkError);
+                    // Vẫn finalize đặt phòng ngay cả khi có lỗi liên kết
+                    this.finalizeBooking();
+                  }
+                });
+                return; // Return ở đây để không gọi finalizeBooking nữa
+              }
+            }
+          }
+          
+          // Nếu không có customerId hoặc không thể liên kết, vẫn finalize đặt phòng
+          this.finalizeBooking();
+        },
+        error: (error: unknown) => {
+          console.error('Lỗi khi tạo thông tin khách hàng:', error);
+          // Vẫn finalize đặt phòng ngay cả khi có lỗi tạo thông tin khách hàng
+          this.finalizeBooking();
+        }
+      });
+  }
+
+  // Phương thức để liên kết thông tin khách hàng với đặt phòng
+  linkCustomerToBooking(customerId: number, bookingId: number) {
+    const apiUrl = `http://localhost:8080/hotelbooking/bookings/${bookingId}/customer/${customerId}`;
+    console.log('Gọi API liên kết:', apiUrl);
+    return this.http.put(apiUrl, {});
   }
 
   // Finalize đặt phòng sau khi thanh toán thành công
