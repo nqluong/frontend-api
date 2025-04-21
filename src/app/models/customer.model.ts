@@ -24,4 +24,5 @@ export interface CustomerData {
 export interface StoredCustomerInfo {
   bookingId: number;
   customerInfo: CustomerInfo;
+  isAlternativeInfo?: boolean; // Flag để đánh dấu thông tin này là của người khác
 } 

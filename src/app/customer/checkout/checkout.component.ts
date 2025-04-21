@@ -349,6 +349,11 @@ export class CheckoutComponent implements OnInit {
   
   // Reset form when user chooses to use alternative info
   toggleAlternativeInfo(): void {
+    console.log('Chuyển đổi sử dụng thông tin thay thế:', { 
+      useAlternativeInfo: this.useAlternativeInfo,
+      loggedIn: !!this.loggedInUser
+    });
+    
     if (this.useAlternativeInfo) {
       // Khi người dùng chọn sử dụng thông tin người khác, xóa dữ liệu hiện tại
       this.customerInfo = {
@@ -364,11 +369,15 @@ export class CheckoutComponent implements OnInit {
       
       // Cũng xóa ID khách hàng từ localStorage để tránh cập nhật nhầm
       localStorage.removeItem('customerID');
+      console.log('Đã xóa thông tin hiện tại, người dùng sẽ nhập thông tin của người khác');
     } else {
       // Khi người dùng muốn quay lại sử dụng thông tin hiện có
       // Nếu có thông tin từ tài khoản đã đăng nhập, tải lại
       if (this.loggedInUser && this.loggedInUser.maTK) {
+        console.log('Quay lại sử dụng thông tin từ tài khoản đăng nhập:', this.loggedInUser.maTK);
         this.fetchCustomerInfoFromApi(this.loggedInUser.maTK);
+      } else {
+        console.log('Không có thông tin đăng nhập để tải lại');
       }
     }
   }
@@ -397,6 +406,13 @@ export class CheckoutComponent implements OnInit {
     const loggedInAccountID = localStorage.getItem('loggedInAccountID');
     const existingCustomerID = localStorage.getItem('customerID');
     
+    console.log('Thông tin đăng nhập:', { 
+      loggedInAccountID, 
+      existingCustomerID, 
+      useAlternativeInfo: this.useAlternativeInfo,
+      createAccount: this.customerInfo.createAccount
+    });
+    
     // Xử lý theo các trường hợp khác nhau
     if (this.customerInfo.createAccount) {
       // Người dùng muốn tạo tài khoản mới - dùng chung phương thức createAccountBeforePayment
@@ -408,6 +424,7 @@ export class CheckoutComponent implements OnInit {
       this.createCustomerForExistingAccount(parseInt(loggedInAccountID));
     } else {
       // Regular flow: just store customer info in localStorage and proceed to payment
+      // Đảm bảo truyền đúng flag useAlternativeInfo vào storeCustomerInfoAndProceed
       this.storeCustomerInfoAndProceed();
     }
   }
@@ -493,12 +510,26 @@ export class CheckoutComponent implements OnInit {
               this.accountCreationSuccess = true;
               this.accountCreationMessage = response.message || 'Tạo tài khoản thành công';
               
-              // Nếu có mã tài khoản trong kết quả, tạo thông tin khách hàng
+              // Nếu có mã tài khoản trong kết quả và cần tạo thông tin khách hàng
               if (response.result && response.result.maTK) {
                 const newAccountId = response.result.maTK;
                 
-                // Nếu đã đăng nhập và dùng thông tin người khác, chỉ tạo khách hàng mới cho tài khoản mới
+                // Lưu ID tài khoản mới đã tạo để dùng sau này
+                localStorage.setItem('createdAccountId', newAccountId.toString());
+                
+                // Nếu đã đăng nhập và dùng thông tin người khác
                 if (this.loggedInUser && this.useAlternativeInfo) {
+                  // KHÔNG tạo thông tin khách hàng ngay tại đây - hãy để backend tự xử lý
+                  // khi gọi submitCustomerInfo lúc thanh toán thành công
+                  console.log('Đã đăng nhập và dùng thông tin người khác - sẽ tạo thông tin khách hàng sau khi thanh toán');
+                  
+                  // Lưu flag để biết là đã tạo tài khoản, nhưng chưa tạo thông tin khách hàng
+                  localStorage.setItem('accountCreated', 'true');
+                  localStorage.setItem('pendingCustomerInfo', 'true');
+                } else {
+                  // Tạo thông tin khách hàng cho tài khoản mới (trường hợp người dùng chưa đăng nhập)
+                  console.log('Tạo thông tin khách hàng cho tài khoản mới (người dùng chưa đăng nhập)');
+                  
                   // Tạo thông tin khách hàng cho tài khoản mới này
                   const customerData = {
                     hoTen: this.customerInfo.fullName,
@@ -523,15 +554,15 @@ export class CheckoutComponent implements OnInit {
               }
               
               // If we get here, account creation was successful
-              // Store login info for display in payment result (chỉ khi không dùng thông tin người khác)
-              if (this.isBrowser && (!this.loggedInUser || !this.useAlternativeInfo)) {
-                this.customerService.storeCustomerInfo(this.bookingId as number, this.customerInfo);
-                localStorage.setItem('accountCreated', 'true'); // Set flag for account created
+              // Store login info for display in payment result
+              if (this.isBrowser) {
+                this.customerService.storeCustomerInfo(
+                  this.bookingId as number, 
+                  this.customerInfo,
+                  this.useAlternativeInfo
+                );
                 
-                // Optionally store additional account information if needed
-                if (response.result && response.result.maTK) {
-                  localStorage.setItem('createdAccountId', response.result.maTK.toString());
-                }
+                localStorage.setItem('accountCreated', 'true'); // Set flag for account created
               }
               
               // Short delay before proceeding to payment to show the success message
@@ -549,8 +580,12 @@ export class CheckoutComponent implements OnInit {
           this.accountCreationMessage = 'Tạo tài khoản thành công';
           
           // Store login info for display in payment result
-          if (this.isBrowser && (!this.loggedInUser || !this.useAlternativeInfo)) {
-            this.customerService.storeCustomerInfo(this.bookingId as number, this.customerInfo);
+          if (this.isBrowser) {
+            this.customerService.storeCustomerInfo(
+              this.bookingId as number, 
+              this.customerInfo,
+              this.useAlternativeInfo
+            );
             localStorage.setItem('accountCreated', 'true'); // Set flag for account created
           }
           
@@ -577,23 +612,27 @@ export class CheckoutComponent implements OnInit {
   
   // Lưu thông tin khách hàng và chuyển đến bước thanh toán
   storeCustomerInfoAndProceed(): void {
-    // Ensure we have a valid bookingId
     if (!this.bookingId) {
-      console.error('Missing bookingId when storing customer info');
-      alert('Không tìm thấy thông tin đặt phòng. Vui lòng thử lại.');
+      console.error('Không thể lưu thông tin: Thiếu bookingId');
       return;
     }
+  
+    console.log('Lưu thông tin khách hàng với flag useAlternativeInfo =', this.useAlternativeInfo);
     
-    // First save booking details to ensure consistency
+    // Lưu thông tin vào localStorage
+    this.customerService.storeCustomerInfo(
+      this.bookingId, 
+      this.customerInfo,
+      this.useAlternativeInfo // Truyền vào flag đánh dấu đây là thông tin của người khác
+    );
+  
+    // Lưu thêm chi tiết đặt phòng để dễ hiển thị sau này
     this.saveBookingDetailsToLocalStorage();
     
-    // Lưu thông tin khách hàng vào localStorage
-    if (this.isBrowser) {
-      this.customerService.storeCustomerInfo(this.bookingId, this.customerInfo);
-      console.log('Đã lưu thông tin khách hàng vào localStorage với bookingId=' + this.bookingId);
-    }
+    // Chuyển sang bước thanh toán
+    this.step = 'payment';
     
-    // Chuyển ngay đến bước thanh toán
+    // Tải thông tin thanh toán
     this.loadPaymentDetails();
   }
   

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, catchError, throwError, map } from 'rxjs';
+import { Observable, catchError, throwError, map, of } from 'rxjs';
 import { CustomerInfo, CustomerData, StoredCustomerInfo } from '../models/customer.model';
 
 @Injectable({
@@ -52,10 +52,11 @@ export class CustomerService {
   }
 
   // Lưu thông tin khách hàng vào localStorage
-  storeCustomerInfo(bookingId: number, customerInfo: CustomerInfo): void {
+  storeCustomerInfo(bookingId: number, customerInfo: CustomerInfo, isAlternativeInfo?: boolean): void {
     const storedInfo: StoredCustomerInfo = {
       bookingId: bookingId,
-      customerInfo: customerInfo
+      customerInfo: customerInfo,
+      isAlternativeInfo: isAlternativeInfo || false
     };
     localStorage.setItem(this.customerStorageKey, JSON.stringify(storedInfo));
   }
