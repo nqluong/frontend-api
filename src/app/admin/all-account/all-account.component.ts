@@ -20,7 +20,6 @@ export interface Account {
   standalone: true,
   imports: [CommonModule],
   templateUrl: './all-account.component.html',
-  styleUrls: ['./all-account.component.css']
 })
 export class AllAccountComponent implements OnInit {
   accounts: Account[] = [];

@@ -41,6 +41,8 @@ import { AllAccountComponent } from './admin/all-account/all-account.component';
 import { AddDichvuComponent } from './admin/add-dichvu/add-dichvu.component';
 import { AllDichvuComponent } from './admin/all-dichvu/all-dichvu.component';
 import { EditDichvuComponent } from './admin/edit-dichvu/edit-dichvu.component';
+import { AddAccountComponent } from './admin/add-account/add-account.component';
+import { RevenueComponent } from './admin/revenue/revenue.component';
 
 export const routes: Routes = [
     { path: '', redirectTo: '/admin', pathMatch: 'full' },
@@ -79,6 +81,8 @@ export const routes: Routes = [
             { path: 'settings', component: SettingsComponent },
             { path: 'view-booking/:id', component: ViewBookingComponent },
             { path: 'all-account', component: AllAccountComponent },
+            { path: 'add-account', component: AddAccountComponent },
+            { path: 'revenue', component: RevenueComponent },
         ]
     },
     {

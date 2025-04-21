@@ -68,4 +68,16 @@ export class BookingService {
       customerInfo
     );
   }
+
+  checkIn(maDP: number, maGD: string): Observable<ApiResponse<Booking>> {
+    return this.http.put<ApiResponse<Booking>>(`${this.apiUrl}/${maDP}/checkin/${maGD}`, {});
+  }
+
+  // Chuyển trạng thái đặt phòng sang "Check-out"
+  checkOut(maDP: number): Observable<ApiResponse<Booking>> {
+    return this.http.put<ApiResponse<Booking>>(`${this.apiUrl}/${maDP}/checkout`, {});
+  }
+  cancelBooking(maDP: number): Observable<ApiResponse<Booking>> {
+    return this.http.put<ApiResponse<Booking>>(`${this.apiUrl}/${maDP}/cancel`, {});
+  }
 }
