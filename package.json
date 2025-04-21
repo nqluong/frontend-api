@@ -26,6 +26,7 @@
     "express": "^4.18.2",
     "flatpickr": "^4.6.13",
     "gsap": "^3.12.7",
+    "ng2-charts": "^5.0.4",
     "ngx-pagination": "^6.0.3",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
