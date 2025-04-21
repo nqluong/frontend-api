@@ -1,0 +1,131 @@
+<div class="page-wrapper">
+  <div class="content container-fluid">
+    <div class="page-header">
+      <div class="row align-items-center">
+        <div class="col">
+          <h3 class="page-title mt-5">Chi Tiết Đặt Phòng</h3>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-lg-12">
+        <div *ngIf="booking; else loadingOrError">
+          <!-- Thông Tin Đặt Phòng -->
+          <div class="card">
+            <div class="card-header">
+              <h5 class="card-title">Thông Tin Đặt Phòng</h5>
+            </div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label><i class="fas fa-hashtag"></i> <strong>Mã Đặt Phòng:</strong></label>
+                    <p>{{ booking!.maDP }}</p>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label><i class="fas fa-bed"></i> <strong>Tên Phòng:</strong></label>
+                    <p>{{ booking!.tenPhong }}</p>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label><i class="fas fa-calendar-alt"></i> <strong>Ngày Đặt:</strong></label>
+                    <p>{{ booking!.ngayDat | date: 'dd-MM-yyyy' }}</p>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label><i class="fas fa-calendar-check"></i> <strong>Ngày Đến:</strong></label>
+                    <p>{{ booking!.ngayDen | date: 'dd-MM-yyyy' }}</p>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label><i class="fas fa-calendar-times"></i> <strong>Ngày Đi:</strong></label>
+                    <p>{{ booking!.ngayDi | date: 'dd-MM-yyyy' }}</p>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label><i class="fas fa-info-circle"></i> <strong>Trạng Thái:</strong></label>
+                    <p>
+                      <span [ngClass]="getStatusClass(booking!.trangThai || '')">
+                        {{ getStatusText(booking!.trangThai) }}
+                      </span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Thông Tin Khách Hàng -->
+          <div class="card mt-4">
+            <div class="card-header">
+              <h5 class="card-title">Thông Tin Khách Hàng</h5>
+            </div>
+            <div class="card-body">
+              <div class="row" *ngIf="customer">
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label><i class="fas fa-id-card"></i> <strong>Mã Khách Hàng:</strong></label>
+                    <p>{{ customer.maKH }}</p>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label><i class="fas fa-user"></i> <strong>Họ Tên:</strong></label>
+                    <p>{{ customer.hoTen }}</p>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label><i class="fas fa-birthday-cake"></i> <strong>Ngày Sinh:</strong></label>
+                    <p>{{ customer.ngaySinh }}</p>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label><i class="fas fa-venus-mars"></i> <strong>Giới Tính:</strong></label>
+                    <p>{{ customer.gioiTinh }}</p>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label><i class="fas fa-envelope"></i> <strong>Email:</strong></label>
+                    <p>{{ customer.email }}</p>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label><i class="fas fa-phone"></i> <strong>Số Điện Thoại:</strong></label>
+                    <p>{{ customer.sdt }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Nút Quay Lại -->
+          <div class="text-center mt-4">
+            <button type="button" class="btn btn-secondary" (click)="cancel()">
+              <i class="fas fa-arrow-left"></i> Quay Lại
+            </button>
+          </div>
+        </div>
+
+        <!-- Loading hoặc Lỗi -->
+        <ng-template #loadingOrError>
+          <div *ngIf="loading" class="text-center mt-3">
+            <p><i class="fas fa-spinner fa-spin"></i> Đang tải...</p>
+          </div>
+          <div *ngIf="error" class="text-danger text-center mt-3">
+            <p><i class="fas fa-exclamation-circle"></i> {{ error }}</p>
+          </div>
+        </ng-template>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,57 @@
+<!-- Add New Account Form -->
+<div>
+    <h3>Add New Account</h3>
+    <form (ngSubmit)="addAccount()">
+      <input [(ngModel)]="newAccount.email" placeholder="Email" name="email" required />
+      <input [(ngModel)]="newAccount.username" placeholder="Username" name="username" required />
+      <input [(ngModel)]="newAccount.password" placeholder="Password" name="password" required />
+      <input [(ngModel)]="newAccount.sdt" placeholder="Phone" name="sdt" required />
+      <input [(ngModel)]="newAccount.role" placeholder="Role" name="role" required />
+      <input [(ngModel)]="newAccount.provider" placeholder="Provider" name="provider" required />
+      <input [(ngModel)]="newAccount.providerId" placeholder="Provider ID" name="providerId" required />
+      <button type="submit">Add Account</button>
+    </form>
+  </div>
+  
+  <!-- Edit Account Form -->
+  <div *ngIf="selectedAccount">
+    <h3>Edit Account</h3>
+    <form (ngSubmit)="updateAccount()">
+      <input [(ngModel)]="selectedAccount.email" placeholder="Email" name="email" disabled />
+      <input [(ngModel)]="selectedAccount.username" placeholder="Username" name="username" disabled />
+      <input [(ngModel)]="selectedAccount.password" placeholder="Password" name="password" required />
+      <input [(ngModel)]="selectedAccount.sdt" placeholder="Phone" name="sdt" required />
+      <button type="submit">Update Account</button>
+      <button type="button" (click)="selectedAccount = null">Cancel</button>
+    </form>
+  </div>
+  
+  <!-- Account List -->
+  <div *ngIf="accounts.length > 0; else noAccounts">
+    <table>
+      <thead>
+        <tr>
+          <th>Email</th>
+          <th>Username</th>
+          <th>Role</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let account of accounts">
+          <td>{{ account.email }}</td>
+          <td>{{ account.username }}</td>
+          <td>{{ account.role }}</td>
+          <td>
+            <button (click)="editAccount(account)">Edit</button>
+            <button (click)="deleteAccount(account.maTK!)">Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  
+  <ng-template #noAccounts>
+    <p>No accounts found.</p>
+  </ng-template>
+  
