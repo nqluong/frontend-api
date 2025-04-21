@@ -39,10 +39,10 @@
                     <!-- Hiển thị ảnh chính -->
                     <div class="main-image">
                         <figure class="image-box" *ngIf="selectedImage">
-                            <a [href]="'assets/images/rooms/' + selectedImage" 
+                            <a [href]="'assets/images/AnhPhong/' + selectedImage" 
                                class="lightbox-image" 
                                data-fancybox="gallery">
-                                <img [src]="'assets/images/rooms/' + selectedImage" 
+                                <img [src]="'assets/images/AnhPhong/' + selectedImage" 
                                      [alt]="room ? room.tenPhong : ''"
                                      onError="this.src='assets/customer/images/resource/room-1.jpg'"
                                      class="img-fluid">
@@ -69,7 +69,7 @@
                                  style="width: 80px; height: 60px; cursor: pointer; border: 2px solid transparent;"
                                  [ngStyle]="{'border-color': selectedImage === image ? '#D2A24D' : 'transparent'}"
                                  (click)="selectImage(image)">
-                                <img [src]="'assets/images/rooms/' + image" 
+                                <img [src]="'assets/images/AnhPhong/' + image" 
                                      [alt]="'Ảnh ' + (i+1) + ' - ' + room.tenPhong"
                                      style="width: 100%; height: 100%; object-fit: cover;"
                                      onError="this.src='assets/customer/images/resource/room-1.jpg'">
@@ -208,7 +208,7 @@
                             <li>
                                 <div class="sidebar__post-image"> 
                                     <img *ngIf="room.anhPhong && room.anhPhong.length > 0" 
-                                         [src]="'assets/images/rooms/' + room.anhPhong[0]" 
+                                         [src]="'assets/images/AnhPhong/' + room.anhPhong[0]" 
                                          [alt]="room.tenPhong"
                                          onError="this.src='assets/customer/images/resource/news-info-1.jpg'">
                                     <img *ngIf="!room.anhPhong || room.anhPhong.length === 0" 

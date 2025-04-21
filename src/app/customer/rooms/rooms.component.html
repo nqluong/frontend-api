@@ -26,7 +26,7 @@
                             <a [routerLink]="['/customer/room-details', room.id]">
                                 <img 
                                     *ngIf="room.anhPhong && room.anhPhong.length > 0" 
-                                    [src]="'assets/images/' + room.anhPhong[0]" 
+                                    [src]="'assets/images/AnhPhong/' + room.anhPhong[0]" 
                                     [alt]="room.tenPhong"
                                     onError="this.src='assets/customer/images/resource/room-1.jpg'"
                                 >

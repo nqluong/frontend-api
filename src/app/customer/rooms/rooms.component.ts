@@ -40,6 +40,8 @@ export class RoomsComponent implements OnInit, AfterViewInit {
   @ViewChild('checkOutPicker') checkOutPicker!: ElementRef;
   
   searchResults: RoomDisplay[] = [];
+  paginatedRooms: RoomDisplay[] = [];
+  itemsPerPage: number = 5;
   checkInDate: string = '';
   checkOutDate: string = '';
   isCreatingBooking: boolean = false;
@@ -257,6 +259,9 @@ export class RoomsComponent implements OnInit, AfterViewInit {
           this.currentPage = response.result.currentPage - 1; // API trả về page bắt đầu từ 1
           this.totalPages = response.result.totalPages;
           console.log('All rooms loaded:', this.searchResults);
+          
+          // Sau khi lấy dữ liệu, gọi phương thức paginate
+          this.paginate();
         }
       },
       error: (error) => {
@@ -266,14 +271,49 @@ export class RoomsComponent implements OnInit, AfterViewInit {
   }
   
   // Chuyển đổi dữ liệu
-  private transformRoomData(room: any): RoomDisplay {
+  transformRoomData(roomData: any): RoomDisplay {
+    // Xử lý mảng tiện nghi
+    let tienNghiArray: string[] = [];
+    if (roomData.tienNghi) {
+      // Nếu tienNghi là chuỗi JSON, chuyển đổi thành mảng
+      if (typeof roomData.tienNghi === 'string') {
+        try {
+          tienNghiArray = JSON.parse(roomData.tienNghi);
+        } catch (error) {
+          console.error('Error parsing tienNghi:', error);
+          tienNghiArray = roomData.tienNghi.split(',').map((item: string) => item.trim());
+        }
+      } else if (Array.isArray(roomData.tienNghi)) {
+        tienNghiArray = roomData.tienNghi;
+      }
+    }
+
+    // Xử lý mảng ảnh phòng
+    let anhPhongArray: string[] = [];
+    if (roomData.anhPhong) {
+      // Nếu anhPhong là chuỗi JSON, chuyển đổi thành mảng
+      if (typeof roomData.anhPhong === 'string') {
+        try {
+          anhPhongArray = JSON.parse(roomData.anhPhong);
+        } catch (error) {
+          console.error('Error parsing anhPhong:', error);
+          // Nếu không parse được, có thể là một URL đơn lẻ hoặc danh sách ngăn cách bằng dấu phẩy
+          anhPhongArray = roomData.anhPhong.split(',').map((item: string) => item.trim());
+        }
+      } else if (Array.isArray(roomData.anhPhong)) {
+        anhPhongArray = roomData.anhPhong;
+      }
+    }
+
     return {
-      id: room.id,
-      tenPhong: `${room.loaiPhong} ${room.tenPhong}`,
-      gia: room.gia,
-      loaiPhong: room.loaiPhong,
-      tienNghi: room.tienNghiDiKem ? room.tienNghiDiKem.split(',').map((item: string) => item.trim()) : [],
-      anhPhong: room.anhPhong || []
+      id: roomData.maPhong || roomData.id,
+      tenPhong: roomData.tenPhong,
+      gia: roomData.giaPhong || roomData.gia,
+      loaiPhong: roomData.loaiPhong,
+      soNguoi: roomData.soNguoi,
+      tienNghi: tienNghiArray,
+      tinhTrang: roomData.tinhTrang,
+      anhPhong: anhPhongArray
     };
   }
 
@@ -681,6 +721,36 @@ export class RoomsComponent implements OnInit, AfterViewInit {
       } else {
         this.bookingDates.checkOut = this.formatDateForInput(nextDay);
       }
+    }
+  }
+
+  // Phương thức phân trang cho danh sách phòng
+  paginate(): void {
+    const startIndex = this.currentPage * this.itemsPerPage;
+    const endIndex = startIndex + this.itemsPerPage;
+    this.paginatedRooms = this.searchResults.slice(startIndex, endIndex);
+    this.totalPages = Math.ceil(this.searchResults.length / this.itemsPerPage);
+  }
+
+  // Các phương thức điều hướng trang
+  nextPage(): void {
+    if (this.currentPage < this.totalPages - 1) {
+      this.currentPage++;
+      this.paginate();
+    }
+  }
+
+  prevPage(): void {
+    if (this.currentPage > 0) {
+      this.currentPage--;
+      this.paginate();
+    }
+  }
+
+  goToPage(page: number): void {
+    if (page >= 0 && page < this.totalPages) {
+      this.currentPage = page;
+      this.paginate();
     }
   }
 }

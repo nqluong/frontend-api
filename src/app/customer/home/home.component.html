@@ -33,7 +33,7 @@
               <i class="fas fa-calendar"></i>
             </div>
           </div>
-          <div class="checkout-field select-field br-0">
+          <div class="checkout-field select-field">
             <h4>Loại Phòng</h4>
             <div class="chk-field">
               <select [(ngModel)]="searchParams.roomType" name="roomType">
@@ -165,7 +165,7 @@
           <div class="image-box">
             <figure class="image mb-0">
               <a [routerLink]="['/customer/room-details', room.id]" [queryParams]="{checkIn: searchParams.checkIn, checkOut: searchParams.checkOut}">
-                <img [src]="'assets/customer/images/resource/room-service1-1.jpg'" alt="Room Image" />
+                <img [src]="getRoomImageUrl(room)" alt="Room Image" />
               </a>
             </figure>
           </div>

@@ -16,6 +16,7 @@ interface RoomResponse {
   tinhTrang: string;
   tienNghiDiKem: string;
   moTa: string;
+  anhPhong: string[];
   khachSan: {
     maKS: number;
     name: string;
@@ -33,6 +34,7 @@ interface RoomDisplay {
   loaiPhong: string;
   soNguoi: string;
   tienNghi: string[];
+  imageUrl: string;
 }
 
 @Component({
@@ -85,8 +87,35 @@ export class HomeComponent implements OnInit, AfterViewInit {
     }
   }
 
+  // Hàm lấy đường dẫn ảnh từ dữ liệu API
+  public getRoomImageUrl(room: any): string {
+    // Kiểm tra xem có anhPhong trong dữ liệu API không
+    if (room.anhPhong && room.anhPhong.length > 0) {
+      return `assets/images/AnhPhong/${room.anhPhong[0]}`;
+    }
+    
+    // Nếu không có, sử dụng ảnh mặc định dựa trên loại phòng
+    let imgPrefix = '';
+    if (room.loaiPhong.includes('Đơn')) {
+      imgPrefix = 'Don1';
+    } else if (room.loaiPhong.includes('Đôi')) {
+      imgPrefix = 'Doi1';
+    } else if (room.loaiPhong.includes('Vip') || room.loaiPhong.includes('VIP')) {
+      imgPrefix = 'Vip1';
+    }
+    
+    return `assets/images/AnhPhong/${imgPrefix}.jpg`;
+  }
+
   // Hàm chuyển đổi dữ liệu từ API sang format hiển thị
   private transformRoomData(room: RoomResponse): RoomDisplay {
+    let imageUrl = '';
+    if (room.anhPhong && room.anhPhong.length > 0) {
+      imageUrl = `assets/images/AnhPhong/${room.anhPhong[0]}`;
+    } else {
+      imageUrl = this.getDefaultImageByRoomType(room.loaiPhong);
+    }
+    
     return {
       id: room.id,
       tenPhong: `${room.loaiPhong} ${room.tenPhong}`,
@@ -94,8 +123,20 @@ export class HomeComponent implements OnInit, AfterViewInit {
       loaiPhong: room.loaiPhong === 'Phòng Đơn' ? 'Single Bed' : 
                  room.loaiPhong === 'Phòng Đôi' ? 'King Size Bed' : 'VIP Bed',
       soNguoi: this.mapRoomTypeToCapacity(room.loaiPhong),
-      tienNghi: room.tienNghiDiKem.split(',').map(item => item.trim())
+      tienNghi: room.tienNghiDiKem.split(',').map(item => item.trim()),
+      imageUrl: imageUrl
     };
+  }
+  
+  // Lấy ảnh mặc định dựa trên loại phòng
+  private getDefaultImageByRoomType(roomType: string): string {
+    if (roomType.includes('Đơn')) {
+      return 'assets/images/AnhPhong/Don1.jpg';
+    } else if (roomType.includes('Đôi')) {
+      return 'assets/images/AnhPhong/Doi1.jpg';
+    } else { // Vip or default
+      return 'assets/images/AnhPhong/Vip1.jpg';
+    }
   }
 
   // Hàm format ngày giờ theo yêu cầu của backend

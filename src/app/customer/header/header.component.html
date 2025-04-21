@@ -36,7 +36,7 @@
             <li><a [routerLink]="['/customer/service']">Dịch vụ</a></li>
             <li><a [routerLink]="['/customer/contact']">Liên hệ</a></li>
             <li *ngIf="!isUserLoggedIn"><a [routerLink]="['/login/signin']">Đăng nhập</a></li>
-            <li *ngIf="isUserLoggedIn" class="dropdown">
+            <li *ngIf="isUserLoggedIn" class="dropdown" [class.active]="showDropdown">
               <a href="javascript:void(0)" (click)="toggleDropdown($event)">
                 {{ getUserName() }} <i class="fa fa-caret-down"></i>
               </a>
@@ -160,7 +160,7 @@
                 <li><a routerLink="/customer/service">Dịch vụ</a></li>
                 <li><a routerLink="/customer/contact">Liên hệ</a></li>
                 <li *ngIf="!isUserLoggedIn"><a routerLink="/login/signin">Đăng nhập</a></li>
-                <li *ngIf="isUserLoggedIn" class="dropdown">
+                <li *ngIf="isUserLoggedIn" class="dropdown" [class.active]="showDropdown">
                   <a href="javascript:void(0)" (click)="toggleDropdown($event)">
                     {{ getUserName() }} <i class="fa fa-caret-down"></i>
                   </a>
