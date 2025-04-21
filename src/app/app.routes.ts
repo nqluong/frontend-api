@@ -39,6 +39,7 @@ import { RolesPermissionsComponent } from './admin/roles-permissions/roles-permi
 import { AddDichvuComponent } from './admin/add-dichvu/add-dichvu.component';
 import { EditDichvuComponent } from './admin/edit-dichvu/edit-dichvu.component';
 import { AllDichvuComponent } from './admin/all-dichvu/all-dichvu.component';
+import { AllAccountComponent } from './admin/all-account/all-account.component';
 
 export const routes: Routes = [
     { path: '', redirectTo: '/admin', pathMatch: 'full' },
@@ -74,7 +75,8 @@ export const routes: Routes = [
             { path: 'pricing', component: PricingComponent },
             { path: 'roles-permissions', component: RolesPermissionsComponent },
             { path: 'invoice-settings', component: InvoiceSettingsComponent },
-            { path: 'settings', component: SettingsComponent }
+            { path: 'settings', component: SettingsComponent },
+            { path: 'all-accounts', component: AllAccountComponent },
         ]
     },
     {
