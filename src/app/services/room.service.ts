@@ -29,8 +29,8 @@ export class RoomService {
 
   // Thêm ảnh cho phòng
   addRoomImage(roomId: number, file: File): Observable<any> {
-    const formData = new FormData();
-    formData.append('maPhong', roomId.toString());
+    // Lấy tên file và định dạng
+    const fileName = file.name;
     
     // Chuyển đổi File thành Base64 để gửi
     return new Observable(observer => {
@@ -43,7 +43,7 @@ export class RoomService {
         
         const imageRequest = {
           maPhong: roomId,
-          duongDan: base64Data
+          duongDan: fileName // Chỉ lưu tên file và định dạng
         };
         
         this.http.post<any>(this.roomImagesUrl, imageRequest).subscribe({
@@ -66,5 +66,10 @@ export class RoomService {
   // Xóa phòng
   deleteRoom(id: number): Observable<any> {
     return this.http.delete<any>(`${this.apiUrl}/${id}`);
+  }
+
+  // Xóa ảnh của phòng
+  deleteRoomImages(roomId: number): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/${roomId}/images`);
   }
 }

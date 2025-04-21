@@ -83,26 +83,27 @@ export class AddRoomComponent implements OnInit {
 
   onSubmit() {
     this.submitted = true;
-
+  
     // Dừng nếu form không hợp lệ
     if (this.roomForm.invalid) {
       return;
     }
-
+  
     this.loading = true;
     
     // Format dữ liệu để phù hợp với PhongCreateRequest
     const roomData = {
       tenPhong: this.f['tenPhong'].value,
       loaiPhong: this.f['loaiPhong'].value,
-      gia: parseFloat(this.f['gia'].value), // Chuyển đổi thành số
-      tinhTrang: this.f['tinhTrang'].value, // Đây là enum RoomStatus trong Java
+      gia: parseFloat(this.f['gia'].value),  // Chuyển đổi thành số cho BigDecimal
+      tinhTrang: this.f['tinhTrang'].value,  // Trường enum RoomStatus
       tienNghiDiKem: this.f['tienNghiDiKem'].value || '',
-      moTa: this.f['moTa'].value || ''
+      moTa: this.f['moTa'].value || '',
+      maKS: 1  // Thêm mã khách sạn, nếu có nhiều KS thì cần thêm dropdown chọn KS
     };
-
+  
     console.log('Dữ liệu gửi:', roomData);
-
+  
     // 1. Trước tiên thêm phòng mới
     this.roomService.addRoom(roomData).subscribe({
       next: (roomResponse) => {
@@ -110,10 +111,11 @@ export class AddRoomComponent implements OnInit {
         // 2. Sau khi thêm phòng thành công, lấy ID phòng để tải lên ảnh
         let roomId;
         
+        // Xác định ID từ response (phụ thuộc vào cấu trúc API response)
         if (roomResponse && roomResponse.result) {
-          roomId = roomResponse.result.id;
-        } else if (roomResponse && roomResponse.id) {
-          roomId = roomResponse.id;
+          roomId = roomResponse.result.id || roomResponse.result.maPhong; // Kiểm tra cả id và maPhong
+        } else if (roomResponse && (roomResponse.id || roomResponse.maPhong)) {
+          roomId = roomResponse.id || roomResponse.maPhong;
         }
         
         if (roomId && this.selectedFiles.length > 0) {

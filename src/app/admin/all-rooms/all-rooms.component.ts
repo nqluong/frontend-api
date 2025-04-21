@@ -95,16 +95,27 @@ export class AllRoomsComponent implements OnInit {
     if (confirm('Bạn có chắc chắn muốn xóa phòng này?')) {
       this.loading = true;
       
-      this.roomService.deleteRoom(id).subscribe({
+      // Đầu tiên xóa ảnh của phòng
+      this.roomService.deleteRoomImages(id).subscribe({
         next: () => {
-          this.loading = false;
-          alert('Đã xóa phòng thành công!');
-          this.loadRooms(); // Tải lại danh sách sau khi xóa
+          console.log('Đã xóa ảnh phòng thành công');
+          
+          // Sau khi xóa ảnh thành công, tiếp tục xóa phòng
+          this.roomService.deleteRoom(id).subscribe({
+            next: () => {
+              this.loading = false;
+              alert('Đã xóa phòng thành công!');
+              this.loadRooms(); // Tải lại danh sách sau khi xóa
+            },
+            error: (error) => {
+              this.loading = false;
+              console.error('Lỗi khi xóa phòng:', error);
+              alert('Xóa phòng không thành công. Vui lòng thử lại sau.');
+            }
+          });
         },
         error: (error) => {
-          this.loading = false;
-          console.error('Lỗi khi xóa phòng:', error);
-          alert('Xóa phòng không thành công. Vui lòng thử lại sau.');
+          console.error('Lỗi khi xóa ảnh phòng:', error);
         }
       });
     }
