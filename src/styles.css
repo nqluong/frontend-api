@@ -1,1 +1,30 @@
 /* You can add global styles to this file, and also import other style files */
+
+/* Fix for zooming issue in admin view */
+.main-wrapper {
+  width: 100%;
+  height: 100vh;
+  min-height: 100vh;
+  overflow-x: hidden; /* Prevent horizontal scrolling */
+}
+
+/* Fix for admin page content */
+.page-wrapper {
+  margin-left: 265px;
+  padding-top: 32px;
+  position: relative;
+  transition: all .4s ease;
+  background-color: #f2f5fa;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* Responsive fix for mobile */
+@media only screen and (max-width: 991.98px) {
+  .page-wrapper {
+    margin-left: 0;
+    padding-left: 0;
+    padding-right: 0;
+    width: 100%;
+  }
+}

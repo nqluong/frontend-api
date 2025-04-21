@@ -52,8 +52,7 @@ export const routes: Routes = [
     {
         path: 'login/oauth2/code/facebook',
         component: OAuthCallbackComponent // Cấu hình route cho callback
-      },
-    { path: '', redirectTo: '/admin', pathMatch: 'full' },
+    },
     {
         path: 'admin',
         component: MainAdminComponent,
