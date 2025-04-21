@@ -1,7 +1,8 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Inject, PLATFORM_ID, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, from, of } from 'rxjs';
 import { catchError, switchMap } from 'rxjs/operators';
+import { isPlatformBrowser } from '@angular/common';
 
 declare const FB: any;
 
@@ -39,13 +40,25 @@ export interface RegisterRequest {
 export class AuthService {
   private baseUrl = 'http://localhost:8080/hotelbooking';
   private fbInitialized = false;
+  private userDataCache: any = null;
+  private tokenCache: string | null = null;
 
-  constructor(private http: HttpClient) {
-    this.initFacebookSdk();
+  constructor(
+    private http: HttpClient,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) {
+    if (isPlatformBrowser(this.platformId)) {
+      this.initFacebookSdk();
+      this.loadUserDataFromStorage();
+    }
   }
 
   // Initialize Facebook SDK
   initFacebookSdk(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+    
     // Check if we're on HTTPS
     if (window.location.protocol !== 'http:') {
       console.error('Facebook SDK requires HTTPS. Please use https:// for development');
@@ -78,6 +91,10 @@ export class AuthService {
 
   // Facebook login method that returns an Observable
   facebookLogin(): Observable<{ accessToken: string }> {
+    if (!isPlatformBrowser(this.platformId)) {
+      return of({ accessToken: '' });
+    }
+    
     return new Observable(observer => {
       // Ensure FB SDK is loaded
       const checkFB = () => {
@@ -131,23 +148,69 @@ export class AuthService {
     return this.http.post<LoginResponse>(`${this.baseUrl}/accounts`, data);
   }
 
+  // Load user data from localStorage to memory cache
+  private loadUserDataFromStorage(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      try {
+        // Load token
+        this.tokenCache = localStorage.getItem('token');
+        
+        // Load user data
+        const userData = localStorage.getItem('user');
+        
+        if (userData) {
+          this.userDataCache = JSON.parse(userData);
+        }
+      } catch (error) {
+        console.error('Error loading user data from localStorage:', error);
+      }
+    }
+  }
+
   // Store user info in localStorage
   saveUserData(data: any): void {
-    localStorage.setItem('user', JSON.stringify(data));
+    this.userDataCache = data;
+    
     if (data.token) {
-      localStorage.setItem('token', data.token);
+      this.tokenCache = data.token;
+    }
+    
+    if (isPlatformBrowser(this.platformId)) {
+      try {
+        localStorage.setItem('user', JSON.stringify(data));
+        
+        if (data.token) {
+          localStorage.setItem('token', data.token);
+        }
+      } catch (error) {
+        console.error('Error saving to localStorage:', error);
+      }
     }
   }
 
   // Get user data from localStorage
   getUserData(): any {
-    const userData = localStorage.getItem('user');
-    if (userData) {
+    // Return from cache if available
+    if (this.userDataCache) {
+      return this.userDataCache;
+    }
+    
+    // Otherwise try to get from localStorage if in browser
+    if (isPlatformBrowser(this.platformId)) {
       try {
-        return JSON.parse(userData);
+        const userData = localStorage.getItem('user');
+        
+        if (userData) {
+          try {
+            this.userDataCache = JSON.parse(userData);
+            return this.userDataCache;
+          } catch (error) {
+            console.error('Error parsing user data from localStorage:', error);
+            return null;
+          }
+        }
       } catch (error) {
-        console.error('Error parsing user data from localStorage:', error);
-        return null;
+        console.error('Error accessing localStorage:', error);
       }
     }
     return null;
@@ -155,12 +218,56 @@ export class AuthService {
 
   // Clear user data on logout
   logout(): void {
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
+    this.userDataCache = null;
+    this.tokenCache = null;
+    
+    if (isPlatformBrowser(this.platformId)) {
+      try {
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+      } catch (error) {
+        console.error('Error removing from localStorage:', error);
+      }
+    }
   }
 
   // Check if user is logged in
   isLoggedIn(): boolean {
-    return !!localStorage.getItem('token');
+    // Check cache first for token
+    if (this.tokenCache) {
+      return true;
+    }
+    
+    // Check cache for user data
+    if (this.userDataCache) {
+      return true;
+    }
+    
+    // Then check localStorage if in browser
+    if (isPlatformBrowser(this.platformId)) {
+      try {
+        // First check if user data exists
+        const userData = localStorage.getItem('user');
+        if (userData) {
+          try {
+            this.userDataCache = JSON.parse(userData);
+            return true;
+          } catch (error) {
+            console.error('Error parsing user data from localStorage:', error);
+          }
+        }
+        
+        // If user data not found, check for token as fallback
+        const hasToken = !!localStorage.getItem('token');
+        if (hasToken) {
+          this.tokenCache = localStorage.getItem('token');
+          return true;
+        }
+      } catch (error) {
+        console.error('Error checking login status in localStorage:', error);
+      }
+    }
+    
+    return false;
   }
 }

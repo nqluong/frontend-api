@@ -31,6 +31,7 @@ export class SigninComponent {
     this.authService.login(this.email, this.password).subscribe({
       next: (response) => {
         this.isLoading = false;
+        
         if (response.status === 200) {
           // Save user data
           if (response.result) {
@@ -63,7 +64,6 @@ export class SigninComponent {
     this.authService.loginWithFacebookFlow().subscribe({
       next: (response) => {
         this.isLoading = false;
-        console.log('Facebook login response:', response);
 
         if (response.status === 200) {
           // Save user data
