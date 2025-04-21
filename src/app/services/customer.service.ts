@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, catchError, throwError, map, of } from 'rxjs';
+import { CustomerInfo, CustomerData, StoredCustomerInfo } from '../models/customer.model';
+
 
 interface Customer {
   maKH: number;
@@ -23,7 +25,9 @@ interface ApiResponse<T> {
   providedIn: 'root',
 })
 export class CustomerService {
-  private apiUrl = 'http://localhost:8080/hotelbooking/customers'; // Cập nhật URL nếu cần
+  private apiUrl = 'http://localhost:8080/hotelbooking/customers'; 
+  private apiUrl2 = 'http://localhost:8080/hotelbooking';
+  private customerStorageKey = 'currentCustomerInfo';// Cập nhật URL nếu cần
 
   constructor(private http: HttpClient) {}
 
@@ -31,23 +35,9 @@ export class CustomerService {
   getCustomerByMaKH(maKH: number): Observable<ApiResponse<Customer>> {
     return this.http.get<ApiResponse<Customer>>(`${this.apiUrl}/byMaKH/${maKH}`);
   }
-}
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, catchError, throwError, map, of } from 'rxjs';
-import { CustomerInfo, CustomerData, StoredCustomerInfo } from '../models/customer.model';
 
-@Injectable({
-  providedIn: 'root'
-})
-export class CustomerService {
-  private apiUrl = 'http://localhost:8080/hotelbooking';
-  private customerStorageKey = 'currentCustomerInfo';
-
-  constructor(private http: HttpClient) { }
-
-  // Phương thức này bây giờ chỉ gửi thông tin khách hàng đến backend
-  submitCustomerInfo(bookingId: number, customerInfo: CustomerInfo): Observable<any> {
+   // Phương thức này bây giờ chỉ gửi thông tin khách hàng đến backend
+   submitCustomerInfo(bookingId: number, customerInfo: CustomerInfo): Observable<any> {
     console.log('Chuẩn bị gửi thông tin khách hàng đến backend:', { bookingId, customerInfo });
     
     // Chuẩn bị dữ liệu gửi đi
@@ -55,7 +45,7 @@ export class CustomerService {
     console.log('Dữ liệu khách hàng đã chuẩn bị:', customerData);
     
     // Gửi thông tin khách hàng lên server
-    return this.http.put(`${this.apiUrl}/bookings/${bookingId}/customer-info`, customerData)
+    return this.http.put(`${this.apiUrl2}/bookings/${bookingId}/customer-info`, customerData)
       .pipe(
         catchError(error => {
           console.error('Lỗi gửi thông tin khách hàng:', error);
@@ -156,7 +146,7 @@ export class CustomerService {
     
     console.log('Creating account with data:', data);
     
-    return this.http.post(`${this.apiUrl}/accounts`, data)
+    return this.http.post(`${this.apiUrl2}/accounts`, data)
       .pipe(
         map(response => {
           console.log('Account creation response:', response);
@@ -204,4 +194,4 @@ export class CustomerService {
         })
       );
   }
-} 
+}

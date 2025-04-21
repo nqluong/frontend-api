@@ -251,7 +251,7 @@ export class RoomsComponent implements OnInit, AfterViewInit {
       this.currentPage = page;
     }
     
-    this.roomService.getAllRooms(this.currentPage).subscribe({
+    this.roomService.getAllRooms2(this.currentPage).subscribe({
       next: (response) => {
         if (response && response.status === 200 && response.result) {
           // Chuyển đổi dữ liệu từ API sang định dạng hiển thị

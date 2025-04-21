@@ -3,12 +3,15 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
+
+
 @Injectable({
   providedIn: 'root'
 })
 export class RoomService {
   private apiUrl = 'http://localhost:8080/hotelbooking/rooms';
   private roomImagesUrl = 'http://localhost:8080/hotelbooking/room-images';
+  private apiUrl2 = 'http://localhost:8080/hotelbooking/rooms'; 
 
   constructor(private http: HttpClient) { }
 
@@ -72,36 +75,26 @@ export class RoomService {
   deleteRoomImages(id: number): Observable<any> {
     return this.http.delete<any>(`${this.roomImagesUrl}/${id}`);
   }
-}
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
 
-@Injectable({
-  providedIn: 'root'
-})
-export class RoomService {
-  private apiUrl = 'http://localhost:8080/hotelbooking/rooms'; 
 
-  constructor(private http: HttpClient) {}
 
   // Hàm lấy danh sách loại phòng
   getRoomTypes(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/typeroom`);
+    return this.http.get(`${this.apiUrl2}/typeroom`);
   }
   
   // Hàm lấy tất cả các phòng với phân trang
-  getAllRooms(page: number = 0, size: number = 10): Observable<any> {
-    return this.http.get(`${this.apiUrl}?page=${page}&size=${size}`);
+  getAllRooms2(page: number = 0, size: number = 10): Observable<any> {
+    return this.http.get(`${this.apiUrl2}?page=${page}&size=${size}`);
   }
   
   // Hàm lấy chi tiết phòng theo ID
   getRoomById(roomId: number): Observable<any> {
-    return this.http.get(`${this.apiUrl}/${roomId}`);
+    return this.http.get(`${this.apiUrl2}/${roomId}`);
   }
 
   // Hàm lấy danh sách booking của một phòng
   getRoomBookings(roomId: number): Observable<any> {
-    return this.http.get(`${this.apiUrl}/${roomId}/bookings`);
+    return this.http.get(`${this.apiUrl2}/${roomId}/bookings`);
   }
 }
