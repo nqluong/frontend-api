@@ -3,6 +3,7 @@ export interface Service {
   tenDV: string;
   gia: number;
   moTa: string;
+  anhDV?: string[];
 }
 
 export interface ServiceResponse {

@@ -80,7 +80,9 @@
                 <div class="inner-box">
                     <div class="image-box">
                         <figure class="image overlay-anim">
-                            <img src="assets/customer/images/resource/feature2-1.jpg" alt="Service Image">
+                            <img src="assets/images/AnhDV/{{service.anhDV && service.anhDV.length > 0 ? service.anhDV[0] : service.maDV + '.jpg'}}" 
+                                 alt="{{service.tenDV}}"
+                                 onError="this.src='assets/customer/images/resource/feature2-1.jpg'">
                         </figure>
                         <div class="icon-box"><span class="icon flaticon-room-service"></span></div>
                     </div>

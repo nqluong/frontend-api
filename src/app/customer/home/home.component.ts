@@ -312,6 +312,20 @@ export class HomeComponent implements OnInit, AfterViewInit {
     return iconMap[key] || 'fal fa-check-circle'; // mặc định nếu không khớp
   }
   
+  // Hàm chia mô tả khách sạn thành danh sách các điểm
+  getDescriptionPoints(): string[] {
+    if (!this.hotel || !this.hotel.moTa) {
+      return [];
+    }
+    
+    // Chia mô tả thành các câu dựa trên dấu chấm
+    let sentences = this.hotel.moTa.split('.');
+    
+    // Lọc ra các câu không rỗng và cắt bỏ khoảng trắng dư
+    return sentences
+      .map((sentence: string) => sentence.trim())
+      .filter((sentence: string) => sentence.length > 0);
+  }
 
   loadHotel(): void {
     this.hotelsService.getHotels().subscribe({

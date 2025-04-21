@@ -107,9 +107,10 @@
         <div class="content-column col-lg-7 wow fadeInRight" data-wow-delay="600ms">
           <div class="inner-column">
             <div class="sec-title">
-              <span class="sub-title style-three">{{hotel.name }}</span>
+              <span class="sub-title style-three">{{hotel.name}}</span>
               <h2>Chúng tôi cung cấp <br />các hoạt động ngoài trời cho tất cả du khách</h2>
               <div class="text">Trải nghiệm Hà Nội – thủ đô nghìn năm văn hiến với những con phố cổ kính, hồ Hoàn Kiếm thơ mộng và nét ẩm thực độc đáo. Thưởng thức phở bò, bún chả trong tiết trời se lạnh và tìm cho mình một khách sạn hay homestay ấm cúng tại trung tâm Hà Nội với view phố phường sôi động và nhịp sống thủ đô.</div>
+              <div class="text">{{hotel.diaChi}}</div>
             </div>
             <div class="outer-box">
               <div class="info-block">
@@ -126,8 +127,8 @@
               </div>
             </div>
             <ul class="list-style-two">
-              <li><i class="icon fa fa-circle-check"></i>{{ hotel.moTa}}</li>
-              </ul>
+              <li *ngFor="let point of getDescriptionPoints()"><i class="icon fa fa-circle-check"></i>{{point}}</li>
+            </ul>
             <div class="btn-box">
               <a [routerLink]="['/customer/rooms']" class="theme-btn btn-style-one"><span class="btn-title">Khám phá thêm</span></a>
             </div>
