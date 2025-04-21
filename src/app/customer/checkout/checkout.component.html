@@ -45,7 +45,7 @@
 </section>
 
 <!-- Loading Indicators -->
-<div class="text-center py-5" *ngIf="isSubmittingInfo || isLoadingPaymentDetails || isCreatingAccount || isRemovingService">
+<div class="text-center py-5" *ngIf="isSubmittingInfo || isLoadingPaymentDetails || isCreatingAccount || isRemovingService || isLoadingCustomerInfo">
     <div class="spinner-border text-primary" role="status">
         <span class="visually-hidden">Đang xử lý...</span>
     </div>
@@ -56,10 +56,11 @@
     </p>
     <p class="mt-2" *ngIf="isLoadingPaymentDetails">Đang tải thông tin thanh toán...</p>
     <p class="mt-2" *ngIf="isRemovingService">Đang xóa dịch vụ...</p>
+    <p class="mt-2" *ngIf="isLoadingCustomerInfo">Đang tải thông tin khách hàng...</p>
 </div>
 
 <!-- Customer Info Form -->
-<section class="customer-info-section pt-60 pb-90" *ngIf="step === 'info' && !isSubmittingInfo && !isLoadingPaymentDetails">
+<section class="customer-info-section pt-60 pb-90" *ngIf="step === 'info' && !isSubmittingInfo && !isLoadingPaymentDetails && !isLoadingCustomerInfo">
     <div class="auto-container">
         <div class="row justify-content-center">
             <div class="col-lg-8">
@@ -67,6 +68,29 @@
                     <div class="form-header">
                         <h3>Thông Tin Cá Nhân</h3>
                         <p>Vui lòng điền đầy đủ thông tin để hoàn tất đặt phòng</p>
+                        
+                        <!-- User info loaded message -->
+                        <div class="alert alert-success mt-3" *ngIf="loggedInUser">
+                            <i class="fa fa-info-circle mr-2"></i> Thông tin của bạn đã được tự động điền từ tài khoản 
+                            <strong>{{loggedInUser.username}}</strong>. Vui lòng kiểm tra và chỉnh sửa nếu cần.
+                        </div>
+                        
+                        <!-- Tùy chọn sử dụng thông tin người khác -->
+                        <div class="form-check mb-3 border-bottom pb-3" *ngIf="loggedInUser">
+                            <input class="form-check-input" type="checkbox" id="useAlternativeInfo" 
+                                   [(ngModel)]="useAlternativeInfo" (change)="toggleAlternativeInfo()" 
+                                   name="useAlternativeInfo">
+                            <label class="form-check-label" for="useAlternativeInfo">
+                                <span class="text-primary"><i class="fa fa-user-plus"></i> Sử dụng thông tin người khác</span>
+                            </label>
+                            <div class="mt-2 small text-muted" *ngIf="useAlternativeInfo">
+                                Thông tin này sẽ chỉ được sử dụng cho đơn đặt phòng hiện tại và không cập nhật vào tài khoản <strong>{{loggedInUser.username}}</strong>.
+                            </div>
+                            <div class="mt-2 small text-muted" *ngIf="!useAlternativeInfo">
+                                Thông tin bạn nhập sẽ cập nhật vào hồ sơ tài khoản <strong>{{loggedInUser.username}}</strong> của bạn.
+                            </div>
+                        </div>
+                        
                         <div class="alert alert-info mt-3">
                             <small>Thông tin của bạn sẽ được lưu tạm thời và chỉ được gửi lên hệ thống sau khi thanh toán thành công.</small>
                         </div>
@@ -80,9 +104,6 @@
                         <div class="alert alert-danger mt-3" *ngIf="validationErrors.general">
                             <i class="fa fa-exclamation-circle mr-2"></i> {{validationErrors.general}}
                         </div>
-                        
-                        <!-- Account creation error summary -->
-
                     </div>
                     <form (ngSubmit)="submitCustomerInfo()">
                         <div class="row">
@@ -152,36 +173,43 @@
                                     <label class="form-check-label" for="createAccount">
                                         Tạo tài khoản để dễ dàng đặt phòng lần sau
                                     </label>
-                                    <div class="small text-info mt-1" *ngIf="customerInfo.createAccount">
+                                    <div class="small text-info mt-1" *ngIf="customerInfo.createAccount && !loggedInUser">
                                         <i class="fa fa-info-circle"></i> Tài khoản sẽ được tạo ngay lập tức để đảm bảo không có lỗi khi thanh toán.
                                     </div>
-                                </div>
-                            </div>
-                            
-                            <div class="col-md-6 mb-4" *ngIf="customerInfo.createAccount">
-                                <div class="form-group">
-                                    <label for="username">Tên đăng nhập <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="username" [(ngModel)]="customerInfo.username" name="username" required
-                                           [ngClass]="{'is-invalid': validationErrors.username || (formSubmitted && customerInfo.createAccount && !customerInfo.username)}">
-                                    <div class="invalid-feedback" *ngIf="validationErrors.username">
-                                        {{validationErrors.username}}
-                                    </div>
-                                    <div class="invalid-feedback" *ngIf="!validationErrors.username && formSubmitted && customerInfo.createAccount && !customerInfo.username">
-                                        Vui lòng nhập tên đăng nhập
+                                    <!-- Thông báo khi đã đăng nhập và chọn tạo tài khoản cho thông tin mới -->
+                                    <div class="small text-info mt-1" *ngIf="customerInfo.createAccount && loggedInUser && useAlternativeInfo">
+                                        <i class="fa fa-info-circle"></i> Bạn đang tạo một tài khoản mới cho người khác, tách biệt với tài khoản hiện tại của bạn.
                                     </div>
                                 </div>
                             </div>
                             
-                            <div class="col-md-6 mb-4" *ngIf="customerInfo.createAccount">
-                                <div class="form-group">
-                                    <label for="password">Mật khẩu <span class="text-danger">*</span></label>
-                                    <input type="password" class="form-control" id="password" [(ngModel)]="customerInfo.password" name="password" required
-                                           [ngClass]="{'is-invalid': validationErrors.password || (formSubmitted && customerInfo.createAccount && (!customerInfo.password || customerInfo.password.length < 6))}">
-                                    <div class="invalid-feedback" *ngIf="validationErrors.password">
-                                        {{validationErrors.password}}
+                            <!-- Chỉ hiển thị trường tạo tài khoản khi chưa đăng nhập hoặc đã chọn dùng thông tin người khác -->
+                            <div *ngIf="customerInfo.createAccount && (!loggedInUser || (loggedInUser && useAlternativeInfo))">
+                                <div class="col-md-6 mb-4">
+                                    <div class="form-group">
+                                        <label for="username">Tên đăng nhập <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="username" [(ngModel)]="customerInfo.username" name="username" required
+                                               [ngClass]="{'is-invalid': validationErrors.username || (formSubmitted && customerInfo.createAccount && !customerInfo.username)}">
+                                        <div class="invalid-feedback" *ngIf="validationErrors.username">
+                                            {{validationErrors.username}}
+                                        </div>
+                                        <div class="invalid-feedback" *ngIf="!validationErrors.username && formSubmitted && customerInfo.createAccount && !customerInfo.username">
+                                            Vui lòng nhập tên đăng nhập
+                                        </div>
                                     </div>
-                                    <div class="invalid-feedback" *ngIf="!validationErrors.password && formSubmitted && customerInfo.createAccount && (!customerInfo.password || customerInfo.password.length < 6)">
-                                        Mật khẩu phải có ít nhất 6 ký tự
+                                </div>
+                                
+                                <div class="col-md-6 mb-4">
+                                    <div class="form-group">
+                                        <label for="password">Mật khẩu <span class="text-danger">*</span></label>
+                                        <input type="password" class="form-control" id="password" [(ngModel)]="customerInfo.password" name="password" required
+                                               [ngClass]="{'is-invalid': validationErrors.password || (formSubmitted && customerInfo.createAccount && (!customerInfo.password || customerInfo.password.length < 6))}">
+                                        <div class="invalid-feedback" *ngIf="validationErrors.password">
+                                            {{validationErrors.password}}
+                                        </div>
+                                        <div class="invalid-feedback" *ngIf="!validationErrors.password && formSubmitted && customerInfo.createAccount && (!customerInfo.password || customerInfo.password.length < 6)">
+                                            Mật khẩu phải có ít nhất 6 ký tự
+                                        </div>
                                     </div>
                                 </div>
                             </div>

@@ -16,6 +16,7 @@ import { CustomerService } from '../../services/customer.service';
 import { BookingService } from '../../services/booking.service';
 import { PaymentService } from '../../services/payment.service';
 import { ServiceService } from '../../services/service.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-checkout',
@@ -41,6 +42,11 @@ export class CheckoutComponent implements OnInit {
     username: '',
     password: ''
   };
+  
+  // User account info
+  loggedInUser: any = null;
+  isLoadingCustomerInfo: boolean = false;
+  useAlternativeInfo: boolean = false; // Flag để đánh dấu sử dụng thông tin khác
   
   paymentDetails: PaymentDetail | null = null;
   isLoadingPaymentDetails: boolean = false;
@@ -78,6 +84,7 @@ export class CheckoutComponent implements OnInit {
     private bookingService: BookingService,
     private paymentService: PaymentService,
     private serviceService: ServiceService,
+    private authService: AuthService,
     private http: HttpClient,
     private router: Router,
     @Inject(PLATFORM_ID) platformId: Object
@@ -120,6 +127,10 @@ export class CheckoutComponent implements OnInit {
 
     // Try to load previously entered form data if available
     if (this.isBrowser) {
+      // Check if user is logged in and get user info
+      this.checkUserLoginAndLoadCustomerInfo();
+      
+      // If no customer info found from account, load saved form data
       this.loadSavedFormData();
     }
   }
@@ -261,7 +272,108 @@ export class CheckoutComponent implements OnInit {
     }
   }
   
-  // Gửi thông tin khách hàng
+  // Check if user is logged in and fetch customer information
+  checkUserLoginAndLoadCustomerInfo(): void {
+    // Get logged in user information
+    this.loggedInUser = this.authService.getUserData();
+    
+    // If user is logged in, fetch customer info
+    if (this.loggedInUser && this.loggedInUser.maTK) {
+      console.log('User is logged in with account ID:', this.loggedInUser.maTK);
+      this.fetchCustomerInfoFromApi(this.loggedInUser.maTK);
+    } else {
+      console.log('No logged in user found');
+    }
+  }
+
+  // Fetch customer information from API using account ID
+  fetchCustomerInfoFromApi(accountId: number): void {
+    if (!accountId) return;
+    
+    this.isLoadingCustomerInfo = true;
+    
+    // API endpoint to get customer info by account ID
+    const apiUrl = `http://localhost:8080/hotelbooking/customers/${accountId}`;
+    
+    this.http.get(apiUrl)
+      .pipe(finalize(() => this.isLoadingCustomerInfo = false))
+      .subscribe({
+        next: (response: any) => {
+          console.log('Customer information response:', response);
+          
+          // Check if we got a valid response with customer data
+          if (response && response.status === 200 && response.result) {
+            // Extract customer data
+            const customerData = response.result;
+            
+            // Populate the customer info form
+            this.populateCustomerInfoForm(customerData);
+          } else {
+            console.log('No customer information found for this account');
+          }
+        },
+        error: (error) => {
+          console.error('Error fetching customer information:', error);
+        }
+      });
+  }
+
+  // Populate form with customer information from API
+  populateCustomerInfoForm(customerData: any): void {
+    if (!customerData) return;
+    
+    console.log('Populating form with customer data:', customerData);
+    
+    // Update the customerInfo object with data from API
+    this.customerInfo = {
+      ...this.customerInfo,
+      fullName: customerData.hoTen || '',
+      dateOfBirth: customerData.ngaySinh || '',
+      gender: customerData.gioiTinh || 'Nam',
+      email: customerData.email || (this.loggedInUser ? this.loggedInUser.email : ''),
+      phone: customerData.sdt || (this.loggedInUser ? this.loggedInUser.sdt : ''),
+      // Since the user is already logged in, set createAccount to false
+      createAccount: false
+    };
+    
+    // Store the customer ID if available for potential updates later
+    if (customerData.maKH) {
+      localStorage.setItem('customerID', customerData.maKH.toString());
+    }
+    
+    // If we're getting this data from a logged-in account, also store the account ID
+    if (this.loggedInUser && this.loggedInUser.maTK) {
+      localStorage.setItem('loggedInAccountID', this.loggedInUser.maTK.toString());
+    }
+  }
+  
+  // Reset form when user chooses to use alternative info
+  toggleAlternativeInfo(): void {
+    if (this.useAlternativeInfo) {
+      // Khi người dùng chọn sử dụng thông tin người khác, xóa dữ liệu hiện tại
+      this.customerInfo = {
+        fullName: '',
+        dateOfBirth: '',
+        gender: 'Nam',
+        email: '',
+        phone: '',
+        createAccount: false,
+        username: '',
+        password: ''
+      };
+      
+      // Cũng xóa ID khách hàng từ localStorage để tránh cập nhật nhầm
+      localStorage.removeItem('customerID');
+    } else {
+      // Khi người dùng muốn quay lại sử dụng thông tin hiện có
+      // Nếu có thông tin từ tài khoản đã đăng nhập, tải lại
+      if (this.loggedInUser && this.loggedInUser.maTK) {
+        this.fetchCustomerInfoFromApi(this.loggedInUser.maTK);
+      }
+    }
+  }
+  
+  // Submit customer info (modified to handle updates for existing customers)
   submitCustomerInfo(): void {
     this.formSubmitted = true;
     this.clearValidationErrors();
@@ -281,35 +393,62 @@ export class CheckoutComponent implements OnInit {
     
     this.isSubmittingInfo = true;
     
-    // Nếu người dùng chọn tạo tài khoản, kiểm tra và đăng ký tài khoản ngay
+    // Check if this is a logged-in user without customer data
+    const loggedInAccountID = localStorage.getItem('loggedInAccountID');
+    const existingCustomerID = localStorage.getItem('customerID');
+    
+    // Xử lý theo các trường hợp khác nhau
     if (this.customerInfo.createAccount) {
+      // Người dùng muốn tạo tài khoản mới - dùng chung phương thức createAccountBeforePayment
+      // Bất kể đã đăng nhập hay chưa
       this.createAccountBeforePayment();
+    } else if (loggedInAccountID && !existingCustomerID && !this.useAlternativeInfo) {
+      // User is logged in but does not have customer information yet
+      // Create customer record and associate with account
+      this.createCustomerForExistingAccount(parseInt(loggedInAccountID));
     } else {
-      // Không tạo tài khoản, chỉ lưu thông tin khách hàng vào localStorage
+      // Regular flow: just store customer info in localStorage and proceed to payment
       this.storeCustomerInfoAndProceed();
     }
   }
   
-  // Lưu thông tin khách hàng và chuyển đến bước thanh toán
-  storeCustomerInfoAndProceed(): void {
-    // Ensure we have a valid bookingId
-    if (!this.bookingId) {
-      console.error('Missing bookingId when storing customer info');
-      alert('Không tìm thấy thông tin đặt phòng. Vui lòng thử lại.');
-      return;
-    }
+  // Create customer information for existing account
+  createCustomerForExistingAccount(accountId: number): void {
+    console.log('Creating customer information for existing account:', accountId);
     
-    // First save booking details to ensure consistency
-    this.saveBookingDetailsToLocalStorage();
+    // Prepare customer data from the form
+    const customerData = {
+      hoTen: this.customerInfo.fullName,
+      ngaySinh: this.customerInfo.dateOfBirth,
+      gioiTinh: this.customerInfo.gender,
+      email: this.customerInfo.email,
+      sdt: this.customerInfo.phone,
+      maTK: accountId
+    };
     
-    // Lưu thông tin khách hàng vào localStorage
-    if (this.isBrowser) {
-      this.customerService.storeCustomerInfo(this.bookingId, this.customerInfo);
-      console.log('Đã lưu thông tin khách hàng vào localStorage với bookingId=' + this.bookingId);
-    }
-    
-    // Chuyển ngay đến bước thanh toán
-    this.loadPaymentDetails();
+    // Create customer information through API
+    this.http.post('http://localhost:8080/hotelbooking/customers', customerData)
+      .pipe(finalize(() => {}))
+      .subscribe({
+        next: (response: any) => {
+          console.log('Customer creation response:', response);
+          
+          if (response && response.status === 201 && response.result) {
+            // Store the customer ID for future reference
+            if (response.result.maKH) {
+              localStorage.setItem('customerID', response.result.maKH.toString());
+            }
+          }
+          
+          // Continue to payment step regardless of outcome
+          this.storeCustomerInfoAndProceed();
+        },
+        error: (error) => {
+          console.error('Error creating customer information:', error);
+          // Continue to payment even if there was an error creating customer info
+          this.storeCustomerInfoAndProceed();
+        }
+      });
   }
   
   // Tạo tài khoản trước khi thanh toán
@@ -320,11 +459,16 @@ export class CheckoutComponent implements OnInit {
     this.accountCreationSuccess = false;
     this.accountCreationMessage = '';
     
+    // Chuẩn bị dữ liệu tài khoản
     const accountData = {
       email: this.customerInfo.email,
       username: this.customerInfo.username,
       password: this.customerInfo.password,
-      sdt: this.customerInfo.phone
+      sdt: this.customerInfo.phone,
+      // Thêm các thông tin khác để tương thích với RegisterRequest
+      role: 'GUEST',
+      provider: 'LOCAL',
+      providerId: ''
     };
     
     console.log('Creating account with data:', accountData);
@@ -349,9 +493,38 @@ export class CheckoutComponent implements OnInit {
               this.accountCreationSuccess = true;
               this.accountCreationMessage = response.message || 'Tạo tài khoản thành công';
               
+              // Nếu có mã tài khoản trong kết quả, tạo thông tin khách hàng
+              if (response.result && response.result.maTK) {
+                const newAccountId = response.result.maTK;
+                
+                // Nếu đã đăng nhập và dùng thông tin người khác, chỉ tạo khách hàng mới cho tài khoản mới
+                if (this.loggedInUser && this.useAlternativeInfo) {
+                  // Tạo thông tin khách hàng cho tài khoản mới này
+                  const customerData = {
+                    hoTen: this.customerInfo.fullName,
+                    ngaySinh: this.customerInfo.dateOfBirth,
+                    gioiTinh: this.customerInfo.gender,
+                    email: this.customerInfo.email,
+                    sdt: this.customerInfo.phone,
+                    maTK: newAccountId
+                  };
+                  
+                  // Gọi API để tạo khách hàng cho tài khoản mới
+                  this.http.post('http://localhost:8080/hotelbooking/customers', customerData)
+                    .subscribe({
+                      next: (customerResponse: any) => {
+                        console.log('Customer created for new account:', customerResponse);
+                      },
+                      error: (error) => {
+                        console.error('Error creating customer for new account:', error);
+                      }
+                    });
+                }
+              }
+              
               // If we get here, account creation was successful
-              // Store login info for display in payment result
-              if (this.isBrowser) {
+              // Store login info for display in payment result (chỉ khi không dùng thông tin người khác)
+              if (this.isBrowser && (!this.loggedInUser || !this.useAlternativeInfo)) {
                 this.customerService.storeCustomerInfo(this.bookingId as number, this.customerInfo);
                 localStorage.setItem('accountCreated', 'true'); // Set flag for account created
                 
@@ -376,7 +549,7 @@ export class CheckoutComponent implements OnInit {
           this.accountCreationMessage = 'Tạo tài khoản thành công';
           
           // Store login info for display in payment result
-          if (this.isBrowser) {
+          if (this.isBrowser && (!this.loggedInUser || !this.useAlternativeInfo)) {
             this.customerService.storeCustomerInfo(this.bookingId as number, this.customerInfo);
             localStorage.setItem('accountCreated', 'true'); // Set flag for account created
           }
@@ -402,76 +575,26 @@ export class CheckoutComponent implements OnInit {
       });
   }
   
-  // Xử lý lỗi từ việc tạo tài khoản
-  handleAccountCreationErrors(error: any): void {
-    // Mặc định message nếu không có chi tiết
-    let errorMessage = 'Không thể tạo tài khoản. Vui lòng thử lại sau.';
-    
-    console.log('Processing account creation error:', error);
-    
-    // Kiểm tra cấu trúc lỗi từ API
-    if (error && error.error) {
-      // Nếu error.error là object với status và message
-      if (error.error.status === 400 && error.error.message) {
-        errorMessage = error.error.message;
-        console.log('API validation error message:', errorMessage);
-      } 
-      // Nếu error.error có message (cấu trúc lỗi khác)
-      else if (typeof error.error.message === 'string') {
-        errorMessage = error.error.message;
-      }
-      // Nếu error.error là string
-      else if (typeof error.error === 'string') {
-        errorMessage = error.error;
-      }
-    } else if (error && error.message) {
-      errorMessage = error.message;
-    } else if (error && typeof error === 'object' && 'status' in error && error.status === 400) {
-      // Handle the case where the error itself is the response object
-      if ('message' in error && typeof error.message === 'string') {
-        errorMessage = error.message;
-      }
+  // Lưu thông tin khách hàng và chuyển đến bước thanh toán
+  storeCustomerInfoAndProceed(): void {
+    // Ensure we have a valid bookingId
+    if (!this.bookingId) {
+      console.error('Missing bookingId when storing customer info');
+      alert('Không tìm thấy thông tin đặt phòng. Vui lòng thử lại.');
+      return;
     }
     
-    // Reset all validation errors first
-    this.clearValidationErrors();
+    // First save booking details to ensure consistency
+    this.saveBookingDetailsToLocalStorage();
     
-    // Phân tích các lỗi cụ thể
-    if (errorMessage.includes('Email không hợp lệ') || errorMessage.includes('Email đã được sử dụng')) {
-      this.validationErrors.email = errorMessage.includes('Email không hợp lệ') ? 
-        'Email không hợp lệ' : 'Email đã được sử dụng';
-    }
-    
-    if (errorMessage.includes('Tên đăng nhập đã tồn tại')) {
-      this.validationErrors.username = 'Tên đăng nhập đã tồn tại';
-    }
-    
-    if (errorMessage.includes('Số điện thoại')) {
-      this.validationErrors.phone = 'Số điện thoại phải là số và có độ dài từ 9-11 chữ số';
-    }
-    
-    if (errorMessage.includes('Mật khẩu')) {
-      this.validationErrors.password = 'Mật khẩu phải có ít nhất 6 ký tự';
-    }
-    
-    // Nếu không nhận diện được lỗi cụ thể, hiển thị chung
-    if (!this.validationErrors.email && 
-        !this.validationErrors.username && 
-        !this.validationErrors.phone && 
-        !this.validationErrors.password) {
-      this.validationErrors.general = errorMessage;
-    }
-    
-    // Set this flag to indicate account creation failed
-    this.canProceedToPayment = false;
-    
-    // Ensure we're back on the info step
-    this.step = 'info';
-    
-    // Cuộn lên đầu form để hiển thị lỗi
+    // Lưu thông tin khách hàng vào localStorage
     if (this.isBrowser) {
-      window.scrollTo(0, 0);
+      this.customerService.storeCustomerInfo(this.bookingId, this.customerInfo);
+      console.log('Đã lưu thông tin khách hàng vào localStorage với bookingId=' + this.bookingId);
     }
+    
+    // Chuyển ngay đến bước thanh toán
+    this.loadPaymentDetails();
   }
   
   // Tải thông tin thanh toán
@@ -575,6 +698,13 @@ export class CheckoutComponent implements OnInit {
     }
     
     this.isCreatingPayment = true;
+    
+    // Update customer information for logged-in users if needed
+    const loggedInAccountID = localStorage.getItem('loggedInAccountID');
+    if (loggedInAccountID && !this.useAlternativeInfo) {
+      // Chỉ cập nhật thông tin tài khoản nếu người dùng không chọn sử dụng thông tin khác
+      this.updateCustomerInfoAfterPayment();
+    }
     
     // Hiển thị thông báo cho người dùng
     console.log('Tạo yêu cầu thanh toán với mã đặt phòng:', this.bookingId);
@@ -735,5 +865,107 @@ export class CheckoutComponent implements OnInit {
             (error.message || 'Vui lòng thử lại sau.'));
         }
       });
+  }
+
+  // After successful payment, update customer information if needed
+  updateCustomerInfoAfterPayment(): void {
+    // This method can be called after successful payment to ensure customer info is saved
+    const loggedInAccountID = localStorage.getItem('loggedInAccountID');
+    const existingCustomerID = localStorage.getItem('customerID');
+    
+    if (loggedInAccountID && existingCustomerID) {
+      // Update existing customer info
+      const customerData = {
+        maKH: parseInt(existingCustomerID),
+        hoTen: this.customerInfo.fullName,
+        ngaySinh: this.customerInfo.dateOfBirth,
+        gioiTinh: this.customerInfo.gender,
+        email: this.customerInfo.email,
+        sdt: this.customerInfo.phone,
+        maTK: parseInt(loggedInAccountID)
+      };
+      
+      this.http.put(`http://localhost:8080/hotelbooking/customers/${existingCustomerID}`, customerData)
+        .subscribe({
+          next: (response: any) => {
+            console.log('Customer info updated after payment:', response);
+          },
+          error: (error) => {
+            console.error('Error updating customer info after payment:', error);
+          }
+        });
+    }
+  }
+
+  // Xử lý lỗi từ việc tạo tài khoản
+  handleAccountCreationErrors(error: any): void {
+    // Mặc định message nếu không có chi tiết
+    let errorMessage = 'Không thể tạo tài khoản. Vui lòng thử lại sau.';
+    
+    console.log('Processing account creation error:', error);
+    
+    // Kiểm tra cấu trúc lỗi từ API
+    if (error && error.error) {
+      // Nếu error.error là object với status và message
+      if (error.error.status === 400 && error.error.message) {
+        errorMessage = error.error.message;
+        console.log('API validation error message:', errorMessage);
+      } 
+      // Nếu error.error có message (cấu trúc lỗi khác)
+      else if (typeof error.error.message === 'string') {
+        errorMessage = error.error.message;
+      }
+      // Nếu error.error là string
+      else if (typeof error.error === 'string') {
+        errorMessage = error.error;
+      }
+    } else if (error && error.message) {
+      errorMessage = error.message;
+    } else if (error && typeof error === 'object' && 'status' in error && error.status === 400) {
+      // Handle the case where the error itself is the response object
+      if ('message' in error && typeof error.message === 'string') {
+        errorMessage = error.message;
+      }
+    }
+    
+    // Reset all validation errors first
+    this.clearValidationErrors();
+    
+    // Phân tích các lỗi cụ thể
+    if (errorMessage.includes('Email không hợp lệ') || errorMessage.includes('Email đã được sử dụng')) {
+      this.validationErrors.email = errorMessage.includes('Email không hợp lệ') ? 
+        'Email không hợp lệ' : 'Email đã được sử dụng';
+    }
+    
+    if (errorMessage.includes('Tên đăng nhập đã tồn tại')) {
+      this.validationErrors.username = 'Tên đăng nhập đã tồn tại';
+    }
+    
+    if (errorMessage.includes('Số điện thoại')) {
+      this.validationErrors.phone = 'Số điện thoại phải là số và có độ dài từ 9-11 chữ số';
+    }
+    
+    if (errorMessage.includes('Mật khẩu')) {
+      this.validationErrors.password = 'Mật khẩu phải có ít nhất 6 ký tự';
+    }
+    
+    // Nếu không nhận diện được lỗi cụ thể, hiển thị chung
+    if (!this.validationErrors.email && 
+        !this.validationErrors.username && 
+        !this.validationErrors.phone && 
+        !this.validationErrors.password) {
+      this.validationErrors.general = errorMessage;
+    }
+    
+    // Set this flag to indicate account creation failed
+    this.canProceedToPayment = false;
+    
+    // Ensure we're back on the info step
+    this.step = 'info';
+    
+    // Cuộn lên đầu form để hiển thị lỗi
+    if (this.isBrowser) {
+      window.scrollTo(0, 0);
+    }
   }
 }

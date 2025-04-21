@@ -139,6 +139,20 @@ export class AuthService {
     }
   }
 
+  // Get user data from localStorage
+  getUserData(): any {
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      try {
+        return JSON.parse(userData);
+      } catch (error) {
+        console.error('Error parsing user data from localStorage:', error);
+        return null;
+      }
+    }
+    return null;
+  }
+
   // Clear user data on logout
   logout(): void {
     localStorage.removeItem('user');
