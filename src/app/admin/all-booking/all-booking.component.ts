@@ -46,65 +46,7 @@ export class AllBookingComponent implements OnInit {
       }
     });
   }
-  checkIn(maDP: number, maGD: string): void {
-    const booking = this.bookings.find(b => b.maDP === maDP);
-    if (!booking) {
-      alert('Không tìm thấy đặt phòng với mã này.');
-      return;
-    }
-  
-    this.bookingService.checkIn(maDP, maGD).subscribe({
-      next: (response) => {
-        if (response.status === 200) {
-          alert('Check-in thành công!');
-          this.loadBookings(); // Tải lại danh sách
-        } else {
-          this.error = response.message;
-        }
-      },
-      error: (err) => {
-        console.error('Error during check-in:', err);
-        this.error = 'Có lỗi xảy ra khi thực hiện check-in';
-      },
-    });
-  }
-  checkOut(maDP: number, trangThai: string): void {
-    if (trangThai === 'CANCELLED') {
-      alert('Không thể thực hiện Check-out vì đặt phòng đã bị hủy.');
-      return;
-    }
-  
-    this.bookingService.checkOut(maDP).subscribe({
-      next: (response) => {
-        if (response.status === 200) {
-          alert('Check-out thành công!');
-          this.loadBookings(); // Tải lại danh sách
-        } else {
-          this.error = response.message;
-        }
-      },
-      error: (err) => {
-        console.error('Error during check-out:', err);
-        this.error = 'Có lỗi xảy ra khi thực hiện check-out';
-      },
-    });
-  }
-  cancelBooking(maDP: number): void {
-    this.bookingService.cancelBooking(maDP).subscribe({
-      next: (response) => {
-        if (response.status === 200) {
-          alert('Hủy đặt phòng thành công!');
-          this.loadBookings(); // Tải lại danh sách đặt phòng
-        } else {
-          this.error = response.message;
-        }
-      },
-      error: (err) => {
-        console.error('Error during cancel booking:', err);
-        this.error = 'Có lỗi xảy ra khi hủy đặt phòng';
-      },
-    });
-  }
+
   viewDetails(maDP: number): void {
     this.router.navigate(['/admin/view-booking', maDP]);
   }

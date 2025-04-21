@@ -32,7 +32,7 @@ export class AddRoomComponent implements OnInit {
   error = '';
   
   // Các lựa chọn cho dropdown - giữ nguyên giá trị từ backend
-  roomTypes = ['SINGLE', 'DOUBLE', 'TWIN', 'DELUXE', 'SUITE'];
+  roomTypes = ['Phòng Đơn', 'Phòng Đôi', 'Phòng VIP'];
   statusOptions = ['AVAILABLE', 'BOOKED', 'OCCUPIED', 'CLEANING', 'MAINTENANCE'];
   
   // Biến cho upload ảnh

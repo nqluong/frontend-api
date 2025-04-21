@@ -80,7 +80,7 @@ export const routes: Routes = [
             { path: 'invoice-settings', component: InvoiceSettingsComponent },
             { path: 'settings', component: SettingsComponent },
             { path: 'view-booking/:id', component: ViewBookingComponent },
-            { path: 'all-account', component: AllAccountComponent },
+            { path: 'all-accounts', component: AllAccountComponent },
             { path: 'add-account', component: AddAccountComponent },
             { path: 'revenue', component: RevenueComponent },
         ]
