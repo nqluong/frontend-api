@@ -38,7 +38,6 @@ import { PricingComponent } from './admin/pricing/pricing.component';
 import { RolesPermissionsComponent } from './admin/roles-permissions/roles-permissions.component';
 import { ViewBookingComponent } from './admin/view-booking/view-booking.component';
 import { AllAccountComponent } from './admin/all-account/all-account.component';
-import { AddAccountComponent } from './admin/add-account/add-account.component';
 import { AddDichvuComponent } from './admin/add-dichvu/add-dichvu.component';
 import { AllDichvuComponent } from './admin/all-dichvu/all-dichvu.component';
 import { EditDichvuComponent } from './admin/edit-dichvu/edit-dichvu.component';
@@ -80,7 +79,6 @@ export const routes: Routes = [
             { path: 'settings', component: SettingsComponent },
             { path: 'view-booking/:id', component: ViewBookingComponent },
             { path: 'all-account', component: AllAccountComponent },
-            { path: 'add-account', component: AddAccountComponent },
         ]
     },
     {
