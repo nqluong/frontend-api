@@ -4,7 +4,7 @@
         <div class="title-outer text-center">
             <h1 class="title">Liên hệ với khách sạn</h1>
             <ul class="page-breadcrumb">
-                <li><a href="index.html">Trang chủ</a></li>
+                <li><a routerLink="/customer">Trang chủ</a></li>
                 <li>Liên hệ</li>
             </ul>
         </div>
@@ -77,7 +77,8 @@
                             </div>
                             <div class="text">
                                 <h6 class="mb-1">Bạn có thắc mắc gì không?</h6>
-                                <a href="tel:980089850"><span>Miễn phí</span> +84 0365606175</a>
+                                <a *ngIf="hotel" href="tel:{{hotel.sdt}}"><span>Hotline</span> {{hotel.sdt}}</a>
+                                <a *ngIf="!hotel" href="tel:980089850"><span>Hotline</span> +84 0365606175</a>
                             </div>
                         </li>
                         <li>
@@ -98,7 +99,8 @@
                             </div>
                             <div class="text">
                                 <h6 class="mb-1">Ghé thăm bất cứ lúc nào</h6>
-                                <span>45 Tây Hồ, Hà Nội</span>
+                                <span *ngIf="hotel">{{hotel.diaChi}}</span>
+                                
                             </div>
                         </li>
                     </ul>
@@ -240,7 +242,9 @@
 
 <!-- Map Section-->
 <section class="map-section">
-    <iframe class="map w-100"
-        src="https://maps.google.com/maps?width=100%25&amp;height=600&amp;hl=vi&amp;q=45%20Tây%20Hồ,%20Hà%20Nội,%20Việt%20Nam&amp;t=&amp;z=14&amp;ie=UTF8&amp;iwloc=B&amp;output=embed"></iframe>
+    <iframe class="map w-100" *ngIf="hotel && mapUrl" [src]="mapUrl | safe:'resourceUrl'" frameborder="0" allowfullscreen></iframe>
+    <iframe class="map w-100" *ngIf="!hotel || !mapUrl"
+        src="https://maps.google.com/maps?q=19+P.+Duy+Tân,+Dịch+Vọng+Hậu,+Cầu+Giấy,+Hà+Nội&output=embed" 
+        frameborder="0" allowfullscreen></iframe>
 </section>
 <!--End Map Section-->
