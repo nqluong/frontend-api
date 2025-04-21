@@ -110,12 +110,29 @@ export class AllRoomsComponent implements OnInit {
             error: (error) => {
               this.loading = false;
               console.error('Lỗi khi xóa phòng:', error);
-              alert('Xóa phòng không thành công. Vui lòng thử lại sau.');
+              
+              // Kiểm tra mã lỗi hoặc thông điệp để xác định nếu phòng đang được sử dụng
+              if (error.status === 400 || error.status === 409) {
+                // Kiểm tra thông điệp lỗi cụ thể
+                if (error.error && error.error.message && 
+                    (error.error.message.includes('Uncategorized error') || 
+                     error.error.message.includes('liên kết') ||
+                     error.error.message.includes('đang có đặt phòng'))) {
+                  alert('Phòng này đang được sử dụng hoặc có đặt phòng, không thể xóa!');
+                } else {
+                  // Nếu API trả về thông điệp lỗi, hiển thị nó
+                  alert(error.error.message || 'Xóa phòng không thành công. Phòng có thể đang được sử dụng.');
+                }
+              } else {
+                alert('Xóa phòng không thành công. Vui lòng thử lại sau.');
+              }
             }
           });
         },
         error: (error) => {
+          this.loading = false;
           console.error('Lỗi khi xóa ảnh phòng:', error);
+          alert('Lỗi khi xóa ảnh phòng. Vui lòng thử lại sau.');
         }
       });
     }

@@ -88,16 +88,63 @@ export class AllDichvuComponent implements OnInit {
             error: (error) => {
               this.loading = false;
               console.error('Lỗi khi xóa dịch vụ:', error);
-              alert('Xóa dịch vụ không thành công. Vui lòng thử lại sau.');
+              
+              // Thêm kiểm tra lỗi chi tiết từ backend (DataIntegrityViolationException)
+              if (error.status === 500 && error.error && error.error.message && 
+                  (error.error.message.includes('ConstraintViolationException') || 
+                   error.error.message.includes('DataIntegrityViolationException'))) {
+                alert('Dịch vụ này đang được sử dụng, không thể xóa!');
+              } else if (error.status === 400 || error.status === 409) {
+                // Kiểm tra thông điệp lỗi cụ thể từ API
+                if (error.error && error.error.message && 
+                    (error.error.message.includes('Uncategorized error') || 
+                     error.error.message.includes('liên kết') ||
+                     error.error.message.includes('đang có đặt dịch vụ'))) {
+                  alert('Dịch vụ này đang được sử dụng, không thể xóa!');
+                } else {
+                  // Nếu API trả về thông điệp lỗi, hiển thị nó
+                  alert(error.error.message || 'Xóa dịch vụ không thành công. Dịch vụ có thể đang được sử dụng.');
+                }
+              } else {
+                alert('Xóa dịch vụ không thành công. Vui lòng thử lại sau.');
+              }
             }
           });
         },
         error: (error) => {
           this.loading = false;
           console.error('Lỗi khi xóa ảnh dịch vụ:', error);
+          
+          // Nếu không xóa được ảnh, vẫn hỏi người dùng có muốn tiếp tục xóa dịch vụ không
+          if (confirm('Không thể xóa ảnh dịch vụ. Bạn vẫn muốn tiếp tục xóa dịch vụ không?')) {
+            this.deleteOnlyDichVu(id);
+          }
         }
       });
     }
+  }
+
+  // Thêm phương thức này để tái sử dụng khi chỉ muốn xóa dịch vụ mà không xóa ảnh
+  deleteOnlyDichVu(id: number) {
+    this.dichvuService.deleteDichVu(id).subscribe({
+      next: () => {
+        this.loading = false;
+        alert('Đã xóa dịch vụ thành công!');
+        this.loadDichVus();
+      },
+      error: (error) => {
+        this.loading = false;
+        console.error('Lỗi khi xóa dịch vụ:', error);
+        
+        if (error.status === 500 && error.error && error.error.message && 
+            (error.error.message.includes('ConstraintViolationException') || 
+            error.error.message.includes('DataIntegrityViolationException'))) {
+          alert('Dịch vụ này đang được sử dụng, không thể xóa!');
+        } else {
+          alert('Xóa dịch vụ không thành công. Vui lòng thử lại sau.');
+        }
+      }
+    });
   }
 
   // Phương thức để hiển thị preview ảnh dịch vụ

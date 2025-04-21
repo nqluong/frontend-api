@@ -80,16 +80,36 @@
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label>Ảnh phòng</label>
-                                <div *ngIf="room && room.anhPhong && room.anhPhong.length > 0">
-                                    <p>Hiện có {{room.anhPhong.length}} ảnh</p>
-                                    <ul>
-                                        <li *ngFor="let img of room.anhPhong">{{img}}</li>
-                                    </ul>
+                                <input class="form-control" type="file" accept="image/*" multiple (change)="onFileSelect($event)">
+                                
+                                <!-- Hiển thị ảnh mới đã chọn -->
+                                <div *ngIf="previewUrls.length > 0" class="mt-3">
+                                    <h5>Ảnh mới đã chọn ({{ previewUrls.length }})</h5>
+                                    <div class="d-flex flex-wrap">
+                                        <div *ngFor="let url of previewUrls; let i = index" class="position-relative me-2 mb-2">
+                                            <img [src]="url" class="img-thumbnail" style="width: 100px; height: 100px; object-fit: cover;">
+                                            <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0" 
+                                                    style="margin-top: -10px; margin-right: -10px;" 
+                                                    (click)="removeImage(i)">
+                                                &times;
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
-                                <p *ngIf="!room || !room.anhPhong || room.anhPhong.length === 0">
-                                    Không có ảnh
-                                </p>
-                                <!-- Chức năng upload ảnh sẽ được thêm sau -->
+                                
+                                <!-- Hiển thị ảnh hiện tại -->
+                                <div *ngIf="room && room.anhPhong && room.anhPhong.length > 0" class="mt-3">
+                                    <h5>Ảnh hiện tại ({{ room.anhPhong.length }})</h5>
+                                    <div class="d-flex flex-wrap">
+                                        <div *ngFor="let image of room.anhPhong" class="me-2 mb-2">
+                                            <img [src]="image" class="img-thumbnail" style="width: 100px; height: 100px; object-fit: cover;">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div *ngIf="(!room || !room.anhPhong || room.anhPhong.length === 0) && previewUrls.length === 0" class="mt-2">
+                                    <p class="text-muted">Không có ảnh nào. Vui lòng chọn ảnh để tải lên.</p>
+                                </div>
                             </div>
                         </div>
                         <div class="col-md-12">

@@ -69,7 +69,7 @@ export class RoomService {
   }
 
   // Xóa ảnh của phòng
-  deleteRoomImages(roomId: number): Observable<any> {
-    return this.http.delete<any>(`${this.apiUrl}/${roomId}/images`);
+  deleteRoomImages(id: number): Observable<any> {
+    return this.http.delete<any>(`${this.roomImagesUrl}/${id}`);
   }
 }

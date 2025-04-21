@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RoomService } from '../../services/room.service';
 import { HttpClientModule } from '@angular/common/http';
+import { forkJoin, Observable } from 'rxjs';
 
 interface Room {
   id: number;
@@ -41,6 +42,8 @@ export class EditRoomComponent implements OnInit {
   error = '';
   statusOptions = ['AVAILABLE', 'BOOKED', 'OCCUPIED', 'CLEANING', 'MAINTENANCE'];
   roomTypes = ['Phòng Đơn', 'Phòng Đôi', 'Phòng VIP'];
+  selectedFiles: File[] = [];
+  previewUrls: string[] = [];
 
   constructor(
     private formBuilder: FormBuilder,
@@ -48,6 +51,30 @@ export class EditRoomComponent implements OnInit {
     private router: Router,
     private roomService: RoomService
   ) {}
+
+  // Thêm phương thức mới
+  onFileSelect(event: any) {
+    if (event.target.files.length > 0) {
+      const files = event.target.files;
+      this.selectedFiles = Array.from(files);
+      
+      // Tạo preview URLs cho các ảnh đã chọn
+      this.previewUrls = [];
+      this.selectedFiles.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = (e: any) => {
+          this.previewUrls.push(e.target.result);
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+  }
+
+  // Thêm phương thức xóa ảnh
+  removeImage(index: number) {
+    this.selectedFiles.splice(index, 1);
+    this.previewUrls.splice(index, 1);
+  }
 
   ngOnInit(): void {
     this.roomForm = this.formBuilder.group({
@@ -148,8 +175,33 @@ export class EditRoomComponent implements OnInit {
   
     this.roomService.updateRoom(this.roomId, updatedRoom).subscribe({
       next: () => {
-        alert('Cập nhật phòng thành công!');
-        this.router.navigate(['/admin/all-rooms']);
+        // Nếu có ảnh mới được chọn, upload ảnh sau khi cập nhật phòng
+        if (this.selectedFiles.length > 0) {
+          // Thêm từng ảnh với roomId
+          const uploadObservables = this.selectedFiles.map(file => {
+            return this.roomService.addRoomImage(this.roomId, file);
+          });
+          
+          // Sử dụng forkJoin để đợi tất cả các upload hoàn thành
+          forkJoin(uploadObservables).subscribe({
+            next: (results) => {
+              console.log('Kết quả upload ảnh:', results);
+              this.loading = false;
+              alert('Cập nhật phòng và tải ảnh mới thành công!');
+              this.router.navigate(['/admin/all-rooms']);
+            },
+            error: (error) => {
+              console.error('Lỗi khi upload ảnh:', error);
+              this.loading = false;
+              this.error = 'Phòng đã được cập nhật nhưng có lỗi khi tải lên ảnh: ' + (error.message || 'Lỗi không xác định');
+              this.router.navigate(['/admin/all-rooms']);
+            }
+          });
+        } else {
+          this.loading = false;
+          alert('Cập nhật phòng thành công!');
+          this.router.navigate(['/admin/all-rooms']);
+        }
       },
       error: (error) => {
         this.error = 'Có lỗi xảy ra khi cập nhật phòng';

@@ -85,7 +85,7 @@ export class DichvuService {
   }
 
   // Xóa ảnh của dịch vụ
-  deleteDichVuImages(dichvuId: number): Observable<any> {
-    return this.http.delete<any>(`${this.serviceImagesUrl}/byService/${dichvuId}`);
+  deleteDichVuImages(id: number): Observable<any> {
+    return this.http.delete<any>(`${this.serviceImagesUrl}/${id}`);
   }
 }
