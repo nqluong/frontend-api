@@ -39,6 +39,13 @@ import { PricingComponent } from './admin/pricing/pricing.component';
 import { RolesPermissionsComponent } from './admin/roles-permissions/roles-permissions.component';
 import { CheckoutComponent } from './customer/checkout/checkout.component';
 import { PaymentResultComponent } from './customer/payment-result/payment-result.component';
+import { ViewBookingComponent } from './admin/view-booking/view-booking.component';
+import { AddDichvuComponent } from './admin/add-dichvu/add-dichvu.component';
+import { AllDichvuComponent } from './admin/all-dichvu/all-dichvu.component';
+import { EditDichvuComponent } from './admin/edit-dichvu/edit-dichvu.component';
+import { AddAccountComponent } from './admin/add-account/add-account.component';
+import { RevenueComponent } from './admin/revenue/revenue.component';
+import { AllAccountComponent } from './admin/all-accounts/all-accounts.component';
 
 export const routes: Routes = [
     { path: '', redirectTo: '/customer', pathMatch: 'full' },
@@ -46,6 +53,7 @@ export const routes: Routes = [
         path: 'login/oauth2/code/facebook',
         component: OAuthCallbackComponent // Cấu hình route cho callback
       },
+    { path: '', redirectTo: '/admin', pathMatch: 'full' },
     {
         path: 'admin',
         component: MainAdminComponent,
@@ -54,19 +62,22 @@ export const routes: Routes = [
             { path: 'activities', component: ActivitiesComponent },
             { path: 'add-booking', component: AddBookingComponent },
             { path: 'add-customer', component: AddCustomerComponent },
+            { path: 'add-dichvu', component: AddDichvuComponent },
             { path: 'add-pricing', component: AddPricingComponent },
             { path: 'add-role', component: AddRoleComponent },
             { path: 'add-room', component: AddRoomComponent },
             { path: 'add-staff', component: AddStaffComponent },
             { path: 'all-booking', component: AllBookingComponent },
             { path: 'all-customer', component: AllCustomerComponent },
+            { path: 'all-dichvu', component: AllDichvuComponent },
             { path: 'all-rooms', component: AllRoomsComponent },
             { path: 'all-staff', component: AllStaffComponent },
             { path: 'calendar', component: CalendarComponent },
             { path: 'edit-booking', component: EditBookingComponent },
             { path: 'edit-customer', component: EditCustomerComponent },
+            { path: 'edit-dichvu/:id', component: EditDichvuComponent },
             { path: 'edit-pricing', component: EditPricingComponent },
-            { path: 'edit-room', component: EditRoomComponent },
+            { path: 'edit-room/:id', component: EditRoomComponent },
             { path: 'edit-staff', component: EditStaffComponent },
             { path: 'invoice-reports', component: InvoiceReportsComponent },
             { path: 'invoice-view', component: InvoiceViewComponent },
@@ -75,7 +86,11 @@ export const routes: Routes = [
             { path: 'pricing', component: PricingComponent },
             { path: 'roles-permissions', component: RolesPermissionsComponent },
             { path: 'invoice-settings', component: InvoiceSettingsComponent },
-            { path: 'settings', component: SettingsComponent }
+            { path: 'settings', component: SettingsComponent },
+            { path: 'view-booking/:id', component: ViewBookingComponent },
+            { path: 'all-account', component: AllAccountComponent },
+            { path: 'add-account', component: AddAccountComponent },
+            { path: 'revenue', component: RevenueComponent },
         ]
     },
     {

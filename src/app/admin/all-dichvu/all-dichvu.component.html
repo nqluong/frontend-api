@@ -1,0 +1,102 @@
+<div class="page-wrapper">
+    <div class="content container-fluid">
+        <div class="page-header">
+            <div class="row align-items-center">
+                <div class="col">
+                    <div class="mt-5">
+                        <h4 class="card-title float-left mt-2">Tất cả dịch vụ</h4> 
+                        <a [routerLink]="['/admin/add-dichvu']" class="btn btn-primary float-right veiwbutton">Thêm Dịch vụ</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-12">
+                <!-- Hiển thị lỗi nếu có -->
+                <div *ngIf="error" class="alert alert-danger">
+                    {{ error }}
+                </div>
+                
+                <!-- Hiển thị loading -->
+                <div *ngIf="loading" class="text-center my-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Đang tải...</span>
+                    </div>
+                </div>
+                
+                <!-- Danh sách dịch vụ -->
+                <div class="card card-table" *ngIf="!loading && dichvus.length > 0">
+                    <div class="card-body booking_card">
+                        <div class="table-responsive">
+                            <table class="datatable table table-stripped table table-hover table-center mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Tên dịch vụ</th>
+                                        <th>Mô tả</th>
+                                        <th>Giá</th>
+                                        <th>Ảnh</th>
+                                        <th class="text-right">Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr *ngFor="let dichvu of dichvus">
+                                        <td>{{dichvu.maDV}}</td>
+                                        <td>{{dichvu.tenDV}}</td>
+                                        <td>{{dichvu.moTa}}</td>
+                                        <td>{{dichvu.gia | currency:'VND'}}</td>
+                                        <td>
+                                            <span *ngIf="dichvu.anhDV && dichvu.anhDV.length > 0">
+                                                <img [src]="getFirstImageUrl(dichvu)" alt="{{dichvu.tenDV}}" class="img-fluid" style="max-width: 80px; max-height: 80px;">
+                                            </span>
+                                            <span *ngIf="!dichvu.anhDV || dichvu.anhDV.length === 0">
+                                                Không có ảnh
+                                            </span>
+                                        </td>
+                                        <td class="text-right">
+                                            <div class="dropdown dropdown-action">
+                                                <a href="#" class="action-icon dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                                                    <i class="fas fa-ellipsis-v ellipse_color"></i>
+                                                </a>
+                                                <div class="dropdown-menu dropdown-menu-right">
+                                                    <a class="dropdown-item" [routerLink]="['/admin/edit-dichvu', dichvu.maDV]" (click)="$event.stopPropagation()">
+                                                        <i class="fas fa-pencil-alt m-r-5"></i> Sửa
+                                                    </a>
+                                                    <a class="dropdown-item" (click)="selectedDichVu = dichvu" data-toggle="modal" data-target="#delete_asset">
+                                                        <i class="fas fa-trash-alt m-r-5"></i> Xóa
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Hiển thị thông báo nếu không có dịch vụ -->
+                <div *ngIf="!loading && dichvus.length === 0" class="alert alert-info">
+                    Không có dịch vụ nào trong hệ thống.
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Delete Modal -->
+    <div id="delete_asset" class="modal fade delete-modal" role="dialog">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body text-center">
+                    <img src="assets/admin/img/sent.png" alt="" width="50" height="46">
+                    <h3 class="delete_class">Bạn có chắc chắn muốn xóa dịch vụ này?</h3>
+                    <p class="text-muted">Lưu ý: Nếu dịch vụ đang được sử dụng, bạn sẽ không thể xóa.</p>
+                    <div class="m-t-20">
+                        <a href="#" class="btn btn-white" data-dismiss="modal">Đóng</a>
+                        <button type="submit" class="btn btn-danger" (click)="selectedDichVu && deleteDichVu(selectedDichVu.maDV)" data-dismiss="modal">Xóa</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

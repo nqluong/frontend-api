@@ -1,0 +1,79 @@
+<div class="page-wrapper">
+    <div class="content container-fluid">
+      <div class="page-header">
+        <div class="row align-items-center">
+          <div class="col">
+            <h3 class="page-title mt-5">Báo Cáo Doanh Thu</h3>
+          </div>
+        </div>
+      </div>
+  
+      <!-- Hiển thị lỗi -->
+      <div *ngIf="error" class="alert alert-danger">
+        {{ error }}
+      </div>
+  
+      <!-- Hiệu suất phòng -->
+      <div class="card mt-4">
+        <div class="card-header">
+          <h5 class="card-title">Hiệu Suất Phòng</h5>
+        </div>
+        <div class="card-body">
+          <p><strong>Tổng Doanh Thu:</strong> {{ totalRevenue | currency:'VND':'symbol' }}</p>
+          <p><strong>Tổng Lượt Đặt Phòng:</strong> {{ totalBookings }}</p>
+          <table class="table table-bordered table-striped">
+            <thead>
+              <tr>
+                <th>Mã Phòng</th>
+                <th>Tên Phòng</th>
+                <th>Tổng Lượt Đặt</th>
+                <th>Tổng Doanh Thu</th>
+                <th>Thời Gian Lưu Trú Trung Bình</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let room of roomPerformances">
+                <td>{{ room.roomId }}</td>
+                <td>{{ room.roomName }}</td>
+                <td>{{ room.totalBookings }}</td>
+                <td>{{ room.totalRevenue | currency:'VND':'symbol' }}</td>
+                <td>{{ room.averageStay }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+  
+      <!-- Báo cáo doanh thu -->
+      <div class="card mt-4">
+        <div class="card-header">
+          <h5 class="card-title">Báo Cáo Doanh Thu</h5>
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <button class="btn btn-primary" (click)="loadRevenueReport('DAILY')">Hàng Ngày</button>
+            <button class="btn btn-primary" (click)="loadRevenueReport('WEEKLY')">Hàng Tuần</button>
+            <button class="btn btn-primary" (click)="loadRevenueReport('MONTHLY')">Hàng Tháng</button>
+          </div>
+          <table class="table table-bordered table-striped" *ngIf="revenueReport">
+            <thead>
+              <tr>
+                <th>Năm</th>
+                <th>Tháng/ Tuần</th>
+                <th>Doanh Thu</th>
+                <th>Ngày</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let data of revenueReport.revenueData">
+                <td>{{ data.year }}</td>
+                <td>{{ data.weekOrMonth }}</td>
+                <td>{{ data.revenue | currency:'VND':'symbol' }}</td>
+                <td>{{ data.date | date: 'dd-MM-yyyy' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
