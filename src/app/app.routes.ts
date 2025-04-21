@@ -36,6 +36,9 @@ import { InvoicesComponent } from './admin/invoices/invoices.component';
 import { PaymentsComponent } from './admin/payments/payments.component';
 import { PricingComponent } from './admin/pricing/pricing.component';
 import { RolesPermissionsComponent } from './admin/roles-permissions/roles-permissions.component';
+import { AddDichvuComponent } from './admin/add-dichvu/add-dichvu.component';
+import { EditDichvuComponent } from './admin/edit-dichvu/edit-dichvu.component';
+import { AllDichvuComponent } from './admin/all-dichvu/all-dichvu.component';
 
 export const routes: Routes = [
     { path: '', redirectTo: '/admin', pathMatch: 'full' },
@@ -47,17 +50,20 @@ export const routes: Routes = [
             { path: 'activities', component: ActivitiesComponent },
             { path: 'add-booking', component: AddBookingComponent },
             { path: 'add-customer', component: AddCustomerComponent },
+            { path: 'add-dichvu', component: AddDichvuComponent },
             { path: 'add-pricing', component: AddPricingComponent },
             { path: 'add-role', component: AddRoleComponent },
             { path: 'add-room', component: AddRoomComponent },
             { path: 'add-staff', component: AddStaffComponent },
             { path: 'all-booking', component: AllBookingComponent },
             { path: 'all-customer', component: AllCustomerComponent },
+            { path: 'all-dichvu', component: AllDichvuComponent },
             { path: 'all-rooms', component: AllRoomsComponent },
             { path: 'all-staff', component: AllStaffComponent },
             { path: 'calendar', component: CalendarComponent },
             { path: 'edit-booking', component: EditBookingComponent },
             { path: 'edit-customer', component: EditCustomerComponent },
+            { path: 'edit-dichvu/:id', component: EditDichvuComponent },
             { path: 'edit-pricing', component: EditPricingComponent },
             { path: 'edit-room/:id', component: EditRoomComponent },
             { path: 'edit-staff', component: EditStaffComponent },

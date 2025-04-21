@@ -1,0 +1,97 @@
+<div class="page-wrapper">
+  <div class="content container-fluid">
+    <div class="page-header">
+      <div class="row align-items-center">
+        <div class="col">
+          <h3 class="page-title mt-5">Chỉnh sửa dịch vụ</h3>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-lg-12">
+        <div *ngIf="error" class="alert alert-danger">
+          {{ error }}
+        </div>
+        
+        <form [formGroup]="dichvuForm" (ngSubmit)="onSubmit()">
+          <div class="row formtype">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label>Tên dịch vụ <span class="text-danger">*</span></label>
+                <input class="form-control" type="text" formControlName="tenDV" 
+                  [ngClass]="{ 'is-invalid': submitted && f['tenDV'].errors }">
+                <div *ngIf="submitted && f['tenDV'].errors" class="invalid-feedback">
+                  {{ getErrorMessage('tenDV') }}
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-md-6">
+              <div class="form-group">
+                <label>Giá <span class="text-danger">*</span></label>
+                <input class="form-control" type="number" formControlName="gia" 
+                  [ngClass]="{ 'is-invalid': submitted && f['gia'].errors }">
+                <div *ngIf="submitted && f['gia'].errors" class="invalid-feedback">
+                  {{ getErrorMessage('gia') }}
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-md-6">
+              <div class="form-group">
+                <label>Mã khách sạn <span class="text-danger">*</span></label>
+                <input class="form-control" type="number" formControlName="maKS" 
+                  [ngClass]="{ 'is-invalid': submitted && f['maKS'].errors }">
+                <div *ngIf="submitted && f['maKS'].errors" class="invalid-feedback">
+                  {{ getErrorMessage('maKS') }}
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-md-6">
+              <div class="form-group">
+                <label>Ảnh dịch vụ</label>
+                <input class="form-control" type="file" accept="image/*" (change)="onFileChange($event)">
+                
+                <!-- Hiển thị ảnh đã chọn -->
+                <div *ngIf="imagePreview" class="mt-2">
+                  <p>Ảnh mới:</p>
+                  <img [src]="imagePreview" alt="Preview" class="img-thumbnail" style="max-width: 200px; max-height: 200px;">
+                </div>
+                
+                <!-- Hiển thị ảnh hiện tại -->
+                <div *ngIf="currentImages && currentImages.length > 0" class="mt-2">
+                  <p>Ảnh hiện tại:</p>
+                  <div class="d-flex flex-wrap">
+                    <div *ngFor="let image of currentImages" class="me-2 mb-2">
+                      <img [src]="image" alt="Current Image" class="img-thumbnail" style="max-width: 100px; max-height: 100px;">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-md-12">
+              <div class="form-group">
+                <label>Mô tả</label>
+                <textarea class="form-control" rows="4" formControlName="moTa" 
+                  [ngClass]="{ 'is-invalid': submitted && f['moTa'].errors }"></textarea>
+                <div *ngIf="submitted && f['moTa'].errors" class="invalid-feedback">
+                  {{ getErrorMessage('moTa') }}
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="mt-4">
+            <button class="btn btn-primary me-2" type="submit" [disabled]="loading">
+              <span *ngIf="loading" class="spinner-border spinner-border-sm me-1"></span>
+              Cập nhật
+            </button>
+            <button class="btn btn-secondary" type="button" (click)="cancel()">Hủy</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
