@@ -36,10 +36,16 @@ import { InvoicesComponent } from './admin/invoices/invoices.component';
 import { PaymentsComponent } from './admin/payments/payments.component';
 import { PricingComponent } from './admin/pricing/pricing.component';
 import { RolesPermissionsComponent } from './admin/roles-permissions/roles-permissions.component';
+<<<<<<< HEAD
 import { AddDichvuComponent } from './admin/add-dichvu/add-dichvu.component';
 import { EditDichvuComponent } from './admin/edit-dichvu/edit-dichvu.component';
 import { AllDichvuComponent } from './admin/all-dichvu/all-dichvu.component';
 import { AllAccountComponent } from './admin/all-account/all-account.component';
+=======
+import { ViewBookingComponent } from './admin/view-booking/view-booking.component';
+import { AllAccountComponent } from './admin/all-account/all-account.component';
+import { AddAccountComponent } from './admin/add-account/add-account.component';
+>>>>>>> origin/anh1
 
 export const routes: Routes = [
     { path: '', redirectTo: '/admin', pathMatch: 'full' },
@@ -76,7 +82,13 @@ export const routes: Routes = [
             { path: 'roles-permissions', component: RolesPermissionsComponent },
             { path: 'invoice-settings', component: InvoiceSettingsComponent },
             { path: 'settings', component: SettingsComponent },
+<<<<<<< HEAD
             { path: 'all-accounts', component: AllAccountComponent },
+=======
+            { path: 'view-booking/:id', component: ViewBookingComponent },
+            { path: 'all-account', component: AllAccountComponent },
+            { path: 'add-account', component: AddAccountComponent },
+>>>>>>> origin/anh1
         ]
     },
     {
