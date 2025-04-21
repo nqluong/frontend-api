@@ -37,12 +37,12 @@ import { PaymentsComponent } from './admin/payments/payments.component';
 import { PricingComponent } from './admin/pricing/pricing.component';
 import { RolesPermissionsComponent } from './admin/roles-permissions/roles-permissions.component';
 import { ViewBookingComponent } from './admin/view-booking/view-booking.component';
-import { AllAccountComponent } from './admin/all-account/all-account.component';
 import { AddDichvuComponent } from './admin/add-dichvu/add-dichvu.component';
 import { AllDichvuComponent } from './admin/all-dichvu/all-dichvu.component';
 import { EditDichvuComponent } from './admin/edit-dichvu/edit-dichvu.component';
 import { AddAccountComponent } from './admin/add-account/add-account.component';
 import { RevenueComponent } from './admin/revenue/revenue.component';
+import { AllAccountComponent } from './admin/all-accounts/all-accounts.component';
 
 export const routes: Routes = [
     { path: '', redirectTo: '/admin', pathMatch: 'full' },

@@ -19,7 +19,7 @@ export interface Account {
   selector: 'app-all-account',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './all-account.component.html',
+  templateUrl: './all-accounts.component.html',
 })
 export class AllAccountComponent implements OnInit {
   accounts: Account[] = [];
