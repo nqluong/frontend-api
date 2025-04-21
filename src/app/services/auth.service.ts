@@ -169,6 +169,7 @@ export class AuthService {
 
   // Store user info in localStorage
   saveUserData(data: any): void {
+    console.log('Lưu thông tin người dùng:', data);
     this.userDataCache = data;
     
     if (data.token) {
@@ -178,9 +179,11 @@ export class AuthService {
     if (isPlatformBrowser(this.platformId)) {
       try {
         localStorage.setItem('user', JSON.stringify(data));
+        console.log('Đã lưu thông tin người dùng vào localStorage');
         
         if (data.token) {
           localStorage.setItem('token', data.token);
+          console.log('Đã lưu token người dùng vào localStorage');
         }
       } catch (error) {
         console.error('Error saving to localStorage:', error);

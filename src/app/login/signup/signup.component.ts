@@ -104,10 +104,36 @@ export class SignupComponent {
         this.isLoading = false;
         if (response.status === 201) {
           this.successMessage = response.message;
-          // Chuyển hướng đến trang đăng nhập sau 2 giây
-          setTimeout(() => {
-            this.router.navigate(['/login/signin']);
-          }, 2000);
+          
+          // Log in the user automatically with the new credentials
+          this.authService.login(this.username, this.password).subscribe({
+            next: (loginResponse) => {
+              // If login successful, redirect to customer info form
+              if (loginResponse && loginResponse.status === 200) {
+                // Lưu thông tin người dùng trước khi chuyển hướng
+                if (loginResponse.result) {
+                  this.authService.saveUserData(loginResponse.result);
+                  console.log('Đã lưu thông tin người dùng:', loginResponse.result);
+                }
+                
+                // Timeout dài hơn để đảm bảo dữ liệu được lưu
+                setTimeout(() => {
+                  this.router.navigate(['/login/customer-info']);
+                }, 2000);
+              } else {
+                // If auto-login fails, redirect to login page
+                setTimeout(() => {
+                  this.router.navigate(['/login/signin']);
+                }, 2000);
+              }
+            },
+            error: () => {
+              // If auto-login fails, redirect to login page
+              setTimeout(() => {
+                this.router.navigate(['/login/signin']);
+              }, 2000);
+            }
+          });
         } else {
           this.errorMessage = response.message;
         }

@@ -293,7 +293,7 @@ export class CheckoutComponent implements OnInit {
     this.isLoadingCustomerInfo = true;
     
     // API endpoint to get customer info by account ID
-    const apiUrl = `http://localhost:8080/hotelbooking/customers/${accountId}`;
+    const apiUrl = `http://localhost:8080/hotelbooking/customers/byMaTK/${accountId}`;
     
     this.http.get(apiUrl)
       .pipe(finalize(() => this.isLoadingCustomerInfo = false))
@@ -808,7 +808,7 @@ export class CheckoutComponent implements OnInit {
     }
     
     if (confirm('Bạn có chắc chắn muốn hủy đặt phòng này không?')) {
-      this.bookingService.cancelBooking(this.bookingId)
+      this.bookingService.cancelBooking2(this.bookingId)
         .subscribe({
           next: (response: any) => {
             console.log('Booking cancelled successfully:', response);

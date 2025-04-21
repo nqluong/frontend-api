@@ -108,11 +108,6 @@ export const routes: Routes = [
     },
     {
         path: 'login',
-        component: MainLoginComponent,
-        children: [
-            { path: 'signin', component: SigninComponent },
-            { path: 'signup', component: SignupComponent },
-            { path: 'forgot-password', component: PasswordResetComponent }
-        ]
+        loadChildren: () => import('./login/login.routes').then(m => m.loginRoutes)
     }
 ];

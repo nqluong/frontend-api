@@ -1,0 +1,15 @@
+                        <!-- Form hiển thị khi có thông tin tài khoản hoặc đã tải xong -->
+                        <form (ngSubmit)="onSubmit()" *ngIf="!isLoadingUserData">
+                            <!-- Full Name -->
+                            <div class="form-group">
+                                <label class="form-control-label">Họ tên đầy đủ</label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       [(ngModel)]="customerInfo.fullName" 
+                                       name="fullName"
+                                       [ngClass]="{'is-invalid': formSubmitted && validationErrors.fullName}"
+                                       required>
+                                <div *ngIf="formSubmitted && validationErrors.fullName" class="invalid-feedback">
+                                    {{ validationErrors.fullName }}
+                                </div>
+                            </div> 

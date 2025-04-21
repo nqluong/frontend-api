@@ -1,0 +1,135 @@
+<div class="main-wrapper login-body">
+    <div class="login-wrapper">
+        <div class="container">
+            <div class="loginbox">
+                <div class="login-left"> <img class="img-fluid" src="assets/admin/img/logo.png" alt="Logo"> </div>
+                <div class="login-right">
+                    <div class="login-right-wrap">
+                        <h1 class="mb-3">Thông tin cá nhân</h1>
+                        <p class="account-subtitle">Vui lòng cung cấp thông tin cá nhân để hoàn tất đăng ký</p>
+
+                        <!-- Loading message -->
+                        <div *ngIf="isLoadingUserData" class="alert alert-info">
+                            <div class="d-flex align-items-center">
+                                <div class="spinner-border spinner-border-sm me-2" role="status">
+                                    <span class="visually-hidden">Đang tải...</span>
+                                </div>
+                                <span>Đang tải thông tin tài khoản...</span>
+                            </div>
+                        </div>
+
+                        <!-- Error message -->
+                        <div *ngIf="errorMessage" class="alert alert-danger">
+                            {{ errorMessage }}
+                        </div>
+
+                        <!-- Success message -->
+                        <div *ngIf="successMessage" class="alert alert-success">
+                            {{ successMessage }}
+                        </div>
+
+                        <!-- Form hiển thị khi có thông tin tài khoản hoặc đã tải xong -->
+                        <form (ngSubmit)="onSubmit()" *ngIf="!isLoadingUserData">
+                            <!-- Full Name -->
+                            <div class="form-group">
+                                <label class="form-control-label">Họ tên đầy đủ</label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       [(ngModel)]="customerInfo.fullName" 
+                                       name="fullName"
+                                       [ngClass]="{'is-invalid': formSubmitted && validationErrors.fullName}"
+                                       required>
+                                <div *ngIf="formSubmitted && validationErrors.fullName" class="invalid-feedback">
+                                    {{ validationErrors.fullName }}
+                                </div>
+                            </div>
+
+                            <!-- Date of Birth -->
+                            <div class="form-group">
+                                <label class="form-control-label">Ngày sinh</label>
+                                <input type="date" 
+                                       class="form-control" 
+                                       [(ngModel)]="customerInfo.dateOfBirth" 
+                                       name="dateOfBirth"
+                                       [ngClass]="{'is-invalid': formSubmitted && validationErrors.dateOfBirth}"
+                                       required>
+                                <div *ngIf="formSubmitted && validationErrors.dateOfBirth" class="invalid-feedback">
+                                    {{ validationErrors.dateOfBirth }}
+                                </div>
+                            </div>
+
+                            <!-- Gender -->
+                            <div class="form-group">
+                                <label class="form-control-label">Giới tính</label>
+                                <select class="form-control" 
+                                        [(ngModel)]="customerInfo.gender" 
+                                        name="gender">
+                                    <option value="Nam">Nam</option>
+                                    <option value="Nữ">Nữ</option>
+                                    <option value="Khác">Khác</option>
+                                </select>
+                            </div>
+
+                            <!-- Email -->
+                            <div class="form-group">
+                                <label class="form-control-label">Email</label>
+                                <input type="email" 
+                                       class="form-control" 
+                                       [(ngModel)]="customerInfo.email" 
+                                       name="email"
+                                       [ngClass]="{'is-invalid': formSubmitted && validationErrors.email}"
+                                       [readOnly]="accountEmail ? true : false"
+                                       required>
+                                <div *ngIf="formSubmitted && validationErrors.email" class="invalid-feedback">
+                                    {{ validationErrors.email }}
+                                </div>
+                                <small *ngIf="accountEmail" class="form-text text-muted">
+                                    Email đã được cung cấp khi đăng ký tài khoản
+                                </small>
+                            </div>
+
+                            <!-- Phone -->
+                            <div class="form-group">
+                                <label class="form-control-label">Số điện thoại</label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       [(ngModel)]="customerInfo.phone" 
+                                       name="phone"
+                                       [ngClass]="{'is-invalid': formSubmitted && validationErrors.phone}"
+                                       [readOnly]="accountPhone ? true : false"
+                                       required>
+                                <div *ngIf="formSubmitted && validationErrors.phone" class="invalid-feedback">
+                                    {{ validationErrors.phone }}
+                                </div>
+                                <small *ngIf="accountPhone" class="form-text text-muted">
+                                    Số điện thoại đã được cung cấp khi đăng ký tài khoản
+                                </small>
+                            </div>
+
+                            <!-- Submit buttons -->
+                            <div class="form-group mb-0">
+                                <button class="btn btn-primary btn-block" 
+                                        type="submit"
+                                        [disabled]="isLoading">
+                                    {{ isLoading ? 'Đang lưu thông tin...' : 'Lưu thông tin' }}
+                                </button>
+                                <button type="button" 
+                                        class="btn btn-secondary btn-block mt-2"
+                                        (click)="skipForm()"
+                                        [disabled]="isLoading">
+                                    Bỏ qua
+                                </button>
+                            </div>
+                        </form>
+
+                        <div class="text-center mt-3">
+                            <small class="text-muted">
+                                Bạn có thể cập nhật thông tin này sau trong hồ sơ cá nhân
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
