@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { AllAccountComponent } from './all-account.component';
+import { RevenueComponent } from './revenue.component';
 
-describe('AllAccountComponent', () => {
-  let component: AllAccountComponent;
-  let fixture: ComponentFixture<AllAccountComponent>;
+describe('RevenueComponent', () => {
+  let component: RevenueComponent;
+  let fixture: ComponentFixture<RevenueComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AllAccountComponent]
+      imports: [RevenueComponent]
     })
     .compileComponents();
     
-    fixture = TestBed.createComponent(AllAccountComponent);
+    fixture = TestBed.createComponent(RevenueComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
