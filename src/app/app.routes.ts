@@ -38,7 +38,7 @@ import { PricingComponent } from './admin/pricing/pricing.component';
 import { RolesPermissionsComponent } from './admin/roles-permissions/roles-permissions.component';
 
 export const routes: Routes = [
-    { path: '', redirectTo: '/customer', pathMatch: 'full' },
+    { path: '', redirectTo: '/admin', pathMatch: 'full' },
     {
         path: 'admin',
         component: MainAdminComponent,

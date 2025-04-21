@@ -43,6 +43,8 @@ export class AllRoomsComponent implements OnInit {
   currentPage = 1;
   totalPages = 1;
   totalElements = 0;
+  loading = false;
+  error = '';
 
   constructor(private roomService: RoomService, private router: Router) {}
 
@@ -51,25 +53,36 @@ export class AllRoomsComponent implements OnInit {
   }
 
   loadRooms() {
+    this.loading = true;
+    this.error = '';
+    
     this.roomService.getAllRooms().subscribe({
-      // Giả sử roomService.getAllRooms() trả về Room[] thay vì ApiResponse
       next: (data: any) => {
+        this.loading = false;
+        
         // Kiểm tra cấu trúc dữ liệu trả về và xử lý phù hợp
         if (data && data.status === 200 && data.result) {
           // Trường hợp dữ liệu trả về là ApiResponse
-          this.rooms = data.result.content;
-          this.currentPage = data.result.currentPage;
-          this.totalPages = data.result.totalPages;
-          this.totalElements = data.result.totalElements;
+          if (data.result.content) {
+            this.rooms = data.result.content;
+            this.currentPage = data.result.currentPage;
+            this.totalPages = data.result.totalPages;
+            this.totalElements = data.result.totalElements;
+          } else if (Array.isArray(data.result)) {
+            this.rooms = data.result;
+          }
         } else if (Array.isArray(data)) {
           // Trường hợp dữ liệu trả về trực tiếp là mảng Room[]
           this.rooms = data;
         } else {
           console.error('API trả về dữ liệu không hợp lệ:', data);
+          this.error = 'Không thể tải dữ liệu phòng. Vui lòng thử lại sau.';
         }
       },
       error: (error) => {
+        this.loading = false;
         console.error('Lỗi khi tải danh sách phòng:', error);
+        this.error = 'Đã xảy ra lỗi khi tải danh sách phòng.';
       }
     });
   }
@@ -80,25 +93,38 @@ export class AllRoomsComponent implements OnInit {
 
   deleteRoom(id: number) {
     if (confirm('Bạn có chắc chắn muốn xóa phòng này?')) {
+      this.loading = true;
+      
       this.roomService.deleteRoom(id).subscribe({
         next: () => {
+          this.loading = false;
+          alert('Đã xóa phòng thành công!');
           this.loadRooms(); // Tải lại danh sách sau khi xóa
         },
         error: (error) => {
+          this.loading = false;
           console.error('Lỗi khi xóa phòng:', error);
+          alert('Xóa phòng không thành công. Vui lòng thử lại sau.');
         }
       });
     }
   }
 
   updateRoomStatus(room: Room, newStatus: string) {
+    this.loading = true;
+    
+    // Tạo bản sao đối tượng phòng với trạng thái mới
     const updatedRoom = { ...room, tinhTrang: newStatus };
+    
     this.roomService.updateRoom(room.id, updatedRoom).subscribe({
       next: () => {
+        this.loading = false;
         this.loadRooms(); // Tải lại danh sách sau khi cập nhật
       },
       error: (error) => {
+        this.loading = false;
         console.error('Lỗi khi cập nhật trạng thái phòng:', error);
+        alert('Cập nhật trạng thái không thành công. Vui lòng thử lại sau.');
       }
     });
   }
@@ -124,5 +150,13 @@ export class AllRoomsComponent implements OnInit {
       case 'MAINTENANCE': return 'Bảo trì';
       default: return status;
     }
+  }
+  
+  // Phương thức để hiển thị preview ảnh phòng
+  getFirstImageUrl(room: Room): string {
+    if (room.anhPhong && room.anhPhong.length > 0) {
+      return room.anhPhong[0];
+    }
+    return 'assets/images/no-image.png'; // Ảnh mặc định
   }
 }

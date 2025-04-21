@@ -3,7 +3,7 @@
         <div class="page-header">
             <div class="row align-items-center">
                 <div class="col">
-                    <h3 class="page-title mt-5">Thêm Phòng</h3>
+                    <h3 class="page-title mt-5">Thêm phòng mới</h3>
                 </div>
             </div>
         </div>
@@ -44,7 +44,7 @@
                             <div class="form-group">
                                 <label>Giá <span class="text-danger">*</span></label>
                                 <input class="form-control" type="number" formControlName="gia" 
-                                       [ngClass]="{ 'is-invalid': submitted && f['gia'].errors }">
+                                    [ngClass]="{ 'is-invalid': submitted && f['gia'].errors }">
                                 <div *ngIf="submitted && f['gia'].errors" class="invalid-feedback">
                                     <div *ngIf="f['gia'].errors?.['required']">Vui lòng nhập giá phòng</div>
                                     <div *ngIf="f['gia'].errors?.['min']">Giá phòng phải lớn hơn 0</div>
@@ -56,12 +56,13 @@
                                 <label>Trạng thái <span class="text-danger">*</span></label>
                                 <select class="form-control" formControlName="tinhTrang" 
                                         [ngClass]="{ 'is-invalid': submitted && f['tinhTrang'].errors }">
+                                    <option value="">Chọn trạng thái</option>
                                     <option *ngFor="let status of statusOptions" [value]="status">
                                         {{status === 'AVAILABLE' ? 'Trống' : 
-                                          status === 'BOOKED' ? 'Đã đặt' : 
-                                          status === 'OCCUPIED' ? 'Đang ở' : 
-                                          status === 'CLEANING' ? 'Đang dọn' : 
-                                          'Bảo trì'}}
+                                            status === 'BOOKED' ? 'Đã đặt' : 
+                                            status === 'OCCUPIED' ? 'Đang ở' : 
+                                            status === 'CLEANING' ? 'Đang dọn' : 
+                                            'Bảo trì'}}
                                     </option>
                                 </select>
                                 <div *ngIf="submitted && f['tinhTrang'].errors" class="invalid-feedback">
@@ -79,24 +80,37 @@
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label>Ảnh phòng</label>
-                                <div class="custom-file">
-                                    <input type="file" class="custom-file-input" id="imageUpload" multiple disabled>
-                                    <label class="custom-file-label" for="imageUpload">Chọn file ảnh</label>
-                                    <small class="form-text text-muted">Tính năng upload hình ảnh sẽ được cập nhật sau</small>
+                                <input type="file" class="form-control" multiple accept="image/*" 
+                                       (change)="onFileSelect($event)">
+                                
+                                <!-- Hiển thị preview ảnh -->
+                                <div *ngIf="previewUrls.length > 0" class="mt-2">
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <div *ngFor="let url of previewUrls; let i = index" class="position-relative">
+                                            <img [src]="url" class="img-thumbnail" style="width: 100px; height: 75px; object-fit: cover;">
+                                            <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0" 
+                                                (click)="removeImage(i)">
+                                                X
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
+                                
+                                <p *ngIf="previewUrls.length === 0">
+                                    Chưa có ảnh
+                                </p>
                             </div>
                         </div>
                         <div class="col-md-12">
                             <div class="form-group">
                                 <label>Mô tả</label>
-                                <textarea class="form-control" rows="4" formControlName="moTa" 
-                                          placeholder="Nhập mô tả về phòng"></textarea>
+                                <textarea class="form-control" rows="4" formControlName="moTa"></textarea>
                             </div>
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-primary buttonedit mr-2" [disabled]="loading">
-                        <span *ngIf="loading" class="spinner-border spinner-border-sm mr-1"></span>
-                        Lưu
+                    <button type="submit" class="btn btn-primary mr-2" [disabled]="loading">
+                        <span *ngIf="loading" class="spinner-border spinner-border-sm me-1"></span>
+                        Thêm phòng
                     </button>
                     <button type="button" class="btn btn-secondary" (click)="cancel()">Hủy</button>
                 </form>

@@ -1,55 +1,70 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-
-interface Room {
-  id?: number;
-  tenPhong: string;
-  loaiPhong: string;
-  gia: number;
-  tinhTrang: string;
-  tienNghiDiKem: string;
-  moTa: string;
-  anhPhong: string[];
-}
-
-interface ApiResponse {
-  status: number;
-  time: string;
-  result: {
-    content: Room[];
-    currentPage: number;
-    totalPages: number;
-    totalElements: number;
-    pageSize: number;
-  };
-}
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class RoomService {
-  private apiUrl = 'http://localhost:8080/hotelbooking/rooms'; // Đường dẫn API của bạn
+  private apiUrl = 'http://localhost:8080/hotelbooking/rooms';
+  private roomImagesUrl = 'http://localhost:8080/hotelbooking/room-images';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
-  getAllRooms(): Observable<ApiResponse> {
-    return this.http.get<ApiResponse>(this.apiUrl);
+  // Lấy danh sách tất cả các phòng
+  getAllRooms(): Observable<any> {
+    return this.http.get<any>(this.apiUrl);
   }
 
-  getRoom(id: number): Observable<ApiResponse> {
-    return this.http.get<ApiResponse>(`${this.apiUrl}/${id}`);
+  // Lấy thông tin chi tiết phòng theo ID
+  getRoom(id: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/${id}`);
   }
 
-  addRoom(room: Room): Observable<ApiResponse> {
-    return this.http.post<ApiResponse>(this.apiUrl, room);
+  // Thêm phòng mới (không có ảnh)
+  addRoom(roomData: any): Observable<any> {
+    return this.http.post<any>(this.apiUrl, roomData);
   }
 
-  updateRoom(id: number, room: Room): Observable<ApiResponse> {
-    return this.http.put<ApiResponse>(`${this.apiUrl}/${id}`, room);
+  // Thêm ảnh cho phòng
+  addRoomImage(roomId: number, file: File): Observable<any> {
+    const formData = new FormData();
+    formData.append('maPhong', roomId.toString());
+    
+    // Chuyển đổi File thành Base64 để gửi
+    return new Observable(observer => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        const base64String = reader.result as string;
+        // Loại bỏ phần prefix "data:image/xxx;base64,"
+        const base64Data = base64String.split(',')[1];
+        
+        const imageRequest = {
+          maPhong: roomId,
+          duongDan: base64Data
+        };
+        
+        this.http.post<any>(this.roomImagesUrl, imageRequest).subscribe({
+          next: (response) => observer.next(response),
+          error: (error) => observer.error(error),
+          complete: () => observer.complete()
+        });
+      };
+      reader.onerror = (error) => {
+        observer.error(error);
+      };
+    });
   }
 
-  deleteRoom(id: number): Observable<ApiResponse> {
-    return this.http.delete<ApiResponse>(`${this.apiUrl}/${id}`);
+  // Cập nhật thông tin phòng (không có ảnh)
+  updateRoom(id: number, roomData: any): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/${id}`, roomData);
+  }
+
+  // Xóa phòng
+  deleteRoom(id: number): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/${id}`);
   }
 }

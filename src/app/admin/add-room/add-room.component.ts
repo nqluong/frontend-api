@@ -1,12 +1,13 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { RoomService } from '../../services/room.service';
+import { forkJoin, Observable } from 'rxjs';
 import { HttpClientModule } from '@angular/common/http';
 
 interface Room {
-  id?: number;
+  id: number;
   tenPhong: string;
   loaiPhong: string;
   gia: number;
@@ -26,16 +27,22 @@ interface Room {
 })
 export class AddRoomComponent implements OnInit {
   roomForm!: FormGroup;
-  submitted = false;
   loading = false;
+  submitted = false;
   error = '';
+  
+  // Các lựa chọn cho dropdown - giữ nguyên giá trị từ backend
+  roomTypes = ['SINGLE', 'DOUBLE', 'TWIN', 'DELUXE', 'SUITE'];
   statusOptions = ['AVAILABLE', 'BOOKED', 'OCCUPIED', 'CLEANING', 'MAINTENANCE'];
-  roomTypes = ['Phòng Đơn', 'Phòng Đôi', 'Phòng VIP'];
+  
+  // Biến cho upload ảnh
+  selectedFiles: File[] = [];
+  previewUrls: string[] = [];
 
   constructor(
     private formBuilder: FormBuilder,
-    private router: Router,
-    private roomService: RoomService
+    private roomService: RoomService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -45,13 +52,34 @@ export class AddRoomComponent implements OnInit {
       gia: ['', [Validators.required, Validators.min(0)]],
       tinhTrang: ['AVAILABLE', Validators.required],
       tienNghiDiKem: [''],
-      moTa: [''],
-      anhPhong: [[]]
+      moTa: ['']
     });
   }
 
-  // Getter thuận tiện cho các trường form
+  // Getter để dễ dàng truy cập form controls
   get f() { return this.roomForm.controls; }
+
+  onFileSelect(event: any) {
+    if (event.target.files.length > 0) {
+      const files = event.target.files;
+      this.selectedFiles = Array.from(files);
+      
+      // Tạo preview URLs cho các ảnh đã chọn
+      this.previewUrls = [];
+      this.selectedFiles.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = (e: any) => {
+          this.previewUrls.push(e.target.result);
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+  }
+
+  removeImage(index: number) {
+    this.selectedFiles.splice(index, 1);
+    this.previewUrls.splice(index, 1);
+  }
 
   onSubmit() {
     this.submitted = true;
@@ -63,41 +91,79 @@ export class AddRoomComponent implements OnInit {
 
     this.loading = true;
     
-    // Sử dụng type assertion để ép kiểu
-    const newRoom = this.roomForm.value as unknown as Room;
-    
-    this.roomService.addRoom(newRoom).subscribe({
-      next: (response: any) => {
-        alert('Thêm phòng thành công!');
-        this.router.navigate(['/admin/all-rooms']);
+    // Format dữ liệu để phù hợp với PhongCreateRequest
+    const roomData = {
+      tenPhong: this.f['tenPhong'].value,
+      loaiPhong: this.f['loaiPhong'].value,
+      gia: parseFloat(this.f['gia'].value), // Chuyển đổi thành số
+      tinhTrang: this.f['tinhTrang'].value, // Đây là enum RoomStatus trong Java
+      tienNghiDiKem: this.f['tienNghiDiKem'].value || '',
+      moTa: this.f['moTa'].value || ''
+    };
+
+    console.log('Dữ liệu gửi:', roomData);
+
+    // 1. Trước tiên thêm phòng mới
+    this.roomService.addRoom(roomData).subscribe({
+      next: (roomResponse) => {
+        console.log('Phản hồi thêm phòng:', roomResponse);
+        // 2. Sau khi thêm phòng thành công, lấy ID phòng để tải lên ảnh
+        let roomId;
+        
+        if (roomResponse && roomResponse.result) {
+          roomId = roomResponse.result.id;
+        } else if (roomResponse && roomResponse.id) {
+          roomId = roomResponse.id;
+        }
+        
+        if (roomId && this.selectedFiles.length > 0) {
+          console.log('Đang upload ảnh cho phòng có ID:', roomId);
+          // Thêm từng ảnh với roomId
+          const uploadObservables: Observable<any>[] = this.selectedFiles.map(file => {
+            return this.roomService.addRoomImage(roomId, file);
+          });
+          
+          // Sử dụng forkJoin để đợi tất cả các upload hoàn thành
+          forkJoin(uploadObservables).subscribe({
+            next: (results) => {
+              console.log('Kết quả upload ảnh:', results);
+              this.loading = false;
+              alert('Thêm phòng thành công!');
+              this.router.navigate(['/admin/rooms']);
+            },
+            error: (error) => {
+              console.error('Lỗi khi upload ảnh:', error);
+              this.loading = false;
+              this.error = 'Phòng đã được tạo nhưng có lỗi khi tải lên ảnh: ' + (error.message || 'Lỗi không xác định');
+            }
+          });
+        } else {
+          // Trường hợp không có ảnh hoặc không lấy được ID
+          this.loading = false;
+          if (!roomId) {
+            console.warn('Không thể lấy ID phòng từ response:', roomResponse);
+            this.error = 'Thêm phòng thành công nhưng không thể xác định ID phòng.';
+          } else {
+            alert('Thêm phòng thành công!');
+            this.router.navigate(['/admin/rooms']);
+          }
+        }
       },
       error: (error) => {
-        this.error = 'Có lỗi xảy ra khi thêm phòng';
+        this.loading = false;
         console.error('Lỗi khi thêm phòng:', error);
-        this.loading = false;
-      }
-    });
-
-    this.createRoom(newRoom);
-  }
-
-  // Phương thức tạo phòng
-  createRoom(room: Room) {
-    this.roomService.addRoom(room).subscribe({
-      next: (response: any) => {
-        console.log('Thêm phòng thành công:', response);
-        alert('Thêm phòng thành công!');
-        this.router.navigate(['/admin/all-rooms']);
-      },
-      error: (error) => {
-        console.error('Chi tiết lỗi khi thêm phòng:', error);
-        this.error = 'Có lỗi xảy ra khi thêm phòng: ' + error;
-        this.loading = false;
+        
+        // Hiển thị thông báo lỗi chi tiết hơn
+        if (error.error && error.error.message) {
+          this.error = `Lỗi: ${error.error.message}`;
+        } else {
+          this.error = error.message || 'Đã xảy ra lỗi khi thêm phòng. Vui lòng thử lại.';
+        }
       }
     });
   }
 
   cancel() {
-    this.router.navigate(['/admin/all-rooms']);
+    this.router.navigate(['/admin/rooms']);
   }
 }
