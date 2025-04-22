@@ -40,10 +40,10 @@ export class SigninComponent {
           
           // Redirect based on role
           if (response.result?.role === 'ADMIN') {
-            this.router.navigate(['/admin']);
-          } else {
-            this.router.navigate(['/customer']);
-          }
+            window.location.href = '/admin';
+} else {
+  window.location.href = '/customer';
+}
         } else {
           // Handle API error
           this.errorMessage = response.message;
